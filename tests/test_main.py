@@ -1,5 +1,6 @@
 from rag_bogado import main
 
+
 def test_main_prints_greeting(capsys):
     main()
 
