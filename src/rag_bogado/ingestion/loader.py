@@ -10,18 +10,20 @@ class Page:
     text: str
     source: str
 
+
 def extract_page_text(
-    page:pymupdf.Page,
+    page: pymupdf.Page,
     top_margin: float = 65,
     bottom_margin: float = 30,
-  ) -> str:
-  clip = pymupdf.Rect(
-    page.rect.x0,
-    page.rect.y0 + top_margin,
-    page.rect.x1,
-    page.rect.y1 - bottom_margin
-  )
-  return page.get_text(clip=clip)
+) -> str:
+    clip = pymupdf.Rect(
+        page.rect.x0,
+        page.rect.y0 + top_margin,
+        page.rect.x1,
+        page.rect.y1 - bottom_margin,
+    )
+    return page.get_text(clip=clip)
+
 
 def load_pdf(path: Path) -> list[Page]:
     document = pymupdf.open(path)
