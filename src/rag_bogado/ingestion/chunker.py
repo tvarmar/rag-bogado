@@ -31,8 +31,8 @@ def find_startpoint(text: str, position: int, lower_bound: int) -> int:
 
 def chunk_page(
     page: Page,
-    chunk_size: int = 1500,
-    overlap: int = 200,
+    chunk_size: int = 800,
+    overlap: int = 120,
 ) -> list[Chunk]:
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")
