@@ -23,15 +23,25 @@ class Retriever:
         self.chunks = chunks
         self.embedding_model = embedding_model
 
-        self.embeddings = embedding_model.embed_passages(
-            [chunk.text for chunk in chunks]
+        self.embeddings = (
+            embedding_model.embed_passages([chunk.text for chunk in chunks])
+            if chunks
+            else []
         )
+        if len(self.embeddings) != len(chunks):
+            raise ValueError("Expected one embedding per chunk")
 
     def search(
         self,
         query: str,
         top_k: int = 10,
     ) -> list[SearchResult]:
+        if top_k < 0:
+            raise ValueError("top_k cannot be negative")
+        if not query.strip():
+            raise ValueError("query cannot be blank")
+        if top_k == 0 or not self.chunks:
+            return []
         query_embedding = self.embedding_model.embed_query(query)
 
         results = []

@@ -53,16 +53,16 @@ def chunk_page(
 
         text = page.text[start:end].strip()
 
-        chunks.append(
-            Chunk(
-                chunk_id=chunk_id,
-                text=text,
-                source=page.source,
-                page_number=page.page_number,
+        if text:
+            chunks.append(
+                Chunk(
+                    chunk_id=chunk_id,
+                    text=text,
+                    source=page.source,
+                    page_number=page.page_number,
+                )
             )
-        )
-
-        chunk_id += 1
+            chunk_id += 1
 
         if end >= len(page.text):
             break
