@@ -11,3 +11,6 @@ wheels/
 
 data/documents/*
 !data/documents/.gitkeep
+
+# Generated evaluation runs (reference reports live with the evaluation package)
+data/evaluation/
