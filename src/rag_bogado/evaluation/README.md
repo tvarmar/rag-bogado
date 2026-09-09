@@ -156,4 +156,55 @@ Tests supply a fake model without creating or downloading a real model.
 
 Words longer than `chunk_size` may be split to guarantee progress. Chunk IDs are
 local to a page: use document, page, and chunk ID together when reading reports.
-Persistent IDs belong to the next milestone.
+Persistent point IDs also include the index identity and full chunk metadata/text.
+
+## Persistent retrieval comparison
+
+Run each command from the project root in a separate process:
+
+```bash
+uv run python -m rag_bogado.evaluation --backend memory --output data/evaluation/memory.json
+uv run python -m rag_bogado.evaluation --backend qdrant --output data/evaluation/qdrant-build.json
+uv run python -m rag_bogado.evaluation --backend qdrant --index-mode reuse --output data/evaluation/qdrant-reuse.json
+```
+
+`--store-path` defaults to `data/qdrant`. Both backends use the same pinned local
+model, corpus, questions, and dot-product similarity. The Qdrant collection name
+includes a SHA-256 identity derived from the PDF hash, actual chunks, chunking
+parameters, ingestion/embedding code, model revision, embedding dependency
+versions, dimension, and distance. Changed identities use separate collections;
+previous collections are retained.
+
+Build mode checks expected point IDs and embeds only missing passages in batches.
+Reuse mode fails if any expected passage is missing, without embedding passages.
+Unexpected points are rejected. After an interrupted build, rerun build mode to
+resume. This verifies a single collection's completeness; it does not implement
+SQL version activation or coordination between multiple writers.
+
+Reports record `backend`, `index_id`, `embedded_passages`, `model_loading_seconds`,
+and `index_preparation_seconds`. The legacy `indexing_seconds` includes loading
+the model and preparing the index; extraction is excluded. Reuse should report
+zero embedded passages, but still reloads the model, extracts/chunks the PDF to
+check identity/completeness, and embeds each question. It is not yet a standalone
+query command that can work without the source PDF.
+
+Compare passage identities and ordering as well as metrics. Small score differences
+can arise from floating-point arithmetic; exact ties can have different ordering.
+The reference implementation uses Python dot products and Qdrant uses its own
+numeric operations. Negative questions still return nearest passages; neither
+backend implements abstention.
+
+### Recorded comparison — 2026-09-09
+
+`reports/persistence-comparison.json` records a comparison of 1,041 passages and
+14 questions, including report hashes and per-run provenance. Full local reports
+are in `data/evaluation/{memory,qdrant-build,qdrant-reuse}-2026-09-09.json`.
+
+- All 140 top-ten passage positions matched the in-memory reference in both
+  persistent runs. The largest absolute score difference was approximately 1.2e-7.
+- All runs retained Hit@1 = 50%, Hit@5 = Hit@10 = 91.67%, MRR@10 = 0.6597.
+- Fresh Qdrant indexing embedded 1,041 passages; a separate reuse process embedded
+  zero. Index preparation took 32.37 seconds to build and 0.068 seconds to reuse.
+- The model used `cuda:0`; these timings are individual observations, not a
+  controlled benchmark or a comparison with the previous CPU run. Model loading
+  is recorded separately, and reuse still verifies the PDF and chunks.

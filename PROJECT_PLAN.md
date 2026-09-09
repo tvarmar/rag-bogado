@@ -1136,3 +1136,43 @@ Si no hay una respuesta clara, dejarla para una iteración posterior.
 Continue in small, explained steps, following the existing folder structure and
 writing new code documentation in English. Update this log at the end of the next
 session with completed work, remaining work, and the next starting point.
+
+## Session — 2026-09-09
+
+- Committed and pushed the September 8 session notes as `b4a7039`.
+- Independently confirmed both GitHub checks passed for that commit and merged PR #1.
+- Updated local `main` and created `feat/qdrant-persistence`.
+- Added `qdrant-client` and ignored `data/qdrant/`.
+- Added a small integration experiment in `tests/test_qdrant_persistence.py`:
+  insert two passages with synthetic vectors, close the local client, reopen it,
+  and verify ranking, scores, and full passage metadata without re-insertion.
+- Verified 35 passing tests. This demonstrates local disk persistence, not
+  semantic retrieval quality or a completed vector-store implementation.
+
+- Implemented `QdrantVectorStore` with a default dimension of 384, DOT distance,
+  collection compatibility checks, batch upserts, reproducible UUIDs scoped by
+  index identity, and `SearchResult` reconstruction.
+- Validated persistence, repeated insertion without duplicates, metadata and
+  dot-product scores, incompatible collections, and invalid input: 43 tests pass,
+  along with Ruff lint and formatting.
+- Documented use and limits in README: collection/model separation remains the
+  caller's responsibility; upsert does not activate or remove document versions.
+
+- Connected `DocumentIndexer` and `PersistentRetriever` through evaluation
+  `--backend qdrant` with build/reuse modes. Index identity includes document hash,
+  chunks, processing code/configuration, model revision, and embedding dependencies.
+- Build mode resumes missing passages; reuse mode rejects incomplete collections.
+  Foreign points are rejected. This is not yet SQL-backed version activation.
+- Verified 49 tests, Ruff lint, and formatting, including the evaluation entry
+  point and recovery after an interrupted index build.
+- Evaluated the real AI Act in three separate processes (memory, Qdrant build,
+  Qdrant reuse): all 140 top-ten passage positions matched, with identical metrics
+  and maximum absolute score difference around 1.2e-7. Reuse embedded zero passages.
+- Recorded provenance and measurements in
+  `src/rag_bogado/evaluation/reports/persistence-comparison.json`.
+
+Next: review and commit the persistence delivery, then introduce the SQLite
+catalog and document/version activation. The current reuse evaluation still reads
+the source PDF to reconstruct and verify the index identity. A standalone query
+path without re-ingestion remains pending.
+The new persistence work has not yet been committed or published.

@@ -1,0 +1,226 @@
+{
+  "date": "2026-09-09",
+  "runs": {
+    "memory": {
+      "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
+      "chunks": 1041,
+      "embedded_passages": 1041,
+      "metrics": {
+        "hit@1": 0.5,
+        "hit@5": 0.9166666666666666,
+        "hit@10": 0.9166666666666666,
+        "mrr@10": 0.6597222222222222
+      },
+      "indexing_seconds": 10.058143432999941,
+      "model_loading_seconds": 6.009076696999955,
+      "index_preparation_seconds": 4.0341336629999205,
+      "device": "cuda:0",
+      "mean_query_seconds": 0.03227179542862554,
+      "report_sha256": "6eef18a99ef80a00a8d15fc40091f3f96ebf8e11f1f4a9d6375d488f8188cc69",
+      "provenance": {
+        "created_at": "2026-09-09T10:39:07.554756+00:00",
+        "index_configuration": {
+          "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+          "model": "intfloat/multilingual-e5-small",
+          "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+          "chunk_size": 800,
+          "overlap": 120,
+          "processing_code_sha256": {
+            "ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+            "ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+            "ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+            "retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59"
+          },
+          "embedding_dependencies": {
+            "sentence-transformers": "6.0.0",
+            "torch": "2.13.0"
+          },
+          "dimension": 384,
+          "distance": "Dot"
+        },
+        "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+        "questions_sha256": "7f2480a5cc29d481afd57795ef07c7741a1a74eb78e02fd9651f689f3c70b4f1",
+        "uv_lock_sha256": "1eacb752f8f3dadaf555f1ee2353e7789e5bb5a01dd9383dcecb4f509134f613",
+        "code_sha256": {
+          "src/rag_bogado/__init__.py": "eb7d6d95e6a0a1faab04d74850ccd43ba23f7c372c1feff63904c089ae5d3afe",
+          "src/rag_bogado/evaluation/__init__.py": "7d589774a083e09eb007d6641c8347336360311d30870321fd25a0db19c58dd3",
+          "src/rag_bogado/evaluation/__main__.py": "da83345c32ded27715f40f7866e9dc4e794e8d49901b05b719909fa128068e05",
+          "src/rag_bogado/evaluation/metrics.py": "4e2366bcb1b0a3b684959b383d0de8ed35c8ea37db712539325eb5cd5a85e29a",
+          "src/rag_bogado/evaluation/runner.py": "263ede024e3c1ac1742c9c6e83e86de5c4fae56f5c240e1c3a89862c98a97cc2",
+          "src/rag_bogado/indexing/__init__.py": "542735fc44d5350ca7f085840f2dbeaa9c3f0deced18bdd9bd70ad941c1166b9",
+          "src/rag_bogado/indexing/indexer.py": "560b4261c35fb05bf5cb78c2551b7fd385a640c9955d642df1add9a650497aaf",
+          "src/rag_bogado/ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+          "src/rag_bogado/ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+          "src/rag_bogado/ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+          "src/rag_bogado/retrieval/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59",
+          "src/rag_bogado/retrieval/persistent_retriever.py": "b155b46dcfe91a7c03af52a01965aecc73024311229454105d7701590239e31f",
+          "src/rag_bogado/retrieval/retriever.py": "c62962cf9c4b3ed7216a88245e1146fe94ebc4a6be10b72e0eea8cf61954c202",
+          "src/rag_bogado/retrieval/vector_store.py": "6464419d28e01ca222c637e71623e607391e157778b12b85a393e48b2afb6202"
+        },
+        "dependencies": {
+          "sentence-transformers": "6.0.0",
+          "torch": "2.13.0",
+          "pymupdf": "1.28.2",
+          "qdrant-client": "1.19.0"
+        },
+        "python": "3.12.3",
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      }
+    },
+    "qdrant-build": {
+      "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
+      "chunks": 1041,
+      "embedded_passages": 1041,
+      "metrics": {
+        "hit@1": 0.5,
+        "hit@5": 0.9166666666666666,
+        "hit@10": 0.9166666666666666,
+        "mrr@10": 0.6597222222222222
+      },
+      "indexing_seconds": 37.02103534099979,
+      "model_loading_seconds": 4.644133394999699,
+      "index_preparation_seconds": 32.36669242500011,
+      "device": "cuda:0",
+      "mean_query_seconds": 0.018320498357135357,
+      "report_sha256": "8b082778b1441fe5822000925eedcb822b04cecca7d2fceb8f0b7a3d7e3b39a9",
+      "provenance": {
+        "created_at": "2026-09-09T10:40:48.822671+00:00",
+        "index_configuration": {
+          "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+          "model": "intfloat/multilingual-e5-small",
+          "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+          "chunk_size": 800,
+          "overlap": 120,
+          "processing_code_sha256": {
+            "ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+            "ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+            "ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+            "retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59"
+          },
+          "embedding_dependencies": {
+            "sentence-transformers": "6.0.0",
+            "torch": "2.13.0"
+          },
+          "dimension": 384,
+          "distance": "Dot"
+        },
+        "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+        "questions_sha256": "7f2480a5cc29d481afd57795ef07c7741a1a74eb78e02fd9651f689f3c70b4f1",
+        "uv_lock_sha256": "1eacb752f8f3dadaf555f1ee2353e7789e5bb5a01dd9383dcecb4f509134f613",
+        "code_sha256": {
+          "src/rag_bogado/__init__.py": "eb7d6d95e6a0a1faab04d74850ccd43ba23f7c372c1feff63904c089ae5d3afe",
+          "src/rag_bogado/evaluation/__init__.py": "7d589774a083e09eb007d6641c8347336360311d30870321fd25a0db19c58dd3",
+          "src/rag_bogado/evaluation/__main__.py": "da83345c32ded27715f40f7866e9dc4e794e8d49901b05b719909fa128068e05",
+          "src/rag_bogado/evaluation/metrics.py": "4e2366bcb1b0a3b684959b383d0de8ed35c8ea37db712539325eb5cd5a85e29a",
+          "src/rag_bogado/evaluation/runner.py": "8989e318f3361b5242136d8cbadf19905a3eb7f180b6126862f19f09074082f1",
+          "src/rag_bogado/indexing/__init__.py": "542735fc44d5350ca7f085840f2dbeaa9c3f0deced18bdd9bd70ad941c1166b9",
+          "src/rag_bogado/indexing/indexer.py": "560b4261c35fb05bf5cb78c2551b7fd385a640c9955d642df1add9a650497aaf",
+          "src/rag_bogado/ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+          "src/rag_bogado/ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+          "src/rag_bogado/ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+          "src/rag_bogado/retrieval/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59",
+          "src/rag_bogado/retrieval/persistent_retriever.py": "b155b46dcfe91a7c03af52a01965aecc73024311229454105d7701590239e31f",
+          "src/rag_bogado/retrieval/retriever.py": "c62962cf9c4b3ed7216a88245e1146fe94ebc4a6be10b72e0eea8cf61954c202",
+          "src/rag_bogado/retrieval/vector_store.py": "6464419d28e01ca222c637e71623e607391e157778b12b85a393e48b2afb6202"
+        },
+        "dependencies": {
+          "sentence-transformers": "6.0.0",
+          "torch": "2.13.0",
+          "pymupdf": "1.28.2",
+          "qdrant-client": "1.19.0"
+        },
+        "python": "3.12.3",
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      }
+    },
+    "qdrant-reuse": {
+      "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
+      "chunks": 1041,
+      "embedded_passages": 0,
+      "metrics": {
+        "hit@1": 0.5,
+        "hit@5": 0.9166666666666666,
+        "hit@10": 0.9166666666666666,
+        "mrr@10": 0.6597222222222222
+      },
+      "indexing_seconds": 4.419997684000009,
+      "model_loading_seconds": 4.341624860000138,
+      "index_preparation_seconds": 0.0677562709997801,
+      "device": "cuda:0",
+      "mean_query_seconds": 0.03791665092856939,
+      "report_sha256": "d1dbd610b9afcea1f710e9ca0501c77df88d773199d1cb62d7a6b7829c0cef24",
+      "provenance": {
+        "created_at": "2026-09-09T10:41:51.410475+00:00",
+        "index_configuration": {
+          "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+          "model": "intfloat/multilingual-e5-small",
+          "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+          "chunk_size": 800,
+          "overlap": 120,
+          "processing_code_sha256": {
+            "ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+            "ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+            "ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+            "retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59"
+          },
+          "embedding_dependencies": {
+            "sentence-transformers": "6.0.0",
+            "torch": "2.13.0"
+          },
+          "dimension": 384,
+          "distance": "Dot"
+        },
+        "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+        "questions_sha256": "7f2480a5cc29d481afd57795ef07c7741a1a74eb78e02fd9651f689f3c70b4f1",
+        "uv_lock_sha256": "1eacb752f8f3dadaf555f1ee2353e7789e5bb5a01dd9383dcecb4f509134f613",
+        "code_sha256": {
+          "src/rag_bogado/__init__.py": "eb7d6d95e6a0a1faab04d74850ccd43ba23f7c372c1feff63904c089ae5d3afe",
+          "src/rag_bogado/evaluation/__init__.py": "7d589774a083e09eb007d6641c8347336360311d30870321fd25a0db19c58dd3",
+          "src/rag_bogado/evaluation/__main__.py": "da83345c32ded27715f40f7866e9dc4e794e8d49901b05b719909fa128068e05",
+          "src/rag_bogado/evaluation/metrics.py": "4e2366bcb1b0a3b684959b383d0de8ed35c8ea37db712539325eb5cd5a85e29a",
+          "src/rag_bogado/evaluation/runner.py": "8989e318f3361b5242136d8cbadf19905a3eb7f180b6126862f19f09074082f1",
+          "src/rag_bogado/indexing/__init__.py": "542735fc44d5350ca7f085840f2dbeaa9c3f0deced18bdd9bd70ad941c1166b9",
+          "src/rag_bogado/indexing/indexer.py": "560b4261c35fb05bf5cb78c2551b7fd385a640c9955d642df1add9a650497aaf",
+          "src/rag_bogado/ingestion/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/ingestion/chunker.py": "f0efe64e836300b975b2533e2e815c87007f9c75bba21a754cd55e9bdf24b029",
+          "src/rag_bogado/ingestion/loader.py": "a9aee8865a4e6c1a40cb99f2915b4fc0bda6f701d9c717ff32f8a4338b4988fa",
+          "src/rag_bogado/ingestion/normalizer.py": "0faa1cc853713a9d4b40d3d6b76fe9212e61b22a21bf5aaccedf2c9a57b5a08f",
+          "src/rag_bogado/retrieval/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "src/rag_bogado/retrieval/embeddings.py": "99cacd1ea25f7accc83ff0a80729929a995e7844c0f3a287279f3ee26be56a59",
+          "src/rag_bogado/retrieval/persistent_retriever.py": "b155b46dcfe91a7c03af52a01965aecc73024311229454105d7701590239e31f",
+          "src/rag_bogado/retrieval/retriever.py": "c62962cf9c4b3ed7216a88245e1146fe94ebc4a6be10b72e0eea8cf61954c202",
+          "src/rag_bogado/retrieval/vector_store.py": "6464419d28e01ca222c637e71623e607391e157778b12b85a393e48b2afb6202"
+        },
+        "dependencies": {
+          "sentence-transformers": "6.0.0",
+          "torch": "2.13.0",
+          "pymupdf": "1.28.2",
+          "qdrant-client": "1.19.0"
+        },
+        "python": "3.12.3",
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      }
+    }
+  },
+  "comparisons": {
+    "qdrant-build": {
+      "questions_compared": 14,
+      "ordered_passage_mismatches": [],
+      "max_score_difference": 1.1946983968780245e-07,
+      "metrics_equal": true
+    },
+    "qdrant-reuse": {
+      "questions_compared": 14,
+      "ordered_passage_mismatches": [],
+      "max_score_difference": 1.1946983968780245e-07,
+      "metrics_equal": true
+    }
+  }
+}
