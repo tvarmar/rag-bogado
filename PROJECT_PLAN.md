@@ -1,3 +1,4 @@
+
 # RAG-Bogado — Project Plan
 
 ## 1. Objetivo del proyecto
@@ -304,24 +305,24 @@ top-k
 
 Tareas:
 
-- [ ] Instalar `qdrant-client`
-- [ ] Añadir `data/qdrant/` al `.gitignore`
-- [ ] Crear `QdrantVectorStore`
-- [ ] Crear colección de dimensión 384
-- [ ] Configurar métrica compatible con embeddings normalizados
-- [ ] Diseñar ID estable para cada chunk
-- [ ] Guardar vectores
-- [ ] Guardar payload:
-  - [ ] texto
-  - [ ] source
-  - [ ] page_number
-  - [ ] chunk ID
-- [ ] Inserción en batch
-- [ ] Buscar `top_k`
-- [ ] Reconstruir `SearchResult`
-- [ ] Tests del vector store
-- [ ] Separar indexación de consulta
-- [ ] Refactorizar `Retriever` para usar el vector store
+- [x] Instalar `qdrant-client`
+- [x] Añadir `data/qdrant/` al `.gitignore`
+- [x] Crear `QdrantVectorStore`
+- [x] Crear colección de dimensión 384
+- [x] Configurar métrica compatible con embeddings normalizados
+- [x] Diseñar ID estable para cada chunk
+- [x] Guardar vectores
+- [x] Guardar payload:
+  - [x] texto
+  - [x] source
+  - [x] page_number
+  - [x] chunk ID
+- [x] Inserción en batch
+- [x] Buscar `top_k`
+- [x] Reconstruir `SearchResult`
+- [x] Tests del vector store
+- [x] Separar indexación de consulta
+- [x] Añadir `PersistentRetriever`; conservar `Retriever` en memoria como referencia
 
 Clases previstas:
 
@@ -1176,3 +1177,30 @@ catalog and document/version activation. The current reuse evaluation still read
 the source PDF to reconstruct and verify the index identity. A standalone query
 path without re-ingestion remains pending.
 The new persistence work has not yet been committed or published.
+
+### Persistence delivery closed and initial SQLite catalog
+
+- Committed persistence as `efc68fb`, published PR #2, independently verified both
+  remote checks, and merged it. Local `main` now points to the merged delivery.
+- Created `feat/sqlite-catalog` for the next increment.
+- Added SQLite `documents`, `document_versions`, and `indexing_runs`, with foreign
+  keys, version uniqueness, and a unique partial index for one active run per document.
+- Added parameterized history/failure JOIN queries and transactional activation.
+  Vector building and completeness checks happen before switching the active run.
+  Failure preserves the previous active version; retry resumes missing vectors.
+- Added index/query/history/failures commands. Indexing retains a hash-addressed
+  original PDF. Querying selects the active collection and pinned model without
+  rereading or embedding the PDF, and returns document/version/index identity.
+- Verified 56 tests plus Ruff lint/format, including a failed activation transaction,
+  failed partial indexing, retry, original retention, and query after restart.
+- Registered the real AI Act as `eu_ai_act`, version 1, reusing all 1,041 saved
+  vectors (zero passage embeddings). A separate query process returned five
+  passages with the correct retained original and active version metadata.
+- Real command output is saved locally in `data/evaluation/catalog-query-2026-09-09.json`.
+
+The earlier pending-persistence notes above describe intermediate states and are
+superseded by this entry. Next: review the SQLite delivery and its remote checks;
+then plan local generation and evidence-insufficiency behavior (milestones 5/6).
+Official-source metadata, schema migrations, and multiwriter coordination remain
+future work. Hard termination leaves a preparing attempt visible in history; a
+new attempt can resume the vectors, without automatically deleting old history.
