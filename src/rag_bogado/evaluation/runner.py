@@ -4,20 +4,29 @@ import argparse
 import hashlib
 import json
 import platform
+from contextlib import ExitStack
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 from time import perf_counter
 
 from rag_bogado.evaluation.metrics import evidence_rank, summarize
+from rag_bogado.indexing.indexer import DocumentIndexer, index_identity
 from rag_bogado.ingestion.chunker import chunk_page
 from rag_bogado.ingestion.loader import Page, load_pdf
 from rag_bogado.ingestion.normalizer import normalize_text
 from rag_bogado.retrieval.embeddings import EmbeddingModel
+from rag_bogado.retrieval.persistent_retriever import PersistentRetriever
 from rag_bogado.retrieval.retriever import Retriever
+from rag_bogado.retrieval.vector_store import QdrantVectorStore
 
 
 def main() -> None:
+    with ExitStack() as stack:
+        run(stack)
+
+
+def run(stack: ExitStack) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--documents", type=Path, default=Path("data/documents"))
     parser.add_argument(
@@ -31,10 +40,15 @@ def main() -> None:
     parser.add_argument("--chunk-size", type=int, default=800)
     parser.add_argument("--overlap", type=int, default=120)
     parser.add_argument("--model", default="intfloat/multilingual-e5-small")
+    parser.add_argument("--backend", choices=("memory", "qdrant"), default="memory")
+    parser.add_argument("--store-path", type=Path, default=Path("data/qdrant"))
+    parser.add_argument("--index-mode", choices=("build", "reuse"), default="build")
     parser.add_argument(
         "--revision", default="614241f622f53c4eeff9890bdc4f31cfecc418b3"
     )
     args = parser.parse_args()
+    if args.backend == "memory" and args.index_mode == "reuse":
+        parser.error("--index-mode reuse requires --backend qdrant")
     dataset_bytes = args.questions.read_bytes()
     dataset = json.loads(dataset_bytes)
     if dataset.get("schema_version") != 2:
@@ -66,8 +80,47 @@ def main() -> None:
 
     started = perf_counter()
     model = EmbeddingModel(args.model, revision=args.revision, local_files_only=True)
-    retriever = Retriever(chunks, model)
+    model_loading_seconds = perf_counter() - started
+    configuration = {
+        "corpus_sha256": digest,
+        "model": args.model,
+        "revision": args.revision,
+        "chunk_size": args.chunk_size,
+        "overlap": args.overlap,
+        "processing_code_sha256": {
+            str(path.relative_to(Path(__file__).parents[1])): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in [
+                *sorted((Path(__file__).parents[1] / "ingestion").glob("*.py")),
+                Path(__file__).parents[1] / "retrieval" / "embeddings.py",
+            ]
+        },
+        "embedding_dependencies": {
+            name: version(name) for name in ("sentence-transformers", "torch")
+        },
+        "dimension": model.model.get_embedding_dimension(),
+        "distance": "Dot",
+    }
+    identity = index_identity(chunks, configuration)
+    embedded_passages = len(chunks)
+    index_started = perf_counter()
+    if args.backend == "qdrant":
+        store = stack.enter_context(
+            QdrantVectorStore(
+                args.store_path,
+                "index_" + identity,
+                dimension=configuration["dimension"],
+            )
+        )
+        embedded_passages = DocumentIndexer(store, model).ensure_index(
+            chunks, identity, reuse_only=args.index_mode == "reuse"
+        )
+        retriever = PersistentRetriever(store, model)
+    else:
+        retriever = Retriever(chunks, model)
     indexing_seconds = perf_counter() - started
+    index_preparation_seconds = perf_counter() - index_started
     rows = []
     ranks = []
     for question in dataset["questions"]:
@@ -96,6 +149,13 @@ def main() -> None:
         )
     report = {
         "created_at": datetime.now(UTC).isoformat(),
+        "backend": args.backend,
+        "index_mode": args.index_mode,
+        "index_id": identity,
+        "index_configuration": configuration,
+        "embedded_passages": embedded_passages,
+        "model_loading_seconds": model_loading_seconds,
+        "index_preparation_seconds": index_preparation_seconds,
         "dataset_schema_version": dataset["schema_version"],
         "relevance_policy": dataset["relevance_policy"],
         "corpus_sha256": digest,
@@ -115,7 +175,7 @@ def main() -> None:
         "device": str(model.model.device),
         "dependencies": {
             name: version(name)
-            for name in ("sentence-transformers", "torch", "pymupdf")
+            for name in ("sentence-transformers", "torch", "pymupdf", "qdrant-client")
         },
         "indexing_seconds": indexing_seconds,
         "answerable_questions": len(ranks),
