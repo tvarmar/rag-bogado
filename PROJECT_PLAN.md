@@ -158,7 +158,7 @@ La estructura puede evolucionar. No se deben crear módulos o abstracciones ante
 - [x] Configurar Ruff
 - [x] Configurar pytest
 - [x] Ignorar documentos/datos locales en Git
-- [ ] GitHub Actions desde la próxima iteración (detalle en hito 12)
+- [x] Configure GitHub Actions; successful remote checks reported by the user (details in milestone 12).
 - [ ] Docker
 
 ---
@@ -358,11 +358,13 @@ Antes del LLM debe existir una evaluación mínima.
 - [x] Medir Hit@5
 - [x] Medir Hit@10
 - [x] Registrar consultas que fallen
-- [ ] Revisar resultados manualmente
-- [ ] Incluir preguntas sin respuesta, paráfrasis y preguntas que requieran varios fragmentos.
+- [x] Perform an initial manual review of results and evidence references.
+- [x] Accept reviewed alternative evidence that helps answer the question, including relevant recitals.
+- [x] Include questions without an answer in the corpus.
+- [ ] Expand coverage with systematic paraphrase cases and questions requiring multiple passages.
 - [ ] Separar preguntas para ajustar parámetros de un pequeño conjunto reservado para comprobar mejoras.
-- [ ] Versionar preguntas y referencias estables al corpus, modelo y configuración; conservar resultados en JSON/CSV.
-- [ ] Medir latencia y MRR; Hit@k indica si aparece alguna evidencia esperada, no si se recupera toda la necesaria.
+- [x] Version questions and stable corpus/model/configuration references; preserve reference results in JSON.
+- [x] Measure latency and MRR@10. Hit@k measures whether accepted evidence appears, not whether all necessary evidence is retrieved.
 
 Mejoras a evaluar, no asumir:
 
@@ -654,13 +656,16 @@ Comparar dos normas puede resolverse recuperando evidencia de ambas mediante un 
 
 ### GitHub Actions
 
-Este trabajo se adelanta al inicio de la siguiente iteración.
+Configured and exercised in the current PR. The user reported successful remote
+checks; recheck CI after subsequent commits before merging.
 
-- [ ] Ejecutar pytest
-- [ ] Ejecutar `ruff check`
-- [ ] Ejecutar `ruff format --check`
-- [ ] Instalar el entorno con `uv.lock` y comprobar pull requests sin modelos descargados ni acceso al BOE.
-- [ ] Practicar ramas pequeñas, issues con criterios de aceptación, pull requests, revisión del diff y resolución de conflictos.
+- [x] Run pytest in GitHub Actions.
+- [x] Run `ruff check` in GitHub Actions.
+- [x] Run `ruff format --check` in GitHub Actions.
+- [x] Install from `uv.lock` and check pull requests without downloading models or accessing BOE.
+- [x] Practice a feature branch, focused commits, diff review, and a pull request.
+- [ ] Practice issues with acceptance criteria.
+- [ ] Practice resolving merge conflicts when an appropriate case arises.
 
 ### Type checking
 
@@ -710,15 +715,15 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 - [ ] Problema
 - [ ] Arquitectura
 - [ ] Diagrama
-- [ ] Instalación
+- [x] Document basic local installation and quality checks.
 - [ ] Indexación
 - [ ] Consulta
 - [ ] Ejemplo de respuesta
 - [ ] Fuentes
-- [ ] Evaluación
-- [ ] Limitaciones
+- [x] Document evaluation commands, reference results, and metric interpretation.
+- [x] Document current implementation and evaluation limitations.
 - [ ] Decisiones técnicas
-- [ ] Roadmap
+- [x] Link the project roadmap from the README.
 
 ### Demo
 
@@ -1030,21 +1035,23 @@ No añadir sin una necesidad clara:
 - [x] Cerrar los PDF con context manager y probar extracción con un PDF temporal.
 - [x] Preparar `.github/workflows/ci.yml` con uv, pytest y Ruff.
 - [x] Crear 14 preguntas (12 con evidencia y 2 negativas), evaluador e informe local.
-- [ ] Confirmar la primera ejecución remota de GitHub Actions después de publicar los cambios.
-- [ ] Revisar conjuntamente las referencias y los fallos de la baseline antes de cambiar retrieval.
+- [x] First successful remote GitHub Actions runs reported by the user after publishing the PR.
+- [x] Review initial baseline references and failures; adopt useful alternative evidence as the relevance criterion.
 
-El detalle y los resultados de esta iteración están en `src/rag_bogado/evaluation/README.md` y
-`src/rag_bogado/evaluation/reports/baseline.json`. CI queda pendiente de validación remota: configurarla
-localmente no demuestra que ya haya pasado en GitHub.
+Evaluation details are in `src/rag_bogado/evaluation/README.md`. The original
+report is preserved in `src/rag_bogado/evaluation/reports/baseline.json`, and the
+updated relevance criterion is recorded in `src/rag_bogado/evaluation/reports/useful-evidence.json`.
+The user reported successful remote CI checks. Commit and push the latest plan
+updates, then confirm checks for the latest PR commit before merging.
 
 Estado:
 
 ```text
-Hito 0 — Setup                         ✅ base; CI pendiente
+Hito 0 — Setup                         ✅ base and CI; Docker pending
 Hito 1 — Ingesta documental            ✅ baseline
 Hito 2 — Embeddings/retrieval           ✅ baseline
-Hito 12 — CI                           configurada; falta ejecución remota
-Hito 4 — Evaluación                    baseline disponible; revisar referencias
+Hito 12 — CI                           ✅ checks reported successful; other quality tasks pending
+Hito 4 — Evaluación                    ✅ initial review and alternative evidence; broader coverage pending
 Hito 3 / 3B — Persistencia y SQL
 Hito 5 — Generación LLM
 Hito 6 — Evidencia/calidad
@@ -1060,7 +1067,10 @@ Hito 14 — Laboratorios opcionales
 
 Próximas tareas:
 
-- [ ] Publicar los cambios y confirmar la CI con pytest y Ruff en GitHub.
+- [x] Publish the implementation PR and confirm its initial CI checks (reported by the user).
+- [ ] Commit and push the latest planning/session-log updates.
+- [ ] Review the final PR diff and confirm checks for its latest commit.
+- [ ] Merge the PR and update local `main` before starting a new persistence branch.
 - [x] Crear 10-20 preguntas y medir el retriever actual; conservar los resultados como baseline reproducible.
 - [ ] Después abordar persistencia con las tareas siguientes y el catálogo SQL del hito 3B.
 - [ ] `uv add qdrant-client`
@@ -1086,3 +1096,43 @@ Antes de añadir una tecnología nueva:
 5. ¿Complica significativamente la arquitectura?
 
 Si no hay una respuesta clara, dejarla para una iteración posterior.
+
+---
+
+# 13. Session log and next session
+
+## Session — 2026-09-08
+
+### Completed
+
+- Revised the roadmap around a local MVP, learning goals, free local execution, and later BOE synchronization.
+- Fixed empty chunks, PDF resource handling, and retrieval edge cases; added regression tests.
+- Preserved the existing module organization and the retriever's reference to `EmbeddingModel`.
+- Organized evaluation code, questions, documentation, and reference reports under `src/rag_bogado/evaluation/`; kept automated tests in `tests/`.
+- Wrote the project and evaluation README files in English; retained Spanish questions and evidence to match the corpus.
+- Created a reproducible evaluation with 12 answerable questions and two negative questions.
+- Updated relevance judgments to accept reviewed alternative evidence that helps answer the question, including appropriate recitals.
+- Recorded results under the updated criterion: Hit@1 = 50%, Hit@5 = 91.67%, Hit@10 = 91.67%, MRR@10 = 0.6597. These reflect a changed evaluation criterion, not an improved retrieval algorithm.
+- Added future multi-passage LLM synthesis and independent research on top-k, thresholds, context selection, and token budgets to the plan.
+- Verified 34 passing tests, Ruff lint, and formatting locally.
+- Prepared GitHub Actions and provided the branch, commit, and pull request workflow; the user published the PR and reported two successful checks in GitHub.
+
+### State at the end of the session
+
+- The PR remains open; merging it is pending.
+- Remote CI success was reported by the user, not independently checked by the assistant.
+- Qdrant persistence and LLM generation have not been implemented.
+- This session-log update was added after the reported successful checks and still needs to be committed and pushed to the PR branch.
+
+## Next session
+
+1. Review the working tree and commit/push this session-log update if it is still pending.
+2. Review the PR's final diff and confirm that checks pass for its latest commit.
+3. Merge the PR, then update the local `main` branch.
+4. Start the Qdrant persistence milestone on a new branch: first review what a collection, vector, point ID, and payload represent and how they fit the current code.
+5. Define the first small implementation: persist a few chunks with their metadata, reopen the store, and retrieve them without recalculating their embeddings.
+6. Preserve the current retriever and evaluation as references; compare results when the persistent retrieval path is ready.
+
+Continue in small, explained steps, following the existing folder structure and
+writing new code documentation in English. Update this log at the end of the next
+session with completed work, remaining work, and the next starting point.
