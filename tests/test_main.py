@@ -130,3 +130,16 @@ def test_chunk_page_returns_no_chunks_for_empty_text():
     chunks = chunk_page(page)
 
     assert chunks == []
+
+
+def test_chunk_page_returns_no_chunks_for_whitespace():
+    assert chunk_page(Page(1, " \n\t " * 100, "test.pdf")) == []
+
+
+@pytest.mark.parametrize("overlap", [0, 3, 14])
+def test_chunk_page_preserves_all_words_with_overlap(overlap):
+    words = "uno dos tres cuatro cinco seis siete ocho nueve diez".split()
+    chunks = chunk_page(Page(1, " ".join(words), "test.pdf"), 15, overlap)
+    recovered = [word for chunk in chunks for word in chunk.text.split()]
+    assert set(recovered) == set(words)
+    assert all(chunk.text for chunk in chunks)

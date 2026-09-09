@@ -5,8 +5,13 @@ class EmbeddingModel:
     def __init__(
         self,
         model_name: str = "intfloat/multilingual-e5-small",
+        *,
+        revision: str | None = None,
+        local_files_only: bool = False,
     ) -> None:
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(
+            model_name, revision=revision, local_files_only=local_files_only
+        )
 
     def embed_query(self, text: str) -> list[float]:
         embedding = self.model.encode(

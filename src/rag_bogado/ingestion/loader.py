@@ -26,13 +26,10 @@ def extract_page_text(
 
 
 def load_pdf(path: Path) -> list[Page]:
-    document = pymupdf.open(path)
-
     pages = []
-
-    for page_number, page in enumerate(document, start=1):
-        text = extract_page_text(page)
-
-        pages.append(Page(page_number=page_number, text=text, source=path.name))
+    with pymupdf.open(path) as document:
+        for page_number, page in enumerate(document, start=1):
+            text = extract_page_text(page)
+            pages.append(Page(page_number=page_number, text=text, source=path.name))
 
     return pages

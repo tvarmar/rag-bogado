@@ -1,0 +1,192 @@
+{
+  "corpus": "eu_ai_act.pdf",
+  "sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+  "questions": [
+    {
+      "id": "q01",
+      "question": "¿Qué es un sistema de inteligencia artificial?",
+      "evidence": [
+        {
+          "page": 46,
+          "reference": "Article 3",
+          "anchor": "sistema basado en una máquina"
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "question": "¿Quién debe garantizar la alfabetización en IA del personal?",
+      "evidence": [
+        {
+          "page": 51,
+          "reference": "Article 4",
+          "anchor": "Los proveedores y responsables del despliegue"
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "question": "¿Qué establece el reglamento sobre técnicas subliminales o deliberadamente manipuladoras?",
+      "evidence": [
+        {
+          "page": 51,
+          "reference": "Article 5",
+          "anchor": "técnicas subliminales"
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "question": "¿Cómo debe mantenerse la gestión de riesgos durante el ciclo de vida de una IA de alto riesgo?",
+      "evidence": [
+        {
+          "page": 56,
+          "reference": "Article 9",
+          "anchor": "proceso iterativo continuo"
+        },
+        {
+          "page": 19,
+          "reference": "Recital 65",
+          "anchor": "gestión de riesgos debe revisarse y actualizarse periódicamente",
+          "rationale": "Explains ongoing review and updating throughout the system life cycle."
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "question": "¿Qué conjuntos de datos deben cumplir los criterios de calidad para entrenar IA de alto riesgo?",
+      "evidence": [
+        {
+          "page": 57,
+          "reference": "Article 10",
+          "anchor": "conjuntos de datos de entrenamiento, validación y prueba"
+        },
+        {
+          "page": 19,
+          "reference": "Recital 67",
+          "anchor": "los conjuntos de datos para el entrenamiento, la validación y la prueba sean de alta calidad",
+          "rationale": "Identifies all three dataset types and the quality requirement."
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo?",
+      "evidence": [
+        {
+          "page": 58,
+          "reference": "Article 11",
+          "anchor": "se elaborará antes de su introducción"
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "question": "¿Deben los sistemas de IA de alto riesgo registrar automáticamente eventos?",
+      "evidence": [
+        {
+          "page": 59,
+          "reference": "Article 12",
+          "anchor": "registro automático de acontecimientos"
+        },
+        {
+          "page": 20,
+          "reference": "Recital 71",
+          "anchor": "deben permitir técnicamente el registro automático de acontecimientos",
+          "rationale": "Directly states the automatic event logging requirement."
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "question": "¿Qué transparencia debe ofrecer un sistema de IA de alto riesgo a quien lo utiliza?",
+      "evidence": [
+        {
+          "page": 59,
+          "reference": "Article 13",
+          "anchor": "interpreten y usen correctamente"
+        },
+        {
+          "page": 21,
+          "reference": "Recital 72",
+          "anchor": "comprender la manera en que el sistema de IA funciona, evaluar su funcionalidad y comprender sus fortalezas y limitaciones",
+          "rationale": "Explains the information transparency should provide to deployers."
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "question": "¿Cómo deben poder las personas supervisar un sistema de IA de alto riesgo?",
+      "evidence": [
+        {
+          "page": 60,
+          "reference": "Article 14",
+          "anchor": "vigilados de manera efectiva"
+        },
+        {
+          "page": 21,
+          "reference": "Recital 73",
+          "anchor": "las personas físicas puedan supervisar su funcionamiento",
+          "rationale": "Explains human oversight of operation and use throughout the life cycle."
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "question": "¿Qué niveles de precisión, solidez y ciberseguridad debe mantener la IA de alto riesgo?",
+      "evidence": [
+        {
+          "page": 61,
+          "reference": "Article 15",
+          "anchor": "durante todo su ciclo de vida"
+        },
+        {
+          "page": 21,
+          "reference": "Recital 74",
+          "anchor": "nivel adecuado de precisión, solidez y ciberseguridad",
+          "rationale": "States the required performance qualities and life-cycle consistency."
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "question": "¿Cuánto tiempo conserva el proveedor la declaración UE de conformidad?",
+      "evidence": [
+        {
+          "page": 80,
+          "reference": "Article 47",
+          "anchor": "período de diez años"
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "question": "¿Qué significa alfabetización en materia de IA?",
+      "evidence": [
+        {
+          "page": 49,
+          "reference": "Article 3.56",
+          "anchor": "las capacidades, los conocimientos y la comprensión"
+        },
+        {
+          "page": 6,
+          "reference": "Recital 20",
+          "anchor": "los conceptos necesarios para tomar decisiones con conocimiento de causa",
+          "rationale": "Explains AI literacy through informed decisions and understanding system use."
+        }
+      ]
+    },
+    {
+      "id": "q13",
+      "question": "¿Cuál es la receta de una tortilla de patatas?",
+      "evidence": []
+    },
+    {
+      "id": "q14",
+      "question": "¿Cuál es la contraseña del servidor de mi empresa?",
+      "evidence": []
+    }
+  ],
+  "schema_version": 2,
+  "relevance_policy": "Accept passages that support answering the question, including relevant recitals; topical overlap alone is insufficient. Explicit article requests require the requested provision. Alternatives are non-exhaustive."
+}
