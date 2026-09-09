@@ -11,6 +11,7 @@ from pathlib import Path
 from time import perf_counter
 
 from rag_bogado.evaluation.metrics import evidence_rank, summarize
+from rag_bogado.indexing.configuration import index_configuration
 from rag_bogado.indexing.indexer import DocumentIndexer, index_identity
 from rag_bogado.ingestion.chunker import chunk_page
 from rag_bogado.ingestion.loader import Page, load_pdf
@@ -81,27 +82,14 @@ def run(stack: ExitStack) -> None:
     started = perf_counter()
     model = EmbeddingModel(args.model, revision=args.revision, local_files_only=True)
     model_loading_seconds = perf_counter() - started
-    configuration = {
-        "corpus_sha256": digest,
-        "model": args.model,
-        "revision": args.revision,
-        "chunk_size": args.chunk_size,
-        "overlap": args.overlap,
-        "processing_code_sha256": {
-            str(path.relative_to(Path(__file__).parents[1])): hashlib.sha256(
-                path.read_bytes()
-            ).hexdigest()
-            for path in [
-                *sorted((Path(__file__).parents[1] / "ingestion").glob("*.py")),
-                Path(__file__).parents[1] / "retrieval" / "embeddings.py",
-            ]
-        },
-        "embedding_dependencies": {
-            name: version(name) for name in ("sentence-transformers", "torch")
-        },
-        "dimension": model.model.get_embedding_dimension(),
-        "distance": "Dot",
-    }
+    configuration = index_configuration(
+        digest,
+        args.model,
+        args.revision,
+        model.model.get_embedding_dimension(),
+        args.chunk_size,
+        args.overlap,
+    )
     identity = index_identity(chunks, configuration)
     embedded_passages = len(chunks)
     index_started = perf_counter()

@@ -26,7 +26,14 @@ class QdrantVectorStore:
     indexing/catalog layer; upsert alone does not replace a document.
     """
 
-    def __init__(self, path: Path, collection: str, *, dimension: int = 384) -> None:
+    def __init__(
+        self,
+        path: Path,
+        collection: str,
+        *,
+        dimension: int = 384,
+        create_if_missing: bool = True,
+    ) -> None:
         if dimension <= 0:
             raise ValueError("dimension must be positive")
         if not collection.strip():
@@ -44,6 +51,8 @@ class QdrantVectorStore:
                 ):
                     raise ValueError("Collection must match dimension and DOT distance")
             else:
+                if not create_if_missing:
+                    raise ValueError("The catalog's vector collection is missing")
                 self.client.create_collection(
                     collection_name=collection,
                     vectors_config=models.VectorParams(

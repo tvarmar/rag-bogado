@@ -77,3 +77,47 @@ only questions. The evaluation runner connects both to this adapter; the in-memo
 `Retriever` remains the reference. See the evaluation guide for build/reuse commands.
 
 API reference: [official Qdrant client documentation](https://github.com/qdrant/qdrant-client).
+
+## Document catalog and standalone queries
+
+Index the local AI Act and activate it only after verifying every expected point:
+
+```bash
+uv run python -m rag_bogado.indexing index data/documents/eu_ai_act.pdf --document-id eu_ai_act --title "EU AI Act"
+uv run python -m rag_bogado.indexing query --document-id eu_ai_act "¿Qué obligaciones de transparencia se establecen?" --top-k 5
+uv run python -m rag_bogado.indexing history --document-id eu_ai_act
+uv run python -m rag_bogado.indexing failures
+```
+
+The stable `--document-id` identifies the logical document; use the same ID when
+indexing an updated copy. SHA-256 distinguishes original versions. Indexing retains
+each PDF under `data/catalog/originals/` and records model revision, processing
+configuration, collection location, timestamps, and indexing outcomes in SQLite.
+Repeating the same index reuses its vectors and document version, while recording
+a new attempt. Use `--catalog PATH` before the subcommand to choose another catalog.
+
+The query command loads the active collection and pinned local model from SQLite.
+It does not read, normalize, chunk, or embed the PDF. Output contains retrieved
+passages and scores plus document/version/index identity and the retained original
+path. This is evidence retrieval; LLM synthesis and abstention remain pending.
+
+`documents` identifies each document; `document_versions` records distinct original
+hashes; `indexing_runs` records attempts and which complete index is active. Foreign
+keys prevent mismatched document/version records, and a unique partial index permits
+only one active run per document. The catalog provides parameterized JOIN queries
+for history and failures, using Python's built-in
+[`sqlite3`](https://docs.python.org/3.12/library/sqlite3.html).
+
+Qdrant and SQLite do not share a transaction. The coordinator builds a separate
+collection, verifies completeness, and then switches the active run in a SQLite
+transaction. A caught indexing/activation failure is recorded and preserves the
+previous active version. A hard process termination may leave a `preparing` run;
+rerun indexing to resume missing vectors in a new attempt. Originals, prior runs,
+and old collections are retained. This local workflow uses Qdrant's path lock and
+does not support concurrent writers across independently configured store paths.
+
+Queries select only the active collection and reject a missing/incomplete one.
+Failures before a run starts (such as invalid PDFs or an unavailable model) are
+reported by the command but are not indexing-run records. Catalog paths are local
+absolute paths; moving data requires updating/rebuilding the catalog. Automatic
+schema migrations and official-source/version metadata remain future work.

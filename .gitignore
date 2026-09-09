@@ -17,3 +17,6 @@ data/evaluation/
 
 # Local vector storage
 data/qdrant/
+
+# SQLite catalog and retained document originals
+data/catalog/
