@@ -43,13 +43,13 @@ Los números de hito se conservan para mantener las referencias del plan origina
 
 ### Criterios de aceptación del MVP
 
-- [ ] Indexar el corpus elegido una vez y consultarlo tras reiniciar sin recalcular todos los embeddings.
+- [x] Indexar el corpus elegido una vez y consultarlo tras reiniciar sin recalcular todos los embeddings.
 - [ ] Preguntar desde la interfaz y recibir una síntesis con fuentes que se puedan abrir y comprobar.
-- [ ] Identificar documento, versión local y página o localizador aplicable; no inventar páginas para fuentes estructuradas.
+- [x] Identificar documento, versión local y página o localizador aplicable; no inventar páginas para fuentes estructuradas.
 - [ ] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
-- [ ] Ejecutar sin servicios de pago, con instrucciones reproducibles mediante `uv`.
+- [x] Ejecutar sin servicios de pago, con instrucciones reproducibles mediante `uv`.
 - [ ] Publicar resultados de retrieval y revisión de respuestas, incluidos fallos y latencia en el equipo utilizado.
-- [ ] Mantener CI de tests deterministas y calidad; las evaluaciones con modelos reales se ejecutan por separado.
+- [x] Mantener CI de tests deterministas y calidad; las evaluaciones con modelos reales se ejecutan por separado.
 
 No se fija un umbral de calidad arbitrario antes de medir: tras la primera evaluación, registrar el objetivo elegido y comprobarlo antes de dar el MVP por cerrado.
 
@@ -198,7 +198,7 @@ La estructura puede evolucionar. No se deben crear módulos o abstracciones ante
 - [x] Soportar texto vacío
 - [x] Probar con el AI Act real
 - [x] Establecer baseline `chunk_size=800`, `overlap=120`
-- [ ] Crear IDs globalmente únicos/estables
+- [x] Crear IDs globalmente únicos/estables
 - [ ] Evaluar chunking jurídico por artículos/apartados
 - [ ] Añadir metadatos: artículo, apartado, sección, capítulo
 
@@ -336,12 +336,13 @@ Retriever
 
 SQLite permite practicar SQL y resolver el seguimiento de documentos sin añadir un servidor. Qdrant almacena vectores; SQLite registra identidad, versiones y estado de indexación.
 
-- [ ] Crear tablas `documents`, `document_versions` e `indexing_runs`, con claves primarias, foráneas y restricciones de unicidad.
-- [ ] Practicar consultas parametrizadas, JOIN, índices y transacciones con consultas reales: versiones de una norma e indexaciones fallidas.
-- [ ] Guardar hash del original, fecha de incorporación y localizador; añadir ID oficial y fechas de la fuente cuando existan.
-- [ ] Registrar versión del modelo de embeddings y configuración de normalización/chunking para poder reconstruir el índice.
-- [ ] Diseñar IDs reproducibles por documento, versión, configuración de procesamiento y posición del fragmento.
-- [ ] Probar reindexación idempotente, reinicio y recuperación de un fallo parcial.
+- [x] Crear tablas `documents`, `document_versions` e `indexing_runs`, con claves primarias, foráneas y restricciones de unicidad.
+- [x] Practicar consultas parametrizadas, JOIN, índices y transacciones con consultas reales: versiones de una norma e indexaciones fallidas.
+- [x] Guardar hash del original, fecha de incorporación y localizador.
+- [ ] Añadir ID oficial y fechas de la fuente cuando existan (integración de fuentes oficiales).
+- [x] Registrar versión del modelo de embeddings y configuración de normalización/chunking para poder reconstruir el índice.
+- [x] Diseñar IDs reproducibles por documento, versión, configuración de procesamiento y posición del fragmento.
+- [x] Probar reindexación idempotente, reinicio y recuperación de un fallo parcial.
 
 SQLite y Qdrant no comparten una transacción: mantener un estado de preparación y activar una versión solo cuando sus vectores estén completos. Las consultas deben filtrar las versiones activas. Implementar este cambio coordinado al introducir versiones; no dar por resuelta la consistencia con dos escrituras independientes.
 
@@ -657,8 +658,8 @@ Comparar dos normas puede resolverse recuperando evidencia de ambas mediante un 
 
 ### GitHub Actions
 
-Configured and exercised in the current PR. The user reported successful remote
-checks; recheck CI after subsequent commits before merging.
+Configured and independently verified remotely for the persistence and catalog
+implementations on September 9. Recheck CI for each latest commit before merging.
 
 - [x] Run pytest in GitHub Actions.
 - [x] Run `ruff check` in GitHub Actions.
@@ -717,8 +718,8 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 - [ ] Arquitectura
 - [ ] Diagrama
 - [x] Document basic local installation and quality checks.
-- [ ] Indexación
-- [ ] Consulta
+- [x] Indexación
+- [x] Consulta
 - [ ] Ejemplo de respuesta
 - [ ] Fuentes
 - [x] Document evaluation commands, reference results, and metric interpretation.
@@ -1030,59 +1031,50 @@ No añadir sin una necesidad clara:
 
 # 11. Próximo paso
 
-### Avance de la iteración de base, CI y evaluación
+Updated: 2026-09-09, end-of-session handoff. The current implementation retrieves
+versioned evidence; LLM synthesis and a user interface remain pending.
 
-- [x] Verificar los tests existentes y añadir casos límite del retriever y chunking.
-- [x] Cerrar los PDF con context manager y probar extracción con un PDF temporal.
-- [x] Preparar `.github/workflows/ci.yml` con uv, pytest y Ruff.
-- [x] Crear 14 preguntas (12 con evidencia y 2 negativas), evaluador e informe local.
-- [x] First successful remote GitHub Actions runs reported by the user after publishing the PR.
-- [x] Review initial baseline references and failures; adopt useful alternative evidence as the relevance criterion.
+| Milestone | Current state |
+| --- | --- |
+| 0 / 12 — Setup and CI | Local checks and remote CI working; Docker and optional quality tools pending |
+| 1 / 2 — Ingestion and semantic retrieval | Tested baseline; legal chunking and richer metadata remain experiments |
+| 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
+| 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
+| 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
+| 5 / 6 — Generation and evidence | Next implementation stage, to be developed together |
+| 7 / 8 — API and interface | After the first evaluated terminal synthesis |
+| 9 / 12B — Packaging and observability | After the local MVP; logs can be added as needed |
+| 10 — BOE / EUR-Lex synchronization | After the local MVP |
+| 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
+| 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
 
-Evaluation details are in `src/rag_bogado/evaluation/README.md`. The original
-report is preserved in `src/rag_bogado/evaluation/reports/baseline.json`, and the
-updated relevance criterion is recorded in `src/rag_bogado/evaluation/reports/useful-evidence.json`.
-The user reported successful remote CI checks. Commit and push the latest plan
-updates, then confirm checks for the latest PR commit before merging.
+## Next session: first local synthesis with citations
 
-Estado:
+1. Start from updated `main`; check the working tree and the final state of
+   [catalog PR #3](https://github.com/tvarmar/rag-bogado/pull/3) if the closing
+   procedure was interrupted. Open a new branch for local generation.
+2. Measure available RAM, GPU VRAM, and disk space. Research current local model
+   candidates and runtimes using primary sources. Present a short comparison of
+   quality in Spanish, resource use, license, and latency before choosing with the user.
+3. Run the chosen pretrained instruct model locally on a small known-evidence
+   example. Record model/revision, quantization, resource use, and latency.
+4. Add a small `generation` layer and context selection: compare top 3/top 5,
+   remove overlap duplicates, preserve source IDs, and respect a token budget.
+5. Produce a terminal synthesis with verifiable citations and original passages.
+   Develop insufficient-evidence behavior alongside generation; a nonempty top-k
+   and high similarity do not establish that the question is answerable.
+6. Extend evaluation with paraphrases, multi-passage questions, and additional
+   negatives; reserve held-out questions. Review claim support, citations,
+   abstention, coverage, latency, and token use before accepting the feature.
 
-```text
-Hito 0 — Setup                         ✅ base and CI; Docker pending
-Hito 1 — Ingesta documental            ✅ baseline
-Hito 2 — Embeddings/retrieval           ✅ baseline
-Hito 12 — CI                           ✅ checks reported successful; other quality tasks pending
-Hito 4 — Evaluación                    ✅ initial review and alternative evidence; broader coverage pending
-Hito 3 / 3B — Persistencia y SQL
-Hito 5 — Generación LLM
-Hito 6 — Evidencia/calidad
-Hito 7 — FastAPI
-Hito 8 — UI
-Hito 9 — Docker
-Hito 10 — Actualización normativa
-Hito 11 — LangChain/agentes opcional
-Hito 12B — Observabilidad/entrega
-Hito 13 — Portfolio
-Hito 14 — Laboratorios opcionales
-```
+First-session target: a measured local synthesis with citations from known
+passages. This is not a promise to finish the complete generation milestone in one
+session. API/FastAPI and the simple HTML interface follow the evaluated terminal
+flow; then packaging, observability, and later official-source synchronization.
 
-Próximas tareas:
-
-- [x] Publish the implementation PR and confirm its initial CI checks (reported by the user).
-- [ ] Commit and push the latest planning/session-log updates.
-- [ ] Review the final PR diff and confirm checks for its latest commit.
-- [ ] Merge the PR and update local `main` before starting a new persistence branch.
-- [x] Crear 10-20 preguntas y medir el retriever actual; conservar los resultados como baseline reproducible.
-- [ ] Después abordar persistencia con las tareas siguientes y el catálogo SQL del hito 3B.
-- [ ] `uv add qdrant-client`
-- [ ] ignorar `data/qdrant/`
-- [ ] crear `QdrantVectorStore`
-- [ ] crear colección
-- [ ] probar persistencia
-- [ ] diseñar `ID + vector + payload`
-- [ ] indexar chunks
-- [ ] buscar desde Qdrant
-- [ ] refactorizar `Retriever`
+Work in small explained steps. Ask the user about material product/resource
+choices with clear alternatives; routine implementation choices can proceed.
+Keep code documentation in English and questions/evidence in Spanish.
 
 ---
 
@@ -1140,67 +1132,54 @@ session with completed work, remaining work, and the next starting point.
 
 ## Session — 2026-09-09
 
-- Committed and pushed the September 8 session notes as `b4a7039`.
-- Independently confirmed both GitHub checks passed for that commit and merged PR #1.
-- Updated local `main` and created `feat/qdrant-persistence`.
-- Added `qdrant-client` and ignored `data/qdrant/`.
-- Added a small integration experiment in `tests/test_qdrant_persistence.py`:
-  insert two passages with synthetic vectors, close the local client, reopen it,
-  and verify ranking, scores, and full passage metadata without re-insertion.
-- Verified 35 passing tests. This demonstrates local disk persistence, not
-  semantic retrieval quality or a completed vector-store implementation.
+### Completed and verified
 
-- Implemented `QdrantVectorStore` with a default dimension of 384, DOT distance,
-  collection compatibility checks, batch upserts, reproducible UUIDs scoped by
-  index identity, and `SearchResult` reconstruction.
-- Validated persistence, repeated insertion without duplicates, metadata and
-  dot-product scores, incompatible collections, and invalid input: 43 tests pass,
-  along with Ruff lint and formatting.
-- Documented use and limits in README: collection/model separation remains the
-  caller's responsibility; upsert does not activate or remove document versions.
+- Closed the September 8 delivery: session notes committed as `b4a7039`, PR #1
+  merged, and local `main` updated after independently checking remote CI.
+- Implemented Qdrant disk persistence, reproducible point/index identities, batch
+  insertion, compatibility/input validation, and `SearchResult` reconstruction.
+- Added resumable `DocumentIndexer`, `PersistentRetriever`, and evaluation
+  build/reuse modes. Preserved the in-memory retriever as the reference.
+- Compared memory, Qdrant build, and Qdrant reuse in separate processes on the
+  AI Act: 1,041 chunks, 14 questions, all 140 top-ten positions identical.
+  Hit@1 = 50%, Hit@5 = Hit@10 = 91.67%, MRR@10 = 0.6597. Maximum score difference
+  was approximately 1.2e-7; reuse calculated zero passage embeddings.
+- Committed persistence as `efc68fb` and merged PR #2 after both remote checks passed.
+- Implemented SQLite documents, original versions, and indexing attempts with
+  foreign keys, uniqueness constraints, parameterized JOINs, and transactions.
+- Built and verified separate vector collections before activating a run. Tested
+  failure isolation, rollback during activation, and retry of missing passages.
+- Added index/query/history/failures commands, retained hash-addressed originals,
+  and active-only query without rereading, chunking, or embedding the PDF.
+- Registered `eu_ai_act`, local version 1, reusing all existing vectors. A separate
+  query returned five passages with version identity and the retained original.
+- Committed the catalog implementation as `5795376` and published PR #3; both
+  remote implementation checks passed. This closing plan update travels in the
+  same PR, whose final commit must pass CI before the closing merge.
+- Verified 56 tests plus Ruff lint/format. No model download or paid service was
+  required for the real local validation; embeddings ran on `cuda:0`.
 
-- Connected `DocumentIndexer` and `PersistentRetriever` through evaluation
-  `--backend qdrant` with build/reuse modes. Index identity includes document hash,
-  chunks, processing code/configuration, model revision, and embedding dependencies.
-- Build mode resumes missing passages; reuse mode rejects incomplete collections.
-  Foreign points are rejected. This is not yet SQL-backed version activation.
-- Verified 49 tests, Ruff lint, and formatting, including the evaluation entry
-  point and recovery after an interrupted index build.
-- Evaluated the real AI Act in three separate processes (memory, Qdrant build,
-  Qdrant reuse): all 140 top-ten passage positions matched, with identical metrics
-  and maximum absolute score difference around 1.2e-7. Reuse embedded zero passages.
-- Recorded provenance and measurements in
-  `src/rag_bogado/evaluation/reports/persistence-comparison.json`.
+### Evidence and reproduction
 
-Next: review and commit the persistence delivery, then introduce the SQLite
-catalog and document/version activation. The current reuse evaluation still reads
-the source PDF to reconstruct and verify the index identity. A standalone query
-path without re-ingestion remains pending.
-The new persistence work has not yet been committed or published.
+- `src/rag_bogado/evaluation/reports/persistence-comparison.json`: comparison,
+  provenance, and measurements. Full local runs live in `data/evaluation/`.
+- `data/evaluation/catalog-query-2026-09-09.json`: real catalog query output.
+- `README.md`: indexing, standalone querying, history, and failures commands.
+- Delivery links: [PR #2](https://github.com/tvarmar/rag-bogado/pull/2),
+  [PR #3](https://github.com/tvarmar/rag-bogado/pull/3).
 
-### Persistence delivery closed and initial SQLite catalog
+### Remaining scope and next starting point
 
-- Committed persistence as `efc68fb`, published PR #2, independently verified both
-  remote checks, and merged it. Local `main` now points to the merged delivery.
-- Created `feat/sqlite-catalog` for the next increment.
-- Added SQLite `documents`, `document_versions`, and `indexing_runs`, with foreign
-  keys, version uniqueness, and a unique partial index for one active run per document.
-- Added parameterized history/failure JOIN queries and transactional activation.
-  Vector building and completeness checks happen before switching the active run.
-  Failure preserves the previous active version; retry resumes missing vectors.
-- Added index/query/history/failures commands. Indexing retains a hash-addressed
-  original PDF. Querying selects the active collection and pinned model without
-  rereading or embedding the PDF, and returns document/version/index identity.
-- Verified 56 tests plus Ruff lint/format, including a failed activation transaction,
-  failed partial indexing, retry, original retention, and query after restart.
-- Registered the real AI Act as `eu_ai_act`, version 1, reusing all 1,041 saved
-  vectors (zero passage embeddings). A separate query process returned five
-  passages with the correct retained original and active version metadata.
-- Real command output is saved locally in `data/evaluation/catalog-query-2026-09-09.json`.
+- The local retrieval/persistence/catalog increment is implemented. Generation,
+  abstention, API, and UI have not been implemented.
+- The development evaluation is small and contains no held-out split yet.
+- Official identifiers/source dates, schema migrations, and multiwriter
+  coordination remain future work. Hard termination can leave a preparing attempt;
+  a new attempt resumes vectors while retaining the previous active version.
+- End-of-day procedure: commit/push this handoff, check CI on the latest PR #3
+  commit, merge PR #3, and update local `main`. Keep branch history and local data.
+- The next work session follows section 11: inspect hardware, compare local LLM
+  options with the user, and build a first measured terminal synthesis with citations.
 
-The earlier pending-persistence notes above describe intermediate states and are
-superseded by this entry. Next: review the SQLite delivery and its remote checks;
-then plan local generation and evidence-insufficiency behavior (milestones 5/6).
-Official-source metadata, schema migrations, and multiwriter coordination remain
-future work. Hard termination leaves a preparing attempt visible in history; a
-new attempt can resume the vectors, without automatically deleting old history.
+The September 8 next-session instructions above are historical. Section 11 and
+this September 9 handoff define the current starting point.
