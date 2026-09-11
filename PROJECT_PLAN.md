@@ -415,13 +415,13 @@ síntesis
 
 Tareas:
 
-- [ ] Crear capa `generation`
-- [ ] Crear interfaz/clase de generación
-- [ ] Diseñar prompt
-- [ ] Entregar al LLM solo contexto recuperado
+- [x] Crear capa `generation`
+- [x] Crear interfaz/clase de generación
+- [x] Diseñar prompt
+- [x] Entregar al LLM solo contexto recuperado
 - [ ] Definir comportamiento cuando falta evidencia
-- [ ] Separar respuesta generada de fragmentos originales
-- [ ] Tests de casos básicos
+- [x] Separar respuesta generada de fragmentos originales
+- [x] Tests de casos básicos
 - [ ] Aprender y documentar tokens, ventana de contexto, embeddings frente a generación, temperatura y cuantización usando ejemplos del proyecto.
 - [ ] Seleccionar un modelo instruct local tras medir memoria y latencia en el equipo disponible; fijar su versión y presupuesto de contexto.
 - [ ] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
@@ -1031,8 +1031,9 @@ No añadir sin una necesidad clara:
 
 # 11. Próximo paso
 
-Updated: 2026-09-09, end-of-session handoff. The current implementation retrieves
-versioned evidence; LLM synthesis and a user interface remain pending.
+Updated: 2026-09-11. Experimental local synthesis is implemented and measured;
+quality acceptance, API, and user interface remain pending. See the September 11
+session log and docs/local-generation.md for evidence and known failures.
 
 | Milestone | Current state |
 | --- | --- |
@@ -1041,40 +1042,45 @@ versioned evidence; LLM synthesis and a user interface remain pending.
 | 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
 | 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
 | 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
-| 5 / 6 — Generation and evidence | Next implementation stage, to be developed together |
+| 5 / 6 — Generation and evidence | Synthesis and separate question workflow implemented; evidence quality acceptance pending |
 | 7 / 8 — API and interface | After the first evaluated terminal synthesis |
 | 9 / 12B — Packaging and observability | After the local MVP; logs can be added as needed |
 | 10 — BOE / EUR-Lex synchronization | After the local MVP |
 | 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
 | 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
 
-## Next session: first local synthesis with citations
+## Next session: reliable evidence for each separated question
 
-1. Start from updated `main`; check the working tree and the final state of
-   [catalog PR #3](https://github.com/tvarmar/rag-bogado/pull/3) if the closing
-   procedure was interrupted. Open a new branch for local generation.
-2. Measure available RAM, GPU VRAM, and disk space. Research current local model
-   candidates and runtimes using primary sources. Present a short comparison of
-   quality in Spanish, resource use, license, and latency before choosing with the user.
-3. Run the chosen pretrained instruct model locally on a small known-evidence
-   example. Record model/revision, quantization, resource use, and latency.
-4. Add a small `generation` layer and context selection: compare top 3/top 5,
-   remove overlap duplicates, preserve source IDs, and respect a token budget.
-5. Produce a terminal synthesis with verifiable citations and original passages.
-   Develop insufficient-evidence behavior alongside generation; a nonempty top-k
-   and high similarity do not establish that the question is answerable.
-6. Extend evaluation with paraphrases, multi-passage questions, and additional
-   negatives; reserve held-out questions. Review claim support, citations,
-   abstention, coverage, latency, and token use before accepting the feature.
+1. Review [PR #4](https://github.com/tvarmar/rag-bogado/pull/4), the September 11
+   `feat/local-generation` delivery, and its latest remote checks. Read `docs/local-generation.md` and the `local-generation.json` and
+   `question-workflow.json` reference reports before changing the baseline.
+2. Start Ollama with `bash scripts/serve_ollama.sh` if it is not already running.
+   The selected model and weights are local; no new download is normally needed.
+3. Prioritize the preparation-timing subquestion. Inspect its ten retrieved
+   candidates against the expected Article 11 sentence (page 58). Compare a small
+   context-selection/retrieval change that recovers complete supporting evidence.
+   Do not count a page hit without checking the actual fragment.
+4. Check every claim against its specific citation. The model still infers timing
+   from a cut recital and can add peripheral literacy claims. Prompt-only tweaks
+   did not resolve this. Measure a concrete support/abstention improvement before
+   calling the generation stage accepted.
+5. Improve the question separator's enumeration handling. It correctly separates
+   the three-part query and preserves the tested comparison, but sometimes splits
+   a single request about two subject categories. Keep separate answers, citations,
+   partial status and per-question errors as implemented.
+6. Expand reviewed development evidence and calibrate any threshold only after
+   measuring relevant/irrelevant examples. Keep held-out cases reserved until the
+   development policy is fixed; then evaluate them once.
+7. Only proceed to FastAPI/UI after reviewing support, coverage, abstention and
+   acceptable latency. A successful response schema does not establish quality.
 
-First-session target: a measured local synthesis with citations from known
-passages. This is not a promise to finish the complete generation milestone in one
-session. API/FastAPI and the simple HTML interface follow the evaluated terminal
-flow; then packaging, observability, and later official-source synchronization.
+Session deliverables: local synthesis, per-question retrieval/generation,
+reproducible measurements, and 86 passing deterministic tests. Milestones 5/6
+remain open for quality acceptance. The closing GitHub delivery is on
+`feat/local-generation`; check its PR/CI rather than repeating model setup.
 
-Work in small explained steps. Ask the user about material product/resource
-choices with clear alternatives; routine implementation choices can proceed.
-Keep code documentation in English and questions/evidence in Spanish.
+Work in small explained steps. Material model/resource choices remain shared
+with the user. Keep code documentation in English and questions/evidence in Spanish.
 
 ---
 
@@ -1183,3 +1189,79 @@ session with completed work, remaining work, and the next starting point.
 
 The September 8 next-session instructions above are historical. Section 11 and
 this September 9 handoff define the current starting point.
+
+
+## Session — 2026-09-11
+
+### Implemented and measured
+
+- Selected Qwen3 4B Instruct Q4_K_M with the user after checking WSL RAM and the
+  RTX 4050 6 GB GPU. Installed Ollama 0.34.0 locally under ignored `data/runtime/`
+  and model weights under `data/models/`; loopback server with cloud disabled.
+- Created `feat/local-generation`. Added an Ollama adapter, bounded context
+  selection, exact-source output, per-claim citation-ID validation, terminal
+  query/replay commands, and deterministic generation tests.
+- Measured known Article 4 synthesis: 7.44 s after model reload, 1.98 s warm,
+  445 prompt tokens / 96 output tokens, sampled device VRAM 3,133 MiB.
+- Compared top three/five on four development questions at 8,192 context tokens;
+  device VRAM reached 4,388 MiB including retained embedding allocations.
+- Added a development/held-out split, an exploratory selection-only threshold
+  sweep, and a reference report with 12 runs and assistant evidence review.
+- Preserved failed initial outputs. Corrected an ambiguous status instruction;
+  validation continues to reject inconsistent or truncated answers.
+- Initial synthesis increment passed 68 tests; the final question-workflow
+  increment passed 86 tests plus Ruff lint/format locally. Closing delivery is
+  tracked on `feat/local-generation`; remote CI is checked after pushing.
+
+### Findings and remaining work
+
+- Top five recovers the useful fourth-ranked passage for the paraphrase; top
+  three appropriately abstains on its selected context.
+- Both compound-question answers fail coverage and do not acknowledge missing
+  parts. Top five additionally uses a cut, out-of-scope passage. This is an
+  explicitly recorded quality failure, not an accepted completed feature.
+- The known response identifies actors and the duty to adopt measures but omits
+  qualifications; it must not be presented as an exhaustive legal explanation.
+- The tested negative questions abstain, but broader and held-out validation,
+  threshold calibration, and coverage-aware selection remain pending.
+- `src/rag_bogado/evaluation/reports/local-generation.json` preserves results,
+  model digest, prompt, metrics, exact passages, and review. Full local attempts
+  are in `data/evaluation/generation-2026-09-11*`.
+- `docs/local-generation.md` documents reproduction and measurement limits.
+  The local server can be started with `bash scripts/serve_ollama.sh`.
+- First measured-synthesis target complete; milestones 5/6 and MVP acceptance
+  remain open. Section 11 defines the next starting point.
+
+
+### Question-workflow increment and session handoff
+
+- Agreed with the user to separate explicit questions, retrieve independently,
+  and answer each with its own evidence and abstention status.
+- Added a bounded local question separator and orchestration that preserves each
+  question, namespaces citations, isolates failures, and rejects mixing document
+  versions. Live CLI uses this flow; saved evidence replay stays unchanged.
+- Real compound query produced three self-contained questions and three separate
+  retrievals/answers. Mixed query produced one answer and one explicit abstention.
+- Measured 22.54 s total for the compound pipeline and 12.13 s for the mixed case;
+  these include retrieval and separation, unlike the earlier generation-only times.
+- Preserved comparison and simple-question cases, but recorded over-splitting of
+  a subject enumeration. The compound preparation answer is still unsupported:
+  separation improves organization but does not guarantee retrieval or generation
+  correctness. No semantic acceptance is claimed.
+- Reference: `src/rag_bogado/evaluation/reports/question-workflow.json`; full local
+  runs: `data/evaluation/question-workflow-2026-09-11/`. A prompt-only follow-up
+  did not resolve the remaining failures and is retained separately as v2.
+- Final local checks: 86 tests passed, Ruff lint/format passed. Runtime and weights
+  remain ignored by Git. The user requested plan updates and GitHub publication;
+  publish the code, tests, docs, and reference reports together.
+- The next session starts with section 11. Do not repeat installation or treat
+  the old single-query coverage work as still unimplemented.
+
+
+### GitHub delivery
+
+- Implementation published as `ae475c6` on `feat/local-generation`.
+- [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) is open as a draft against
+  `main`; it has not been merged. The draft records the remaining semantic failures.
+- This handoff update travels in the same PR. Check CI against its latest head
+  before marking it ready or merging; local validation is 86 tests plus Ruff.

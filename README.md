@@ -2,8 +2,9 @@
 
 A learning project for retrieval-augmented generation over regulatory documents.
 The current implementation extracts PDFs, normalizes text, creates chunks, and
-retrieves passages using embeddings. LLM answers, a user interface, and BOE
-synchronization are planned but not implemented yet.
+retrieves passages using embeddings. Experimental local LLM synthesis with source
+citations is available in the terminal. A user interface and BOE synchronization
+remain planned.
 
 ## Setup and checks
 
@@ -99,7 +100,8 @@ a new attempt. Use `--catalog PATH` before the subcommand to choose another cata
 The query command loads the active collection and pinned local model from SQLite.
 It does not read, normalize, chunk, or embed the PDF. Output contains retrieved
 passages and scores plus document/version/index identity and the retained original
-path. This is evidence retrieval; LLM synthesis and abstention remain pending.
+path. This command returns evidence; use the separate generation command below
+for experimental synthesis and insufficient-evidence handling.
 
 `documents` identifies each document; `document_versions` records distinct original
 hashes; `indexing_runs` records attempts and which complete index is active. Foreign
@@ -121,3 +123,30 @@ Failures before a run starts (such as invalid PDFs or an unavailable model) are
 reported by the command but are not indexing-run records. Catalog paths are local
 absolute paths; moving data requires updating/rebuilding the catalog. Automatic
 schema migrations and official-source/version metadata remain future work.
+
+## Experimental local synthesis
+
+With the local Ollama runtime and `qwen3:4b-instruct` installed:
+
+```bash
+bash scripts/serve_ollama.sh
+```
+
+In another terminal:
+
+```bash
+uv run python -m rag_bogado.generation --question "¿Quién debe garantizar la alfabetización en IA del personal?"
+```
+
+The live command detects individual questions, retrieves evidence for each, and
+returns an `answers` list with per-question statuses and citations such as
+`Q1-S2`. Output includes exact passages, page numbers, local version identity,
+and timing/token metrics. A missing answer does not hide the other parts. Invalid citation IDs and
+inconsistent or truncated responses are rejected. These checks do not establish
+semantic support; review the original evidence. Question separation and
+abstention are experimental: some subject enumerations are over-split and
+unsupported claims remain in the measured compound-query case. No
+similarity threshold has been calibrated.
+
+See [the local generation experiment](docs/local-generation.md) for installation,
+saved-evidence replay, model provenance, measurements, and remaining limitations.
