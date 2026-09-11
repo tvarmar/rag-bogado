@@ -1051,8 +1051,8 @@ session log and docs/local-generation.md for evidence and known failures.
 
 ## Next session: reliable evidence for each separated question
 
-1. Review the September 11 `feat/local-generation` delivery and its latest remote
-   checks. Read `docs/local-generation.md` and the `local-generation.json` and
+1. Review [PR #4](https://github.com/tvarmar/rag-bogado/pull/4), the September 11
+   `feat/local-generation` delivery, and its latest remote checks. Read `docs/local-generation.md` and the `local-generation.json` and
    `question-workflow.json` reference reports before changing the baseline.
 2. Start Ollama with `bash scripts/serve_ollama.sh` if it is not already running.
    The selected model and weights are local; no new download is normally needed.
@@ -1256,3 +1256,12 @@ this September 9 handoff define the current starting point.
   publish the code, tests, docs, and reference reports together.
 - The next session starts with section 11. Do not repeat installation or treat
   the old single-query coverage work as still unimplemented.
+
+
+### GitHub delivery
+
+- Implementation published as `ae475c6` on `feat/local-generation`.
+- [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) is open as a draft against
+  `main`; it has not been merged. The draft records the remaining semantic failures.
+- This handoff update travels in the same PR. Check CI against its latest head
+  before marking it ready or merging; local validation is 86 tests plus Ruff.
