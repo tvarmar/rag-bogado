@@ -75,7 +75,12 @@ def main():
                     return query
 
                 result = answer_questions(
-                    question, generator, retrieve, max_passages=5, context_tokens=8192
+                    question,
+                    generator,
+                    retrieve,
+                    max_passages=10,
+                    context_tokens=8192,
+                    answer_mode="synthesis",
                 )
             (destination / f"{name}-retrievals.json").write_text(
                 json.dumps(retrievals, ensure_ascii=False, indent=2) + "\n"

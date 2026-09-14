@@ -1,5 +1,11 @@
 # Local generation experiment
 
+Current behavior (2026-09-14): the CLI defaults to exact retrieved passages.
+Use `--answer-mode synthesis` explicitly for the experimental synthesis described
+below; it now includes mandatory, fallible automated support review. See
+[the new workflow](multi-query.md). Historical measurements retain their original
+prompts and behavior and are not measurements of the new gate.
+
 Session: 2026-09-11. Status: first measured synthesis completed; generation quality acceptance pending.
 
 ## Measured environment
@@ -236,3 +242,9 @@ unsupported timing from a cut recital. Literacy responses can include peripheral
 claims and incomplete citation support. The comparison and simple-question cases
 are preserved, but a subject enumeration is over-split. The report records these
 failures explicitly. Held-out questions remain unexecuted.
+
+## Context-selection follow-up
+
+The [September 14 replay](context-selection.md) isolates a preparation answer
+failure: the useful sentence is retrieved at rank seven but excluded by the
+five-passage cap. It records budget comparisons and remaining citation failures.

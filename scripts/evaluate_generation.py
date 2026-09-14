@@ -122,7 +122,10 @@ def main():
         thread.start()
         try:
             result = generator.generate(
-                evidence, max_passages=count, context_tokens=context
+                evidence,
+                max_passages=count,
+                context_tokens=context,
+                answer_mode="synthesis",
             )
         except (RuntimeError, ValueError) as error:
             result = {"error": str(error)}

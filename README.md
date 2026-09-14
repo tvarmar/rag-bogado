@@ -21,13 +21,47 @@ requires a connection. GitHub Actions runs these checks on pushes and pull
 requests using the lockfile; semantic evaluation runs separately.
 The workflow follows the [official uv integration guide](https://docs.astral.sh/uv/guides/integration/github/).
 
+## Documentation map
+
+- [PROJECT_PLAN.md](PROJECT_PLAN.md): scope, architecture, tools, milestones, and acceptance criteria.
+- [TODO.md](TODO.md): next session, known failures, reproduction commands, relevant files, and delivery status.
+- `ESTUDIAR.md` (local, Git-ignored): personal learning checklist in Spanish; not included in a fresh clone.
+- [AGENTS.md](AGENTS.md): session startup and closing instructions for coding assistants.
+- [Session history](docs/session-history.md): archived deliveries; consult only when historical context is needed.
+
 ## Project structure
 
-- `src/rag_bogado/ingestion/`: PDF extraction, normalization, and chunking.
-- `src/rag_bogado/retrieval/`: the embedding model and semantic retriever.
-- `src/rag_bogado/evaluation/`: evaluation runner, metrics, questions, and reference reports.
-- `tests/`: automated checks for these components.
-- `data/`: local documents and generated evaluation runs, excluded from Git.
+```text
+rag-bogado/
+├── README.md                  # Entry point, file map, setup and usage
+├── PROJECT_PLAN.md            # Project goals and roadmap
+├── TODO.md                    # Actionable handoff for the next session
+├── ESTUDIAR.md                # Theory and learning progress
+├── AGENTS.md                  # Session maintenance instructions
+├── pyproject.toml / uv.lock   # Dependencies and reproducible environment
+├── .github/workflows/ci.yml   # Automated tests and Ruff checks
+├── src/rag_bogado/
+│   ├── ingestion/            # loader.py, normalizer.py, chunker.py
+│   ├── retrieval/            # embeddings.py, retriever.py,
+│   │                        # persistent_retriever.py, vector_store.py
+│   ├── indexing/             # indexer.py, catalog.py, configuration.py,
+│   │                        # service.py, __main__.py (catalog CLI)
+│   ├── generation/           # generator.py, questions.py, service.py,
+│   │                        # multi_query.py, support.py, structured.py,
+│   │                        # __main__.py (synthesis CLI)
+│   └── evaluation/           # metrics.py, runner.py, __main__.py,
+│                            # README.md, datasets/, reports/
+├── tests/                    # Deterministic unit and integration tests
+├── scripts/                  # serve_ollama.sh, evaluate_generation.py,
+│                            # evaluate_question_workflow.py,
+│                            # compare_saved_contexts.py, evaluate_multi_query.py
+├── docs/                     # Experiments, multi-query.md, session-history.md
+└── data/                     # Ignored local PDFs, catalog, vectors,
+                             # model weights, runtime and evaluation runs
+```
+
+API, UI, and official-source synchronization are planned in the roadmap.
+Update this map when adding, moving, or removing modules.
 
 ## Local evaluation
 
@@ -124,7 +158,7 @@ reported by the command but are not indexing-run records. Catalog paths are loca
 absolute paths; moving data requires updating/rebuilding the catalog. Automatic
 schema migrations and official-source/version metadata remain future work.
 
-## Experimental local synthesis
+## Local evidence answers and experimental synthesis
 
 With the local Ollama runtime and `qwen3:4b-instruct` installed:
 
@@ -138,7 +172,8 @@ In another terminal:
 uv run python -m rag_bogado.generation --question "¿Quién debe garantizar la alfabetización en IA del personal?"
 ```
 
-The live command detects individual questions, retrieves evidence for each, and
+The live command detects individual questions, searches the original plus one
+rewrite for each, combines rankings with RRF, and
 returns an `answers` list with per-question statuses and citations such as
 `Q1-S2`. Output includes exact passages, page numbers, local version identity,
 and timing/token metrics. A missing answer does not hide the other parts. Invalid citation IDs and
@@ -147,6 +182,16 @@ semantic support; review the original evidence. Question separation and
 abstention are experimental: some subject enumerations are over-split and
 unsupported claims remain in the measured compound-query case. No
 similarity threshold has been calibrated.
+
+By default, the LLM selects source IDs and the application copies their full
+retrieved text into the answer. No generated prose is used in this mode. This
+preserves exact text, but does not certify relevance or complete legal context.
+Use `--answer-mode synthesis` explicitly for experimental paraphrasing with
+mandatory automated claim review. Real evaluation found false approvals by that
+reviewer, so synthesis is not accepted as reliably grounded.
+
+See [two-search retrieval and evaluation](docs/multi-query.md) for the workflow,
+manual evaluation rubric, comparison command and limitations.
 
 See [the local generation experiment](docs/local-generation.md) for installation,
 saved-evidence replay, model provenance, measurements, and remaining limitations.

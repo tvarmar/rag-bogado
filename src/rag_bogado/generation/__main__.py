@@ -21,9 +21,22 @@ def main():
     )
     parser.add_argument("--model", default="qwen3:4b-instruct")
     parser.add_argument("--retrieve-k", type=int, default=10)
-    parser.add_argument("--max-passages", type=int, default=5)
+    parser.add_argument("--max-passages", type=int, default=10)
+    parser.add_argument(
+        "--search-count",
+        type=int,
+        choices=(1, 2),
+        default=2,
+        help="Original only (baseline) or original plus one rewrite",
+    )
     parser.add_argument("--context-tokens", type=int, default=8192)
     parser.add_argument("--output-tokens", type=int, default=512)
+    parser.add_argument(
+        "--answer-mode",
+        choices=("evidence", "synthesis"),
+        default="evidence",
+        help="Exact source passages (default) or experimental synthesis",
+    )
     parser.add_argument(
         "--min-score", type=float, help="Experimental, uncalibrated relevance threshold"
     )
@@ -36,6 +49,7 @@ def main():
             context_tokens=args.context_tokens,
             output_tokens=args.output_tokens,
             min_score=args.min_score,
+            answer_mode=args.answer_mode,
         )
         if args.evidence_json:
             query = json.loads(args.evidence_json.read_text())
@@ -48,6 +62,7 @@ def main():
                     lambda question: query_active(
                         catalog, args.document_id, question, top_k=args.retrieve_k
                     ),
+                    search_count=args.search_count,
                     **options,
                 )
         serialized = json.dumps(result, ensure_ascii=False, indent=2)

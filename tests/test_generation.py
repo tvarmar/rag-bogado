@@ -117,6 +117,25 @@ def test_successful_generation_preserves_sources_and_metrics(query, monkeypatch)
 
     def respond(path, payload):
         calls.append((path, payload))
+        if "reviews" in payload["format"]["properties"]:
+            return {
+                "done": True,
+                "done_reason": "stop",
+                "message": {
+                    "content": json.dumps(
+                        {
+                            "reviews": [
+                                {
+                                    "id": 0,
+                                    "supported": True,
+                                    "relevant": True,
+                                    "qualifications_preserved": True,
+                                }
+                            ]
+                        }
+                    )
+                },
+            }
         return {
             "done": True,
             "done_reason": "stop",
@@ -126,12 +145,13 @@ def test_successful_generation_preserves_sources_and_metrics(query, monkeypatch)
         }
 
     monkeypatch.setattr(generator, "request", respond)
-    result = generator.generate(query)
+    result = generator.generate(query, answer_mode="synthesis")
     assert result["claims"] == answer["claims"]
     assert result["sources"][0]["text"] == "Evidencia original."
     assert result["content_hash"] == query["content_hash"]
     assert result["metrics"]["eval_count"] == 30
     assert result["semantic_support_reviewed"] is False
+    assert result["support_review"]["status"] == "passed"
     assert calls[0][1]["options"]["num_ctx"] == 4096
     assert calls[0][1]["stream"] is False
 
@@ -146,3 +166,60 @@ def test_context_selection_respects_count_and_byte_budget(query):
     assert len(sources) == 3
     used = sum(len(m["content"].encode("utf-8")) for m in messages)
     assert used + 256 + 512 <= 4096
+
+
+def test_default_copies_whole_source_without_generated_prose(query, monkeypatch):
+    import json
+
+    generator = OllamaGenerator()
+    text = "Adoptarán medidas, en la medida posible, salvo la excepción indicada."
+    query["results"][0]["chunk"]["text"] = text
+    calls = []
+
+    def respond(path, payload):
+        calls.append(payload)
+        return {
+            "done": True,
+            "done_reason": "stop",
+            "message": {
+                "content": json.dumps({"status": "answered", "source_ids": ["S1"]})
+            },
+        }
+
+    monkeypatch.setattr(generator, "request", respond)
+    result = generator.generate(query)
+    assert result["answer_mode"] == "evidence"
+    assert result["claims"] == [{"text": text, "citations": ["S1"]}]
+    assert len(calls) == 1
+    assert result["support_review"]["status"] == "exact_source_copy"
+
+
+@pytest.mark.parametrize(
+    "selection",
+    [
+        {"status": "answered", "source_ids": ["S99"]},
+        {"status": "answered", "source_ids": ["S1", "S1"]},
+        {"status": "answered", "source_ids": []},
+        {"status": "insufficient_evidence", "source_ids": ["S1"]},
+        {"status": "answered", "source_ids": [1]},
+        {"status": "answered", "source_ids": ["S1"], "text": "An invented duty."},
+        {"status": "answered", "source_ids": "S1"},
+    ],
+)
+def test_default_rejects_invalid_selection_and_model_prose(
+    query, monkeypatch, selection
+):
+    import json
+
+    generator = OllamaGenerator()
+    monkeypatch.setattr(
+        generator,
+        "request",
+        lambda *args: {
+            "done": True,
+            "done_reason": "stop",
+            "message": {"content": json.dumps(selection)},
+        },
+    )
+    with pytest.raises(ValueError):
+        generator.generate(query)

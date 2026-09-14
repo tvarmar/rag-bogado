@@ -208,3 +208,13 @@ are in `data/evaluation/{memory,qdrant-build,qdrant-reuse}-2026-09-09.json`.
 - The model used `cuda:0`; these timings are individual observations, not a
   controlled benchmark or a comparison with the previous CPU run. Model loading
   is recorded separately, and reuse still verifies the PDF and chunks.
+
+## Multi-query and answer evaluation
+
+See [the workflow and rubric](../../../docs/multi-query.md) for original-plus-rewrite
+retrieval, RRF, exact-passage answers and experimental synthesis review. Run
+`uv run python scripts/evaluate_multi_query.py --output-dir data/evaluation/multi-query-new`
+from the repository root; add `--answer-mode synthesis` for the guarded synthesis
+comparison. The output retains blank human labels and does not infer quality from
+execution status. Reference reports are `reports/multi-query-evidence.json` and
+`reports/multi-query-synthesis.json`; the latter records false automated approvals.

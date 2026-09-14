@@ -4,6 +4,7 @@ import time
 from collections.abc import Callable
 
 from rag_bogado.generation.generator import OllamaGenerator
+from rag_bogado.generation.multi_query import retrieve_questions
 from rag_bogado.generation.questions import split_questions
 
 
@@ -11,6 +12,8 @@ def answer_questions(
     question: str,
     generator: OllamaGenerator,
     retrieve: Callable[[str], dict],
+    *,
+    search_count: int = 2,
     **generation_options,
 ) -> dict:
     """Keep one result per detected question, including failures and abstentions.
@@ -19,6 +22,8 @@ def answer_questions(
     deterministically so a second synthesis cannot silently drop an answer.
     """
     started = time.perf_counter()
+    if search_count not in (1, 2):
+        raise ValueError("Search count must be one or two")
     decomposition = split_questions(question, generator)
     answers = []
     identity = None
@@ -26,7 +31,9 @@ def answer_questions(
         question_id = f"Q{number}"
         try:
             retrieval_started = time.perf_counter()
-            query = retrieve(individual)
+            query = retrieve_questions(
+                individual, generator, retrieve, search_count=search_count
+            )
             retrieval_seconds = time.perf_counter() - retrieval_started
             current = tuple(
                 query[k]
@@ -39,6 +46,7 @@ def answer_questions(
             if query["question"] != individual:
                 raise ValueError("Retrieved evidence belongs to a different question")
             result = generator.generate(query, **generation_options)
+            result["retrieval"] = query["retrieval"]
             for source in result["sources"]:
                 source["id"] = f"{question_id}-{source['id']}"
             for claim in result["claims"]:

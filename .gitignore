@@ -24,3 +24,5 @@ data/catalog/
 # Local generation runtime and downloaded weights
 data/runtime/
 data/models/
+
+ESTUDIAR.md

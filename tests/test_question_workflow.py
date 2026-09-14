@@ -17,6 +17,13 @@ class FakeGenerator:
         self.contexts = []
 
     def request(self, path, payload):
+        if "query" in payload["format"].get("properties", {}):
+            question = json.loads(payload["messages"][1]["content"])["question"]
+            return {
+                "done": True,
+                "done_reason": "stop",
+                "message": {"content": json.dumps({"query": question})},
+            }
         return {
             "done": True,
             "done_reason": "stop",
@@ -44,7 +51,17 @@ def retrieve(question):
         "version_id": 1,
         "content_hash": "hash",
         "index_id": "index",
-        "results": [question],
+        "results": [
+            {
+                "score": 0.9,
+                "chunk": {
+                    "source": "doc.pdf",
+                    "page_number": 1,
+                    "chunk_id": 0,
+                    "text": question,
+                },
+            }
+        ],
     }
 
 
@@ -58,7 +75,7 @@ def test_each_question_has_independent_retrieval_and_citations():
 
     result = answer_questions("Original compound question", generator, tracked)
     assert seen == ["First?", "Second?", "Third?"]
-    assert [q["results"] for q in generator.contexts] == [[q] for q in seen]
+    assert [q["results"][0]["chunk"]["text"] for q in generator.contexts] == seen
     assert result["status"] == "answered"
     assert [a["question_id"] for a in result["answers"]] == ["Q1", "Q2", "Q3"]
     for index, answer in enumerate(result["answers"], 1):
@@ -193,3 +210,37 @@ def test_cli_evidence_replay_does_not_split_or_retrieve(tmp_path, monkeypatch, c
     monkeypatch.setattr(sys, "argv", ["generation", "--evidence-json", str(evidence)])
     cli.main()
     assert json.loads(capsys.readouterr().out)["status"] == "answered"
+
+
+def test_pipeline_searches_twice_but_generates_once_per_original_question():
+    generator = FakeGenerator(["First?", "Second?"])
+    original_request = generator.request
+
+    def respond(path, payload):
+        if "query" in payload["format"]["properties"]:
+            question = json.loads(payload["messages"][1]["content"])["question"]
+            return {
+                "done": True,
+                "done_reason": "stop",
+                "message": {"content": json.dumps({"query": question + " rewritten"})},
+            }
+        return original_request(path, payload)
+
+    generator.request = respond
+    seen = []
+
+    def search(question):
+        seen.append(question)
+        original = question.removesuffix(" rewritten")
+        return dict(retrieve(original), question=question)
+
+    result = answer_questions("Compound", generator, search)
+    assert result["status"] == "answered"
+    assert seen == ["First?", "First? rewritten", "Second?", "Second? rewritten"]
+    assert [q["question"] for q in generator.contexts] == ["First?", "Second?"]
+    assert all(len(q["results"][0]["retrieval_hits"]) == 2 for q in generator.contexts)
+
+
+def test_invalid_search_count_rejected_before_model_call():
+    with pytest.raises(ValueError, match="Search count"):
+        answer_questions("Original", None, None, search_count=3)
