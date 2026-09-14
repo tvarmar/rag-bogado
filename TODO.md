@@ -8,9 +8,11 @@ están en [PROJECT_PLAN.md](PROJECT_PLAN.md) y el mapa en [README.md](README.md)
 - Síntesis local y recuperación por pregunta implementadas; aceptación de calidad
   de los hitos 5/6 pendiente. API e interfaz vendrán después de esa revisión.
 - Rama de entrega: `feat/local-generation`, PR #4 (borrador).
-- PR #4 verificada el 2026-09-14: abierta como borrador, head `dcd7601`,
-  ambos checks correctos. La entrega del 14 de septiembre está preparada para subir;
-  el estado final de publicación y CI se anotará al cerrar la entrega.
+- Entrega del 2026-09-14 publicada en [PR #4](https://github.com/tvarmar/rag-bogado/pull/4),
+  que sigue como borrador: implementación e informes en `8ed3161`.
+  Estas notas se publican en un commit documental posterior en la misma rama.
+  CI estaba en ejecución al redactar el cierre; comprobar el último head en GitHub
+  al retomar, sin asumir que los checks de un commit anterior lo cubren.
 - Primera acción de la próxima sesión: revisar [el flujo implementado](docs/multi-query.md)
   y los informes `multi-query-evidence.json` y `multi-query-synthesis.json` en
   `src/rag_bogado/evaluation/reports/`. Completar la valoración humana de respuestas
@@ -119,8 +121,9 @@ Este resumen fija el punto de partida; la lista de abajo contiene solo pendiente
 ## Entrega y bloqueos
 
 - [ ] Mantener PR #4 como borrador mientras siga pendiente la aceptación semántica.
-  CI de `dcd7601` verificado; comprobar el nuevo head cuando se publique otra entrega.
-- Publicación de código, documentación e informes autorizada; en curso durante el cierre.
+  Verificar CI del último head antes de proponer un merge.
+- Código, documentación e informes publicados en `8ed3161`; cierre documental
+  en la misma PR. No hay una publicación de implementación pendiente.
 - `ESTUDIAR.md` permanece local e ignorado por Git; no forma parte de la publicación.
 - No hay otros bloqueos de entorno confirmados. Las evaluaciones reales requieren
   corpus, índice y modelo locales; los tests deterministas no los necesitan.

@@ -201,3 +201,14 @@ this September 9 handoff define the current starting point.
   quality improvement is claimed. Reports and limits are in `docs/multi-query.md`.
 - Final local validation: 125 tests passed, Ruff lint/format and diff checks passed.
   No commit/push; earlier user changes, including ignored study notes, were preserved.
+
+### GitHub publication — 2026-09-14
+
+- Published implementation, documentation and reference reports as `8ed3161` on
+  `feat/local-generation`. Updated PR #4 title and description to match the final
+  evidence-first workflow; the PR remains a draft, not merged.
+- Updated TODO with completed delivery and next work: rewrite fidelity, synthesis
+  review false approvals, enumeration handling and human evaluation.
+- Reviewed and extended local study notes; `ESTUDIAR.md` remains Git-ignored.
+- These closing notes are a follow-up documentation commit in the same PR.
+  Remote checks were running when written; inspect the latest head in GitHub.
