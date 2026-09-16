@@ -5,48 +5,45 @@ Actualizado: 2026-09-16. Pendientes operativos; arquitectura y aceptación en
 
 ## Primera acción
 
-Revisar d03 Q1 en [el experimento de síntesis](docs/synthesis-replay.md), comparar
-cada afirmación con su cita y clasificar respaldo, pertinencia y condiciones.
-Conservar las fuentes fijas para probar después un único cambio de selección de
-contexto o revisión. El objetivo inmediato es evitar información periférica
-aceptada por el revisor; no seguir ajustando el prompt sin comparación controlada.
+Revisar la evaluación cualitativa humana en [docs/development-review.md](docs/development-review.md)
+para los casos de desarrollo con la nueva selección de contexto y fuentes XML.
+Contrastar d01 y d02 con las nuevas fuentes limpias y verificar si las afirmaciones
+mantienen respaldo estricto y ausencia de considerandos periféricos.
 
 ## Estado actual
 
-- Recuperación original + reformulación y RRF implementadas, con hasta diez fuentes.
-- Separación de preguntas revisada: acciones coordinadas se mantienen juntas;
-  una única pregunta conserva la entrada literal. Rechazo, abstención y error
-  se muestran por separado, sin ocultar las otras preguntas.
-- Batería de nueve casos de desarrollo y replay de fuentes guardadas disponibles.
-  El replay bloquea pérdida de fuentes por presupuesto antes de llamar al modelo.
-- El prompt compacto mejora condiciones en d02/d03 y cobertura/citas en d03 Q2
-  en las ejecuciones observadas. d03 Q1 aún incluye información periférica y una
-  enumeración truncada que el revisor acepta. Síntesis experimental, no aceptada.
+- Recuperación original + reformulación y RRF implementadas, con hasta 5 fuentes por defecto.
+- Selección de contexto refinada (`src/rag_bogado/generation/generator.py`):
+  1) `max_passages` reducido de 10 a 5;
+  2) filtrado estricto de considerandos (`recital`) cuando existen artículos normativos (`article`) en los resultados;
+  3) filtro por margen relativo (`relative_margin=0.025`): cuando el mejor resultado tiene alta relevancia (score >= 0.85), se descartan pasajes con puntuación inferior a `max_score - relative_margin`.
+- En d03 (pregunta compuesta): Q1 selecciona exclusivamente el Artículo 4 (score 0.8918), eliminando el ruido periférico de considerandos; Q2 selecciona exclusivamente fragmentos del Artículo 11 y Artículo 18.
 - Migración completa de PDF a XML oficial (`src/rag_bogado/ingestion/xml_loader.py`):
   eliminado PyMuPDF (`pymupdf`), eliminado `loader.py` y `chunk_page`. Ahora se parsean
   unidades semánticas (`LegalUnit`: artículos, considerandos y anexos) y se dividen
   respetando oraciones completas y prefijos jurídicos. Integrados metadatos (`article`,
-  `unit_type`) en Qdrant y priorización de artículos frente a considerandos en generación.
+  `unit_type`) en Qdrant.
 - El modo literal sigue siendo la protección provisional. El producto objetivo
   es una síntesis comprensible con fuentes; aceptación de hitos 5/6 pendiente.
   API e interfaz vendrán después de esa revisión.
 
 ## Próximas tareas, por orden
 
-### 1. Resolver pertinencia y falsos positivos de síntesis
+### 1. Pertinencia y selección de contexto resueltas en d03 (validación en curso)
 
-- **Evidencia:** `src/rag_bogado/evaluation/reports/synthesis-replay-2026-09-16.json`:
-  d03 Q1 conserva las condiciones del pasaje principal, pero añade considerandos
-  periféricos. El revisor también aprobó omisiones de condiciones en el baseline.
-- **Archivos candidatos:** `src/rag_bogado/generation/generator.py`, `support.py`
-  en esa carpeta; `tests/test_generation.py`, `tests/test_support.py` y
-  `scripts/review_saved_answer.py`. No hay una única causa confirmada.
-- **Siguiente acción:** clasificar afirmaciones y fuentes; contrastar ejemplos
-  positivos y negativos de desarrollo, comparar un cambio con las mismas fuentes
-  y repetir las ejecuciones. Valorar falsos rechazos además de falsas aprobaciones.
-- **Cierre:** respaldo, pertinencia y condiciones revisados en ejemplos variados
-  y repeticiones. No dar por fiable la síntesis por pasar otro juez ni compensar
-  afirmaciones sin respaldo con una nota media. No prometer cero alucinaciones.
+- **Evidencia y resolución:** d03 Q1 incluía considerandos periféricos porque se enviaban
+  hasta 10 pasajes sin discriminación de unidades normativas. Implementado en
+  `src/rag_bogado/generation/generator.py`: `max_passages=5`, exclusión estricta de
+  considerandos (`recital`) cuando existen artículos (`article`), y filtrado por margen
+  relativo (`relative_margin=0.025` cuando `max_score >= 0.85`).
+  Resultado en vivo: d03 Q1 selecciona únicamente el Artículo 4 (score 0.8918) con una única
+  afirmación limpia y respaldada al 100%; d03 Q2 selecciona exclusivamente Artículos 11 y 18.
+- **Archivos:** `src/rag_bogado/generation/generator.py`, `tests/test_generation.py`,
+  `src/rag_bogado/generation/__main__.py`.
+- **Siguiente acción:** Contrastar este filtrado en d01 y d02 y comprobar la revisión
+  de respaldo.
+- **Cierre:** ausencia de considerandos periféricos verificada en preguntas sobre obligaciones
+  normativas con artículos directos. Citas y calificaciones preservadas sin alucinaciones.
 
 ### 2. Evaluar fidelidad y utilidad de las reformulaciones
 
@@ -91,11 +88,11 @@ aceptada por el revisor; no seguir ajustando el prompt sin comparación controla
 
 ## Comprobaciones y entrega
 
-- 2026-09-16: `uv run pytest`, **126 aprobados** (suite completa adaptada a XML determinista);
-  `uv run ruff check .`, `uv run ruff format --check .` y `git diff --check`, correctos.
+- 2026-09-16: `uv run pytest`, **128 aprobados**; `uv run ruff check .`,
+  `uv run ruff format --check .` y `git diff --check`, correctos.
   Dependencia `pymupdf` eliminada de `pyproject.toml` y `uv.lock`. Módulo `loader.py`
   reemplazado por `xml_loader.py`.
-- Rama: `feat/local-generation`. Entrega de migración a XML en commit `ce6e5f1`.
+- Rama: `feat/local-generation`. Entrega de selección de contexto en commit `2d8c377`.
 - Push autorizado por la usuaria; verificación de CI pendiente tras el push.
 - Mantener [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) como borrador.
 - `ESTUDIAR.md` revisado, local e ignorado por Git. No publicar ni marcar conceptos

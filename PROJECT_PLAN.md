@@ -405,7 +405,8 @@ Tareas:
 - [x] Tests de casos básicos
 - [ ] Aprender y documentar tokens, ventana de contexto, embeddings frente a generación, temperatura y cuantización usando ejemplos del proyecto.
 - [x] Seleccionar un modelo instruct local tras medir memoria y latencia en el equipo disponible; fijar su versión y presupuesto de contexto.
-- [ ] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
+- [x] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
+- [x] Reducción de pasajes de contexto a 5, exclusión de considerandos si hay artículos y ponderación por margen relativo de puntuación.
 - [x] Associate citations with supplied source IDs and reject unknown IDs.
 - [ ] Establish semantic support for every claim; automated review still has false positives.
 
@@ -449,7 +450,7 @@ Source
 - [x] Implement fail-closed handling for absent evidence and rejected synthesis.
 - [x] Show unanswered questions with distinct rejection, abstention and error states.
 - [ ] Validate the sufficiency policy with reviewed examples, including false rejections.
-- [ ] No usar conocimiento general del LLM como sustituto de documentos
+- [x] No usar conocimiento general del LLM como sustituto de documentos
 - [x] Record supplied chunks, citation IDs and document/version identity for each answer.
 - [x] Test empty-evidence abstention and preservation of unanswered questions with deterministic fakes.
 - [ ] Validate abstention with real questions outside the corpus.
@@ -483,8 +484,8 @@ Respuesta conceptual:
   "answer": "...",
   "sources": [
     {
-      "document": "eu_ai_act.pdf",
-      "page": 46,
+      "document": "eu_ai_act.xml",
+      "page": 0,
       "text": "..."
     }
   ]
