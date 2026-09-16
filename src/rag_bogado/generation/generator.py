@@ -73,10 +73,11 @@ class GenerationError(ValueError):
 def prepare_context(
     query: dict,
     *,
-    max_passages: int = 10,
+    max_passages: int = 5,
     context_tokens: int = 4096,
     output_tokens: int = 512,
     min_score: float | None = None,
+    relative_margin: float | None = 0.025,
     system_prompt: str = SYSTEM_PROMPT,
 ) -> tuple[list[dict], list[dict]]:
     """Use UTF-8 bytes as a conservative token bound for Qwen's byte-level BPE.
@@ -126,19 +127,39 @@ def prepare_context(
         for r in results
     )
     if has_articles:
-        results = sorted(
-            results,
-            key=lambda r: (
-                0
-                if (
-                    r["chunk"].get("unit_type")
-                    if isinstance(r["chunk"], dict)
-                    else getattr(r["chunk"], "unit_type", None)
-                )
-                == "article"
-                else 1
-            ),
-        )
+        results = [
+            r
+            for r in results
+            if (
+                r["chunk"].get("unit_type")
+                if isinstance(r["chunk"], dict)
+                else getattr(r["chunk"], "unit_type", None)
+            )
+            != "recital"
+        ]
+
+    if results and relative_margin is not None and relative_margin > 0:
+        scores = [
+            r["score"]
+            for r in results
+            if r.get("score") is not None and math.isfinite(r["score"])
+        ]
+        if scores:
+            max_score = max(scores)
+            if max_score >= 0.85:
+                results = [
+                    r
+                    for r in results
+                    if r.get("score") is not None
+                    and r["score"] >= max_score - relative_margin
+                ]
+            elif max_score >= 0.80:
+                results = [
+                    r
+                    for r in results
+                    if r.get("score") is not None
+                    and r["score"] >= max_score - (relative_margin * 2)
+                ]
     for result in results:
         if len(sources) >= max_passages:
             break
@@ -254,10 +275,11 @@ class OllamaGenerator:
         self,
         query: dict,
         *,
-        max_passages: int = 10,
+        max_passages: int = 5,
         context_tokens: int = 4096,
         output_tokens: int = 512,
         min_score: float | None = None,
+        relative_margin: float | None = 0.025,
         answer_mode: str = "evidence",
     ) -> dict:
         if answer_mode not in {"evidence", "synthesis"}:
@@ -268,6 +290,7 @@ class OllamaGenerator:
             context_tokens=context_tokens,
             output_tokens=output_tokens,
             min_score=min_score,
+            relative_margin=relative_margin,
             system_prompt=EVIDENCE_PROMPT
             if answer_mode == "evidence"
             else SYSTEM_PROMPT,

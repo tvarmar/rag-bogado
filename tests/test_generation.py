@@ -254,3 +254,62 @@ def test_prepare_context_prioritizes_articles_over_recitals(query):
     assert len(sources) == 1
     assert sources[0]["article"] == "Artículo 4"
     assert sources[0]["unit_type"] == "article"
+
+
+def test_prepare_context_applies_relative_score_margin(query):
+    query["results"] = [
+        {
+            "score": 0.90,
+            "chunk": {
+                "text": "Top hit text.",
+                "source": "law.xml",
+                "page_number": 0,
+                "chunk_id": 0,
+                "article": "Artículo 4",
+                "unit_type": "article",
+            },
+        },
+        {
+            "score": 0.89,
+            "chunk": {
+                "text": "Close second text.",
+                "source": "law.xml",
+                "page_number": 0,
+                "chunk_id": 1,
+                "article": "Artículo 4",
+                "unit_type": "article",
+            },
+        },
+        {
+            "score": 0.84,
+            "chunk": {
+                "text": "Distant text.",
+                "source": "law.xml",
+                "page_number": 0,
+                "chunk_id": 2,
+                "article": "Artículo 66",
+                "unit_type": "article",
+            },
+        },
+    ]
+    sources, _ = prepare_context(query, max_passages=5, relative_margin=0.025)
+    assert len(sources) == 2
+    assert [s["chunk_id"] for s in sources] == [0, 1]
+
+
+def test_prepare_context_retains_low_confidence_passages_without_strict_margin(query):
+    query["results"] = [
+        {
+            "score": 0.65,
+            "chunk": {
+                "text": f"Low score passage {i}.",
+                "source": "law.xml",
+                "page_number": i,
+                "chunk_id": i,
+            },
+        }
+        for i in range(5)
+    ]
+    query["results"][1]["score"] = 0.55
+    sources, _ = prepare_context(query, max_passages=5, relative_margin=0.025)
+    assert len(sources) == 5

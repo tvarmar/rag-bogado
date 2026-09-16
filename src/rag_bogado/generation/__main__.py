@@ -21,7 +21,13 @@ def main():
     )
     parser.add_argument("--model", default="qwen3:4b-instruct")
     parser.add_argument("--retrieve-k", type=int, default=10)
-    parser.add_argument("--max-passages", type=int, default=10)
+    parser.add_argument("--max-passages", type=int, default=5)
+    parser.add_argument(
+        "--relative-margin",
+        type=float,
+        default=0.025,
+        help="Discard passages whose score drops below max_score - relative_margin",
+    )
     parser.add_argument(
         "--search-count",
         type=int,
@@ -49,6 +55,7 @@ def main():
             context_tokens=args.context_tokens,
             output_tokens=args.output_tokens,
             min_score=args.min_score,
+            relative_margin=args.relative_margin,
             answer_mode=args.answer_mode,
         )
         if args.evidence_json:
