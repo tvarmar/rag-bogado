@@ -60,6 +60,22 @@ def answer_questions(
                 "claims": [],
                 "sources": [],
             }
+        if result.get("support_review", {}).get("status") == "rejected":
+            result["answer_state"] = "review_rejected"
+            result["display_message"] = (
+                "La respuesta generada no superó la comprobación de respaldo "
+                "en las fuentes. Esta pregunta sigue sin respuesta validada."
+            )
+        elif result["status"] == "insufficient_evidence":
+            result["answer_state"] = "abstained"
+            result["display_message"] = (
+                "No se ha obtenido una respuesta con la evidencia seleccionada."
+            )
+        elif result["status"] == "error":
+            result["answer_state"] = "error"
+            result["display_message"] = "No se pudo procesar esta pregunta."
+        else:
+            result["answer_state"] = "answered"
         answers.append(dict(result, question_id=question_id))
     statuses = {a["status"] for a in answers}
     if statuses == {"answered"}:
@@ -75,6 +91,15 @@ def answer_questions(
         "status": status,
         "decomposition": decomposition,
         "answers": answers,
+        "unanswered_questions": [
+            {
+                "question_id": a["question_id"],
+                "question": a["question"],
+                "reason": a["answer_state"],
+            }
+            for a in answers
+            if a["answer_state"] != "answered"
+        ],
         "wall_seconds": time.perf_counter() - started,
         "semantic_support_reviewed": False,
     }

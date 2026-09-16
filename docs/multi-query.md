@@ -141,3 +141,54 @@ Observed exact-passage pipeline times were approximately 4–5 seconds (simple),
 13–14 seconds (compound) and 9–10 seconds (mixed). Synthesis runs took approximately
 14–36 seconds. These are individual cache/order-dependent measurements, not a
 controlled latency benchmark. No held-out cases or new models were used.
+
+## Joint development review
+
+The [nine-case review sheet](development-review.md) starts with a saved real answer
+and keeps user judgments pending until supplied. Run cases incrementally with
+`--dataset src/rag_bogado/evaluation/datasets/development-review.json --case d02
+--search-count 1`. The original three default cases remain unchanged. The dataset
+loader selects only `development`, never `held_out`.
+
+## Group related actions without dropping questions
+
+Updated question separation keeps coordinated actions with the same interrogative,
+object and context together. It uses generic examples outside the legal corpus;
+there are no rules for specific articles or expected legal answers. If the model
+returns only one question, the original user text is retained deterministically:
+separation must not become a lossy rewrite. The proposed text and whether it was
+restored remain visible in `decomposition`.
+
+For the development compound request, the final decomposition is now:
+
+1. ¿Quién debe procurar la alfabetización en IA?
+2. ¿Cuándo debe prepararse y actualizarse la documentación técnica de una IA de alto riesgo?
+
+The second question still contains two requested aspects; a two-question split
+does not prove the generated answer covers both. Earlier reference reports retain
+the historical three-question split.
+
+Every processed question has `answer_state`: `answered`, `review_rejected`,
+`abstained` or `error`. Unanswered parts have a user-facing `display_message` and
+also appear in `unanswered_questions`. A reviewer rejection is distinct from not
+obtaining an answer from selected evidence. Existing `status` values are preserved
+for compatibility. `answered` remains an execution/model outcome, not legal approval.
+
+The old d03 A run did extract all questions: the reviewer subsequently rejected
+literacy and preparation. Grouping alone does not fix those synthesis failures.
+The new state/message fields prevent downstream presentation from silently skipping
+such parts. UI consumers should render every answer block, not only nonempty claims.
+
+[Question-grouping evaluation](../src/rag_bogado/evaluation/reports/question-grouping.json)
+records nine development cases before and after the single-question protection.
+The initial prompt-only attempt lost a subject in d04; that failure is retained.
+After protection, the reviewed nine outputs preserve the intended requests.
+
+```bash
+uv run python scripts/evaluate_multi_query.py \
+  --dataset src/rag_bogado/evaluation/datasets/development-review.json \
+  --split-only --output-dir data/evaluation/question-grouping-new
+```
+
+This command performs no retrieval or generation of answers and never selects the
+held-out split. Its `separated` status is execution success, not a semantic score.

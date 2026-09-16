@@ -218,3 +218,14 @@ from the repository root; add `--answer-mode synthesis` for the guarded synthesi
 comparison. The output retains blank human labels and does not infer quality from
 execution status. Reference reports are `reports/multi-query-evidence.json` and
 `reports/multi-query-synthesis.json`; the latter records false automated approvals.
+
+For joint manual evaluation, use [the review sheet](../../../docs/development-review.md)
+and `datasets/development-review.json`. The first case reuses a saved real output;
+`reports/development-review-progress.json` keeps user judgments explicitly pending.
+
+## Fixed-source synthesis replay
+
+See [the September 16 experiment](../../../docs/synthesis-replay.md) for controlled
+replay of saved d02/d03 sources, prompt comparisons, and remaining reviewer failures.
+`scripts/review_saved_answer.py --source-mode all` also accepts rejected synthesis
+with saved sources; it fails before inference if context assembly drops any source.

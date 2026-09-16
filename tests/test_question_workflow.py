@@ -244,3 +244,63 @@ def test_pipeline_searches_twice_but_generates_once_per_original_question():
 def test_invalid_search_count_rejected_before_model_call():
     with pytest.raises(ValueError, match="Search count"):
         answer_questions("Original", None, None, search_count=3)
+
+
+def test_rejected_first_question_remains_visible_when_second_answers():
+    generator = FakeGenerator(["Who?", "When install and remove?"])
+    generate = generator.generate
+
+    def respond(query, **options):
+        if query["question"] == "Who?":
+            return dict(
+                query,
+                status="insufficient_evidence",
+                claims=[],
+                sources=[],
+                support_review={"status": "rejected"},
+            )
+        return generate(query, **options)
+
+    generator.generate = respond
+    result = answer_questions("Who and when?", generator, retrieve, search_count=1)
+    assert result["status"] == "partial"
+    assert [a["question"] for a in result["answers"]] == [
+        "Who?",
+        "When install and remove?",
+    ]
+    assert result["answers"][0]["answer_state"] == "review_rejected"
+    assert result["answers"][0]["display_message"]
+    assert result["answers"][0]["claims"] == []
+    assert result["answers"][1]["claims"][0]["citations"] == ["Q2-S1"]
+    assert result["unanswered_questions"] == [
+        {"question_id": "Q1", "question": "Who?", "reason": "review_rejected"}
+    ]
+
+
+def test_abstention_error_and_rejection_are_distinct_outcomes():
+    result = answer_questions(
+        "Several",
+        FakeGenerator(["First?", "Missing?", "Failed?"]),
+        retrieve,
+        search_count=1,
+    )
+    assert [a["answer_state"] for a in result["answers"]] == [
+        "answered",
+        "abstained",
+        "error",
+    ]
+    assert [q["reason"] for q in result["unanswered_questions"]] == [
+        "abstained",
+        "error",
+    ]
+
+
+def test_single_question_cannot_drop_an_enumerated_subject():
+    original = "What requirements apply to students and teachers?"
+    generator = FakeGenerator(["What requirements apply to students?"])
+    result = answer_questions(original, generator, retrieve, search_count=1)
+    assert result["decomposition"]["questions"] == [original]
+    assert result["decomposition"]["single_question_restored"] is True
+    assert result["decomposition"]["proposed_questions"] == generator.questions
+    assert generator.contexts[0]["question"] == original
+    assert result["answers"][0]["question"] == original

@@ -52,7 +52,7 @@ def main():
             "compound",
             "¿Quién debe procurar la alfabetización en IA y cuándo debe prepararse "
             "y actualizarse la documentación técnica de una IA de alto riesgo?",
-            3,
+            2,
         ),
         (
             "mixed",

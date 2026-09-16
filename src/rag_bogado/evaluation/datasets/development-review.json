@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "purpose": "Joint development review, not a held-out benchmark or exact-answer test. Do not tune prompts before recording the baseline.",
+  "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+  "development": [
+    {
+      "id": "d01",
+      "kind": "simple",
+      "question": "¿Quién debe procurar la alfabetización en IA?",
+      "requested_parts": [
+        "Identificar los sujetos responsables."
+      ],
+      "review_focus": "Conservar el grado de obligación y las condiciones; no premiar fragmentos solo por mencionar alfabetización."
+    },
+    {
+      "id": "d02",
+      "kind": "paraphrase",
+      "question": "¿A quién le corresponde procurar que el personal sepa utilizar la IA con suficiente formación?",
+      "requested_parts": [
+        "Identificar a quién corresponde adoptar las medidas."
+      ],
+      "review_focus": "Comparar con d01 sin exigir la misma redacción ni los mismos fragmentos."
+    },
+    {
+      "id": "d03",
+      "kind": "compound",
+      "question": "¿Quién debe procurar la alfabetización en IA y cuándo debe prepararse y actualizarse la documentación técnica de una IA de alto riesgo?",
+      "requested_parts": [
+        "Responsables de alfabetización.",
+        "Momento de preparación documental.",
+        "Actualización documental."
+      ],
+      "review_focus": "Comprobar que no se pierde ninguna petición; aceptar agrupaciones que conserven las tres."
+    },
+    {
+      "id": "d04",
+      "kind": "enumerated_subjects",
+      "question": "¿Qué obligaciones de transparencia tienen proveedores y responsables del despliegue?",
+      "requested_parts": [
+        "Obligaciones de transparencia para ambos grupos."
+      ],
+      "review_focus": "Es una petición con dos sujetos; no inventar dos preguntas independientes ni omitir un grupo."
+    },
+    {
+      "id": "d05",
+      "kind": "comparison",
+      "question": "¿Qué diferencias hay entre las obligaciones de proveedores y responsables del despliegue?",
+      "requested_parts": [
+        "Comparar las obligaciones de ambos grupos."
+      ],
+      "review_focus": "Conservar la comparación; advertir límites de cobertura ante una pregunta amplia."
+    },
+    {
+      "id": "d06",
+      "kind": "explicit_questions",
+      "question": "¿Quién debe procurar la alfabetización en IA? ¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?",
+      "requested_parts": [
+        "Responsables de alfabetización.",
+        "Momento de preparación documental."
+      ],
+      "review_focus": "Dos preguntas explícitas; citas y estado separados, sin mezclar evidencia."
+    },
+    {
+      "id": "d07",
+      "kind": "mixed",
+      "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo? ¿Cuál es el número de teléfono del delegado de protección de datos de mi empresa?",
+      "requested_parts": [
+        "Momento de elaboración documental.",
+        "Teléfono concreto de la empresa."
+      ],
+      "review_focus": "Responder la parte con evidencia y abstenerse de inventar el teléfono; no ocultar la parte no respondida."
+    },
+    {
+      "id": "d08",
+      "kind": "near_domain_negative",
+      "question": "¿Qué número de teléfono tiene el delegado de protección de datos de mi empresa?",
+      "requested_parts": [
+        "Teléfono concreto de la empresa."
+      ],
+      "review_focus": "No confundir información general sobre protección de datos con el dato privado solicitado."
+    },
+    {
+      "id": "d09",
+      "kind": "negative",
+      "question": "¿Cuál es la receta de una tortilla de patatas?",
+      "requested_parts": [
+        "Receta solicitada."
+      ],
+      "review_focus": "Abstenerse: el corpus normativo no aporta la receta, aunque el modelo pueda conocerla."
+    }
+  ]
+}

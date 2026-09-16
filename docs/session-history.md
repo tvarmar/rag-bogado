@@ -212,3 +212,16 @@ this September 9 handoff define the current starting point.
 - Reviewed and extended local study notes; `ESTUDIAR.md` remains Git-ignored.
 - These closing notes are a follow-up documentation commit in the same PR.
   Remote checks were running when written; inspect the latest head in GitHub.
+
+## Cierre local — 2026-09-16
+
+- Revisión conjunta de nueve casos, agrupación de preguntas y estados explícitos
+  entregados junto con replay de síntesis y protección contra pérdida de fuentes.
+- Mejora parcial de condiciones/citas en d02/d03; la pertinencia de d03 Q1 y los
+  falsos positivos del revisor siguen abiertos. Evidencia y variantes descartadas
+  en [el experimento](synthesis-replay.md).
+- TODO depurado y reordenado; el plan distingue protecciones implementadas de
+  aceptación semántica pendiente. No se aceptan todavía los hitos 5/6.
+- Commit local autorizado, sin push. Comprobaciones: 134 tests y Ruff correctos;
+  revisión de diff, enlaces y JSON. Las evaluaciones reales no se repitieron para
+  este cierre documental. Los apuntes de estudio permanecen locales.

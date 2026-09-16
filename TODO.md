@@ -1,137 +1,109 @@
 # Pendientes para próximas sesiones
 
-Actualizado: 2026-09-14. Fuente operativa de pendientes; los objetivos completos
-están en [PROJECT_PLAN.md](PROJECT_PLAN.md) y el mapa en [README.md](README.md).
+Actualizado: 2026-09-16. Pendientes operativos; arquitectura y aceptación en
+[PROJECT_PLAN.md](PROJECT_PLAN.md), mapa en [README.md](README.md).
 
-## Punto de partida
+## Primera acción
 
-- Síntesis local y recuperación por pregunta implementadas; aceptación de calidad
-  de los hitos 5/6 pendiente. API e interfaz vendrán después de esa revisión.
-- Rama de entrega: `feat/local-generation`, PR #4 (borrador).
-- Entrega del 2026-09-14 publicada en [PR #4](https://github.com/tvarmar/rag-bogado/pull/4),
-  que sigue como borrador: implementación e informes en `8ed3161`.
-  Estas notas se publican en un commit documental posterior en la misma rama.
-  CI estaba en ejecución al redactar el cierre; comprobar el último head en GitHub
-  al retomar, sin asumir que los checks de un commit anterior lo cubren.
-- Primera acción de la próxima sesión: revisar [el flujo implementado](docs/multi-query.md)
-  y los informes `multi-query-evidence.json` y `multi-query-synthesis.json` en
-  `src/rag_bogado/evaluation/reports/`. Completar la valoración humana de respuestas
-  y fidelidad de reformulaciones antes de ajustar la política.
-- Implementado: original + una reformulación, unión RRF, hasta diez fuentes finales,
-  identidad documental y citas por pregunta. Default conservador: pasajes literales;
-  `--answer-mode synthesis` conserva la síntesis experimental con revisión obligatoria.
-- No repetir instalación: el runtime y los pesos estaban guardados localmente.
-  Para una evaluación real, comprobar disponibilidad y arrancar, si hace falta,
-  con `bash scripts/serve_ollama.sh`.
+Revisar d03 Q1 en [el experimento de síntesis](docs/synthesis-replay.md), comparar
+cada afirmación con su cita y clasificar respaldo, pertinencia y condiciones.
+Conservar las fuentes fijas para probar después un único cambio de selección de
+contexto o revisión. El objetivo inmediato es evitar información periférica
+aceptada por el revisor; no seguir ajustando el prompt sin comparación controlada.
 
-## Tests y comprobaciones
+## Estado actual
 
-No hay tests automatizados fallidos documentados. Última verificación del 2026-09-14:
-`uv run pytest`: **125 aprobados**; `.venv/bin/ruff check .` y
-`.venv/bin/ruff format --check .`: correctos. `git diff --check`: correcto.
-
-Evaluaciones reales: dos matrices de seis ejecuciones (una/dos búsquedas para
-preguntas simple, compuesta y mixta), doce respuestas por modo. Guardadas en
-`src/rag_bogado/evaluation/reports/multi-query-{evidence,synthesis}.json`.
-Todos los textos devueltos en modo literal coinciden exactamente con sus citas.
-La síntesis tuvo falsos positivos del revisor: no está aceptada como fiable.
-No se ejecutaron casos held-out. La comparación anterior de contexto se conserva.
-
-Comandos de referencia:
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run ruff format --check .
-```
-
-Si falla un test, registrar aquí: fecha, comando y nodo `archivo::test`, error
-observado, archivo de implementación confirmado o candidato, siguiente diagnóstico
-y criterio de cierre. Si impide ejecutar la suite, clasificarlo como bloqueo de
-entorno. Quitar la entrada tras verificar la corrección.
-
-## Trabajo completado en esta sesión
-
-- Separación de documentación: mapa de archivos, plan, TODO e historial.
-- Diagnóstico y comparación de selección de contexto conservados como referencia.
-- Original + una reformulación, fusión RRF, trazabilidad y comparación de una/dos búsquedas.
-- Respuestas literales por defecto y síntesis experimental con revisión por afirmación.
-- Rúbrica de evaluación, informes reales y tests de regresión; 125 tests aprobados.
-- Apuntes locales de estudio sobre reformulación, RRF, evaluación y límites del juez LLM.
-
-Este resumen fija el punto de partida; la lista de abajo contiene solo pendientes.
+- Recuperación original + reformulación y RRF implementadas, con hasta diez fuentes.
+- Separación de preguntas revisada: acciones coordinadas se mantienen juntas;
+  una única pregunta conserva la entrada literal. Rechazo, abstención y error
+  se muestran por separado, sin ocultar las otras preguntas.
+- Batería de nueve casos de desarrollo y replay de fuentes guardadas disponibles.
+  El replay bloquea pérdida de fuentes por presupuesto antes de llamar al modelo.
+- El prompt compacto mejora condiciones en d02/d03 y cobertura/citas en d03 Q2
+  en las ejecuciones observadas. d03 Q1 aún incluye información periférica y una
+  enumeración truncada que el revisor acepta. Síntesis experimental, no aceptada.
+- El modo literal sigue siendo la protección provisional. El producto objetivo
+  es una síntesis comprensible con fuentes; aceptación de hitos 5/6 pendiente.
+  API e interfaz vendrán después de esa revisión.
 
 ## Próximas tareas, por orden
 
-### 1. Evaluar fidelidad y utilidad de las reformulaciones
+### 1. Resolver pertinencia y falsos positivos de síntesis
 
-- **Estado:** las dos búsquedas y RRF están implementadas sin reglas por pregunta
-  o artículo. Se conservan los resultados exclusivos y se evita contar dos veces
-  una reformulación idéntica. Máximo diez fuentes dentro del presupuesto existente.
-- **Hallazgo:** todas las reformulaciones del experimento literal repitieron la
-  original. Su brazo nominal de dos búsquedas ejecutó una; no demuestra una mejora.
-  El experimento de síntesis sí produjo una reformulación distinta de alfabetización,
-  con posible aumento del grado de obligación («procurar» → «garantizar»).
-- **Revisar:** `src/rag_bogado/generation/multi_query.py`,
-  `scripts/evaluate_multi_query.py`, `tests/test_multi_query.py` y los informes.
-- **Siguiente acción:** añadir preguntas de desarrollo variadas y valorar fidelidad,
-  evidencia útil, cobertura y latencia con la ficha; mantener las reservadas intactas.
-- **Cierre:** comparación con reformulaciones fieles y distintas, sin privilegiar
-  artículos ni exigir una respuesta textual específica. No declarar calibrados umbrales.
+- **Evidencia:** `src/rag_bogado/evaluation/reports/synthesis-replay-2026-09-16.json`:
+  d03 Q1 conserva las condiciones del pasaje principal, pero añade considerandos
+  periféricos. El revisor también aprobó omisiones de condiciones en el baseline.
+- **Archivos candidatos:** `src/rag_bogado/generation/generator.py`, `support.py`
+  en esa carpeta; `tests/test_generation.py`, `tests/test_support.py` y
+  `scripts/review_saved_answer.py`. No hay una única causa confirmada.
+- **Siguiente acción:** clasificar afirmaciones y fuentes; contrastar ejemplos
+  positivos y negativos de desarrollo, comparar un cambio con las mismas fuentes
+  y repetir las ejecuciones. Valorar falsos rechazos además de falsas aprobaciones.
+- **Cierre:** respaldo, pertinencia y condiciones revisados en ejemplos variados
+  y repeticiones. No dar por fiable la síntesis por pasar otro juez ni compensar
+  afirmaciones sin respaldo con una nota media. No prometer cero alucinaciones.
 
-### 2. Resolver los falsos positivos del revisor de síntesis
+### 2. Evaluar fidelidad y utilidad de las reformulaciones
 
-- **Fallo medido:** el revisor aprueba una afirmación de alfabetización sin las
-  condiciones del original y una obligación de preparación inferida de un fragmento
-  cortado. Temperatura cero tampoco produjo veredictos idénticos en repeticiones.
-- **Protección implementada:** el modo por defecto solo permite IDs y copia íntegro
-  el chunk citado. No incorpora redacción factual del LLM. Esto verifica procedencia,
-  pero no pertinencia, contexto completo ni aplicabilidad jurídica.
-- **Revisar:** `src/rag_bogado/generation/support.py`, `generator.py` en esa carpeta,
-  `tests/test_support.py`, `tests/test_generation.py`, informe `multi-query-synthesis.json`.
-- **Siguiente acción:** revisión humana de falsos positivos y falsos rechazos con la
-  ficha. La síntesis es explícitamente experimental; no promoverla por pasar otro juez.
-- **Cierre:** respaldo y condiciones revisados en ejemplos variados. No usar una nota
-  media para compensar afirmaciones no respaldadas ni prometer cero alucinaciones.
+- **Evidencia:** las reformulaciones del experimento literal repiten la original;
+  no demuestran una mejora por dos búsquedas. Una reformulación de síntesis podría
+  aumentar la obligación («procurar» → «garantizar»). d02 A/B coinciden.
+- **Archivos:** `src/rag_bogado/generation/multi_query.py`,
+  `scripts/evaluate_multi_query.py`, `tests/test_multi_query.py` y los informes
+  `multi-query-{evidence,synthesis}.json` en el paquete de evaluación.
+- **Siguiente acción:** preguntas variadas de desarrollo con reformulaciones
+  distintas; comparar fidelidad, evidencia útil, cobertura y latencia.
+- **Cierre:** comparación con reformulaciones fieles y distintas, sin reglas por
+  artículo ni respuesta textual obligatoria. No declarar calibrados umbrales.
 
-### 3. Evitar dividir una enumeración de sujetos en varias preguntas
+### 3. Comprobar generalización y cobertura de preguntas compuestas
 
-- **Fallo semántico observado:** una petición sobre dos categorías de sujetos
-  puede separarse de más. La comparación y la consulta simple medidas se conservan.
-- **Revisar/candidatos:** `src/rag_bogado/generation/questions.py`,
-  `tests/test_question_workflow.py`, `scripts/evaluate_question_workflow.py`,
-  `src/rag_bogado/evaluation/reports/question-workflow.json`.
-- **Siguiente acción:** recuperar el ejemplo fallido del informe y comparar con
-  preguntas compuestas reales. Un fake determinista no valida la fidelidad del LLM.
-- **Cierre:** evaluación real que conserve la enumeración como una petición sin
-  perder separación de preguntas independientes, citas propias ni errores parciales.
+- **Evidencia:** nueve casos de desarrollo preservan sus peticiones en la
+  descomposición; la última síntesis de d03 Q2 cubre preparación y actualización.
+  Eso no acredita generalización ni cobertura de otras preguntas.
+- **Archivos:** `src/rag_bogado/generation/questions.py`, `service.py` en esa carpeta,
+  `scripts/evaluate_multi_query.py --split-only`, `tests/test_question_workflow.py`.
+- **Siguiente acción:** añadir entradas de desarrollo y revisar por separado
+  descomposición y cobertura de cada aspecto en la respuesta final.
+- **Cierre:** todas las peticiones conservadas y cada aspecto respondido o señalado
+  explícitamente como pendiente, incluidos rechazos y errores.
 
-### 4. Ampliar evaluación y fijar criterios de aceptación
+### 4. Completar revisión humana y criterios de aceptación
 
-- **Revisar/candidatos:** `src/rag_bogado/evaluation/datasets/generation.json`,
-  `src/rag_bogado/evaluation/datasets/questions.json`,
-  `src/rag_bogado/evaluation/metrics.py`, `scripts/evaluate_generation.py`,
-  `src/rag_bogado/evaluation/README.md`.
-- **Siguiente acción:** añadir ejemplos revisados de desarrollo y pasajes
-  relevantes/irrelevantes. Calibrar cualquier umbral solo tras medir; reservar los
-  casos held-out hasta fijar la política y después evaluarlos una vez.
-- **Cierre:** criterios acordados y resultados de respaldo, cobertura, abstención
-  y latencia documentados antes de dar por aceptados los hitos 5/6.
+- **Pendiente humano:** en d01 la redacción gustó y la recuperación se consideró
+  pertinente, pero el respaldo no está aprobado. Comentario global de d02/d03
+  pendiente; no exigir puntuaciones caso por caso. Las observaciones del asistente
+  del 16 de septiembre no sustituyen esa valoración.
+- **Archivos:** `docs/development-review.md`, `docs/development-review-batch.md`,
+  `src/rag_bogado/evaluation/reports/development-review-progress.json`, datasets
+  `generation.json` y `questions.json`, `metrics.py` y `README.md` del paquete de
+  evaluación; `scripts/evaluate_generation.py`.
+- **Siguiente acción:** ampliar ejemplos revisados y acordar criterios de respaldo,
+  cobertura, abstención y latencia. Calibrar umbrales solo después de medir.
+- **Cierre:** política fijada y evaluación final de casos reservados una vez;
+  resultados documentados antes de aceptar hitos 5/6. Mantener held-out intacto
+  durante el desarrollo.
 
-## Entrega y bloqueos
+## Comprobaciones y entrega
 
-- [ ] Mantener PR #4 como borrador mientras siga pendiente la aceptación semántica.
-  Verificar CI del último head antes de proponer un merge.
-- Código, documentación e informes publicados en `8ed3161`; cierre documental
-  en la misma PR. No hay una publicación de implementación pendiente.
-- `ESTUDIAR.md` permanece local e ignorado por Git; no forma parte de la publicación.
-- No hay otros bloqueos de entorno confirmados. Las evaluaciones reales requieren
-  corpus, índice y modelo locales; los tests deterministas no los necesitan.
+- 2026-09-16: `.venv/bin/pytest`, **134 aprobados**; `.venv/bin/ruff check .`,
+  `.venv/bin/ruff format --check .` y `git diff --check`, correctos.
+  Enlaces relativos, rutas y JSON de informes revisados. Sin tests fallidos pendientes.
+- Siete ejecuciones de síntesis guardadas, incluidas variantes descartadas.
+  No se ejecutó held-out ni se estableció fiabilidad entre repeticiones o latencia
+  comparable. No repetir estas evaluaciones para un cambio solo documental.
+- Rama: `feat/local-generation`. Entrega local de esta sesión identificada por
+  el commit `fix: preserve question coverage and improve synthesis review`.
+  Incluye código, tests, documentación e informes pendientes de las últimas sesiones.
+- Sin push: la usuaria ha solicitado commit local. Publicación y CI de esta entrega
+  pendientes. Última comprobación remota en esta conversación: PR #4 abierta como
+  borrador, head `5fab572`, checks correctos; no cubre la entrega local.
+- Mantener [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) como borrador.
+  Al autorizar publicación, hacer push y verificar CI del último commit publicado.
+- No hay bloqueos de entorno confirmados. Runtime y pesos ya instalados; comprobar
+  disponibilidad y arrancar con `bash scripts/serve_ollama.sh` si hace falta.
+- `ESTUDIAR.md` revisado, local e ignorado por Git. No publicar ni marcar conceptos
+  como aprendidos solo por haberlos implementado.
 
-## Cómo mantener esta lista
-
-Conservar solo trabajo pendiente. Para cada nueva tarea: prioridad, problema,
-evidencia/comando, archivos a revisar o corregir, siguiente acción y criterio de
-cierre. Indicar hipótesis y dependencias. Mover decisiones duraderas al plan o a
-una guía; resultados históricos útiles al historial. Seguir [AGENTS.md](AGENTS.md)
-al finalizar y revisar también `ESTUDIAR.md` cuando esté disponible localmente.
+Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
+siguiente diagnóstico y criterio de cierre; retirar lo resuelto después de verificarlo.

@@ -8,11 +8,20 @@ from rag_bogado.generation.generator import GenerationError, OllamaGenerator
 QUESTION_PROMPT = """Identifica las preguntas explícitas sin responderlas.
 Devuelve JSON con questions: una lista ordenada de preguntas autónomas en español.
 Separa peticiones independientes, incluso si comparten signos de interrogación.
+Usa el mínimo número de preguntas que conserve todas las peticiones independientes.
+No conviertas cada verbo en una pregunta. Mantén juntas acciones coordinadas que
+comparten interrogativo, objeto y contexto: una pregunta puede pedir varios aspectos.
+Por ejemplo, '¿Cuándo se solicita y renueva el permiso?' es UNA pregunta que debe
+conservar ambas acciones. '¿Quién autoriza el acceso y cuándo se solicita y renueva
+el permiso?' son DOS: '¿Quién autoriza el acceso?' y '¿Cuándo se solicita y renueva
+el permiso?'. Distintos interrogativos o preguntas explícitas independientes sí
+requieren separación. No omitas la primera petición al procesar las posteriores.
 Cada pregunta debe conservar el sujeto, el tipo de sistema, las condiciones y el
 contexto compartido; sustituye pronombres por su referente cuando sea inequívoco.
 No añadas preguntas implícitas, respuestas, supuestos ni información externa.
 No pierdas ninguna petición. No separes una comparación: comparar A y B es una
 sola pregunta. Tampoco separes una enumeración de sujetos de una misma pregunta.
+En '¿Qué requisitos tienen alumnos y profesores?' conserva ambos sujetos juntos.
 Si hay una sola pregunta, consérvala literalmente. Si la consulta no es una
 pregunta gramatical pero pide información, conserva esa petición.
 Ejemplo: '¿Quién mantiene el equipo y cuándo debe revisarlo?' produce
@@ -84,8 +93,14 @@ def split_questions(question: str, generator: OllamaGenerator) -> dict:
             raise ValueError("Question separation returned duplicates")
     except (ValueError, TypeError, KeyError) as error:
         raise GenerationError(str(error), response) from error
+    proposed_questions = questions
+    if len(questions) == 1:
+        # Separation is not rewriting. Preserve every original subject/condition.
+        questions = [question.strip()]
     return {
         "questions": questions,
+        "proposed_questions": proposed_questions,
+        "single_question_restored": proposed_questions != questions,
         "model": generator.model,
         "semantic_coverage_verified": False,
         "metrics": {

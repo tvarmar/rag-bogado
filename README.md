@@ -54,7 +54,8 @@ rag-bogado/
 ├── tests/                    # Deterministic unit and integration tests
 ├── scripts/                  # serve_ollama.sh, evaluate_generation.py,
 │                            # evaluate_question_workflow.py,
-│                            # compare_saved_contexts.py, evaluate_multi_query.py
+│                            # compare_saved_contexts.py, evaluate_multi_query.py,
+│                            # review_saved_answer.py
 ├── docs/                     # Experiments, multi-query.md, session-history.md
 └── data/                     # Ignored local PDFs, catalog, vectors,
                              # model weights, runtime and evaluation runs

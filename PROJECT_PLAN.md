@@ -356,13 +356,17 @@ Mejoras a evaluar, no asumir:
 
 ## Hito 5 — Generación con LLM
 
-Actualización 2026-09-14: implementadas pregunta original + una reformulación,
-fusión RRF y hasta diez fuentes dentro del presupuesto. La evaluación separa
-pertinencia, cobertura, respaldo y condiciones, sin respuesta textual exacta.
-La revisión automática por afirmación sigue teniendo falsos positivos medidos.
-El modo predeterminado copia pasajes originales; la síntesis requiere selección
-explícita y sigue pendiente de aceptación. Véase [el flujo](docs/multi-query.md).
+Implementation status — 2026-09-16: original plus one rewrite, RRF fusion,
+question-specific citations, coordinated-question grouping, and explicit rejected,
+abstained and failed outcomes are implemented. Fixed-source replay preserves the
+saved evidence or fails before inference. The compact synthesis prompt improved
+qualifications and coverage in observed d02/d03 runs, but irrelevant claims and
+reviewer false positives remain. See [the experiment](docs/synthesis-replay.md).
 
+The target remains readable synthesis with inspectable original sources. Literal
+passage output is a temporary protection. Milestones 5/6 are not accepted yet;
+retrieval relevance, answer support, coverage and readability need separate review.
+Operational next steps belong in [TODO.md](TODO.md).
 
 ### Multi-passage synthesis and context selection
 
@@ -404,13 +408,15 @@ Tareas:
 - [x] Crear interfaz/clase de generación
 - [x] Diseñar prompt
 - [x] Entregar al LLM solo contexto recuperado
-- [ ] Definir comportamiento cuando falta evidencia
+- [x] Implement empty-evidence abstention and explicit rejected/error outcomes.
+- [ ] Validate semantic abstention on reviewed positive and negative cases.
 - [x] Separar respuesta generada de fragmentos originales
 - [x] Tests de casos básicos
 - [ ] Aprender y documentar tokens, ventana de contexto, embeddings frente a generación, temperatura y cuantización usando ejemplos del proyecto.
 - [x] Seleccionar un modelo instruct local tras medir memoria y latencia en el equipo disponible; fijar su versión y presupuesto de contexto.
 - [ ] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
-- [ ] Asociar citas con IDs de fragmentos entregados al LLM y comprobar que los IDs citados existen; revisar también si el texto respalda cada afirmación.
+- [x] Associate citations with supplied source IDs and reject unknown IDs.
+- [ ] Establish semantic support for every claim; automated review still has false positives.
 
 Respuesta objetivo:
 
@@ -449,11 +455,13 @@ Source
 
 ## Hito 6 — Evidencia y seguridad de respuesta
 
-- [ ] Estrategia para evidencia insuficiente
-- [ ] Responder explícitamente cuando no se pueda justificar una respuesta
+- [x] Implement fail-closed handling for absent evidence and rejected synthesis.
+- [x] Show unanswered questions with distinct rejection, abstention and error states.
+- [ ] Validate the sufficiency policy with reviewed examples, including false rejections.
 - [ ] No usar conocimiento general del LLM como sustituto de documentos
-- [ ] Registrar chunks usados en cada respuesta
-- [ ] Tests de preguntas sin respuesta
+- [x] Record supplied chunks, citation IDs and document/version identity for each answer.
+- [x] Test empty-evidence abstention and preservation of unanswered questions with deterministic fakes.
+- [ ] Validate abstention with real questions outside the corpus.
 - [ ] Evaluar alucinaciones y citas
 - [ ] No interpretar la similitud como probabilidad de respuesta correcta ni decidir suficiencia solo porque existan resultados top-k.
 - [ ] Evaluar conjuntamente corrección, respaldo de afirmaciones y abstención con respuestas revisadas manualmente; un juez LLM es opcional y no sustituye esas referencias.
@@ -503,6 +511,9 @@ MVP sencillo.
 - [ ] Fuentes visibles
 - [ ] Página
 - [ ] Fragmentos originales
+- [ ] Abrir desde la cita la versión original del documento en la página correspondiente.
+- [ ] Explorar resaltado del pasaje en el visor; comprobar si requiere conservar coordenadas
+  de extracción. Mejora posterior de interfaz, sin bloquear la evaluación actual.
 - [ ] Mensaje claro si no existe evidencia
 
 Opciones:
@@ -1019,7 +1030,7 @@ No añadir sin una necesidad clara:
 
 # 11. Estado de los hitos
 
-Estado de implementación registrado el 2026-09-11. Los pendientes operativos,
+Estado de implementación registrado el 2026-09-16. Los pendientes operativos,
 fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
 
 | Milestone | Current state |
@@ -1029,8 +1040,8 @@ fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
 | 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
 | 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
 | 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
-| 5 / 6 — Generation and evidence | Synthesis and separate question workflow implemented; evidence quality acceptance pending |
-| 7 / 8 — API and interface | After the first evaluated terminal synthesis |
+| 5 / 6 — Generation and evidence | Question grouping, explicit outcomes and fixed-source replay implemented; synthesis support/relevance acceptance pending |
+| 7 / 8 — API and interface | After the pending terminal synthesis quality review |
 | 9 / 12B — Packaging and observability | After the local MVP; logs can be added as needed |
 | 10 — BOE / EUR-Lex synchronization | After the local MVP |
 | 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
