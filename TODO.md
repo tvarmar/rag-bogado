@@ -22,6 +22,11 @@ aceptada por el revisor; no seguir ajustando el prompt sin comparación controla
 - El prompt compacto mejora condiciones en d02/d03 y cobertura/citas en d03 Q2
   en las ejecuciones observadas. d03 Q1 aún incluye información periférica y una
   enumeración truncada que el revisor acepta. Síntesis experimental, no aceptada.
+- Migración completa de PDF a XML oficial (`src/rag_bogado/ingestion/xml_loader.py`):
+  eliminado PyMuPDF (`pymupdf`), eliminado `loader.py` y `chunk_page`. Ahora se parsean
+  unidades semánticas (`LegalUnit`: artículos, considerandos y anexos) y se dividen
+  respetando oraciones completas y prefijos jurídicos. Integrados metadatos (`article`,
+  `unit_type`) en Qdrant y priorización de artículos frente a considerandos en generación.
 - El modo literal sigue siendo la protección provisional. El producto objetivo
   es una síntesis comprensible con fuentes; aceptación de hitos 5/6 pendiente.
   API e interfaz vendrán después de esa revisión.
@@ -86,22 +91,13 @@ aceptada por el revisor; no seguir ajustando el prompt sin comparación controla
 
 ## Comprobaciones y entrega
 
-- 2026-09-16: `.venv/bin/pytest`, **134 aprobados**; `.venv/bin/ruff check .`,
-  `.venv/bin/ruff format --check .` y `git diff --check`, correctos.
-  Enlaces relativos, rutas y JSON de informes revisados. Sin tests fallidos pendientes.
-- Siete ejecuciones de síntesis guardadas, incluidas variantes descartadas.
-  No se ejecutó held-out ni se estableció fiabilidad entre repeticiones o latencia
-  comparable. No repetir estas evaluaciones para un cambio solo documental.
-- Rama: `feat/local-generation`. Entrega local de esta sesión identificada por
-  el commit `fix: preserve question coverage and improve synthesis review`.
-  Incluye código, tests, documentación e informes pendientes de las últimas sesiones.
-- Sin push: la usuaria ha solicitado commit local. Publicación y CI de esta entrega
-  pendientes. Última comprobación remota en esta conversación: PR #4 abierta como
-  borrador, head `5fab572`, checks correctos; no cubre la entrega local.
+- 2026-09-16: `uv run pytest`, **126 aprobados** (suite completa adaptada a XML determinista);
+  `uv run ruff check .`, `uv run ruff format --check .` y `git diff --check`, correctos.
+  Dependencia `pymupdf` eliminada de `pyproject.toml` y `uv.lock`. Módulo `loader.py`
+  reemplazado por `xml_loader.py`.
+- Rama: `feat/local-generation`. Entrega de migración a XML en commit `ce6e5f1`.
+- Push autorizado por la usuaria; verificación de CI pendiente tras el push.
 - Mantener [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) como borrador.
-  Al autorizar publicación, hacer push y verificar CI del último commit publicado.
-- No hay bloqueos de entorno confirmados. Runtime y pesos ya instalados; comprobar
-  disponibilidad y arrancar con `bash scripts/serve_ollama.sh` si hace falta.
 - `ESTUDIAR.md` revisado, local e ignorado por Git. No publicar ni marcar conceptos
   como aprendidos solo por haberlos implementado.
 

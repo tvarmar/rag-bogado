@@ -1,7 +1,8 @@
 # RAG-Bogado
 
 A learning project for retrieval-augmented generation over regulatory documents.
-The current implementation extracts PDFs, normalizes text, creates chunks, and
+The current implementation parses regulatory XML documents (such as BOE / EUR-Lex),
+preserves structured legal units (recitals, articles, annexes), creates chunks, and
 retrieves passages using embeddings. Experimental local LLM synthesis with source
 citations is available in the terminal. A user interface and BOE synchronization
 remain planned.
@@ -15,7 +16,7 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
-Tests use a fake embedding model and temporary PDFs. They do not need a local
+Tests use a fake embedding model and synthetic XML fixtures. They do not need a local
 corpus, model downloads, or Internet access. Installing dependencies initially
 requires a connection. GitHub Actions runs these checks on pushes and pull
 requests using the lockfile; semantic evaluation runs separately.
@@ -41,7 +42,7 @@ rag-bogado/
 ├── pyproject.toml / uv.lock   # Dependencies and reproducible environment
 ├── .github/workflows/ci.yml   # Automated tests and Ruff checks
 ├── src/rag_bogado/
-│   ├── ingestion/            # loader.py, normalizer.py, chunker.py
+│   ├── ingestion/            # xml_loader.py, normalizer.py, chunker.py
 │   ├── retrieval/            # embeddings.py, retriever.py,
 │   │                        # persistent_retriever.py, vector_store.py
 │   ├── indexing/             # indexer.py, catalog.py, configuration.py,
@@ -57,7 +58,7 @@ rag-bogado/
 │                            # compare_saved_contexts.py, evaluate_multi_query.py,
 │                            # review_saved_answer.py
 ├── docs/                     # Experiments, multi-query.md, session-history.md
-└── data/                     # Ignored local PDFs, catalog, vectors,
+└── data/                     # Ignored local XML documents, catalog, vectors,
                              # model weights, runtime and evaluation runs
 ```
 
@@ -119,21 +120,21 @@ API reference: [official Qdrant client documentation](https://github.com/qdrant/
 Index the local AI Act and activate it only after verifying every expected point:
 
 ```bash
-uv run python -m rag_bogado.indexing index data/documents/eu_ai_act.pdf --document-id eu_ai_act --title "EU AI Act"
-uv run python -m rag_bogado.indexing query --document-id eu_ai_act "¿Qué obligaciones de transparencia se establecen?" --top-k 5
-uv run python -m rag_bogado.indexing history --document-id eu_ai_act
+uv run python -m rag_bogado.indexing index data/documents/eu_ai_act.xml --document-id eu_ai_act_xml --title "EU AI Act (XML)"
+uv run python -m rag_bogado.indexing query --document-id eu_ai_act_xml "¿Qué obligaciones de transparencia se establecen?" --top-k 5
+uv run python -m rag_bogado.indexing history --document-id eu_ai_act_xml
 uv run python -m rag_bogado.indexing failures
 ```
 
 The stable `--document-id` identifies the logical document; use the same ID when
 indexing an updated copy. SHA-256 distinguishes original versions. Indexing retains
-each PDF under `data/catalog/originals/` and records model revision, processing
+each XML under `data/catalog/originals/` and records model revision, processing
 configuration, collection location, timestamps, and indexing outcomes in SQLite.
 Repeating the same index reuses its vectors and document version, while recording
 a new attempt. Use `--catalog PATH` before the subcommand to choose another catalog.
 
 The query command loads the active collection and pinned local model from SQLite.
-It does not read, normalize, chunk, or embed the PDF. Output contains retrieved
+It does not read, normalize, chunk, or embed the XML. Output contains retrieved
 passages and scores plus document/version/index identity and the retained original
 path. This command returns evidence; use the separate generation command below
 for experimental synthesis and insufficient-evidence handling.
@@ -154,7 +155,7 @@ and old collections are retained. This local workflow uses Qdrant's path lock an
 does not support concurrent writers across independently configured store paths.
 
 Queries select only the active collection and reject a missing/incomplete one.
-Failures before a run starts (such as invalid PDFs or an unavailable model) are
+Failures before a run starts (such as invalid XML documents or an unavailable model) are
 reported by the command but are not indexing-run records. Catalog paths are local
 absolute paths; moving data requires updating/rebuilding the catalog. Automatic
 schema migrations and official-source/version metadata remain future work.

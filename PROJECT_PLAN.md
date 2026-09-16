@@ -141,52 +141,43 @@ Los módulos futuros se describen en sus hitos; no crearlos antes de necesitarlo
 
 ## Hito 1 — Ingesta documental
 
-### PDF
+### Ingesta estructurada (XML oficial) y pivote desde PDF
 
-- [x] Evaluar `pypdf`
-- [x] Detectar problemas de extracción
-- [x] Migrar a PyMuPDF
-- [x] Crear `Page`
-- [x] Extraer texto por página
-- [x] Conservar `page_number`
-- [x] Conservar `source`
-- [x] Eliminar cabecera y pie mediante posición
-- [ ] Hacer configurable la estrategia de márgenes por fuente
-- [x] Revisar uso de context manager para cerrar documentos
+- [x] Evaluar extracción inicial en PDF y límites de división por página/caracteres
+- [x] Decisión de arquitectura (septiembre 2026): migración completa a XML oficial (BOE / EUR-Lex)
+- [x] Eliminar dependencia de PyMuPDF y parseo frágil por caracteres/páginas
+- [x] Implementar `load_xml()` para extraer unidades jurídicas semánticas (`LegalUnit`)
+- [x] Extraer considerandos desde tablas (`recital`)
+- [x] Extraer artículos y títulos normativos (`article`)
+- [x] Extraer anexos normativos (`annex`)
+- [x] Conservar identificador de norma, número y título
 
 ### Normalización
 
 - [x] Normalizar espacios horizontales
 - [x] Conservar saltos de línea significativos
 - [x] Colapsar exceso de líneas vacías
-- [x] Evitar correcciones manuales agresivas
+- [x] Limpiar preámbulos y banners de navegadores en XML
 
-### Chunking
+### Chunking semántico jurídico
 
-- [x] Crear `Chunk`
-- [x] Chunking por tamaño
-- [x] Overlap
-- [x] Evitar cortes de palabras
-- [x] Evitar pérdida de contenido
-- [x] Validar `chunk_size`
-- [x] Validar `overlap`
+- [x] Crear `Chunk` con metadatos de unidad (`article`, `unit_type`)
+- [x] Agrupar párrafos bajo el prefijo normativo (ej. `Artículo 4. Alfabetización...`)
+- [x] Subdivisión por oraciones completas respetando puntuación si la unidad excede `max_chunk_size`
 - [x] Soportar texto vacío
-- [x] Probar con el AI Act real
-- [x] Establecer baseline `chunk_size=800`, `overlap=120`
-- [x] Crear IDs globalmente únicos/estables
-- [ ] Evaluar chunking jurídico por artículos/apartados
-- [ ] Añadir metadatos: artículo, apartado, sección, capítulo
+- [x] Probar con el AI Act real en XML (180 considerandos, 113 artículos, 13 anexos)
+- [x] Crear IDs globalmente únicos/estables por unidad y corte
 
 Resultado actual:
 
 ```text
-PDF
+XML oficial (BOE / EUR-Lex)
  ↓
-Page
+LegalUnit (artículo, considerando, anexo)
  ↓
 normalización
  ↓
-Chunk + metadatos
+Chunk + metadatos jurídicos (article, unit_type)
 ```
 
 ---
@@ -732,9 +723,9 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 
 ### Ser capaz de explicar
 
-- [ ] por qué PyMuPDF;
-- [ ] por qué conservar páginas;
-- [ ] por qué overlap;
+- [ ] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
+- [ ] por qué no depender de páginas arbitrarias de PDF;
+- [ ] por qué corte por oraciones completas y prefijo normativo;
 - [ ] limitación de chunks grandes;
 - [ ] por qué E5;
 - [ ] diferencia retrieval/generación;
@@ -756,9 +747,9 @@ Una función o clase debe tener una responsabilidad principal.
 Bien:
 
 ```text
-load_pdf()
+load_xml()
 normalize_text()
-chunk_page()
+chunk_legal_units()
 embed_query()
 search()
 ```
@@ -899,7 +890,7 @@ en lugar de descargar/cargar el modelo real.
 Para comprobar varias capas juntas:
 
 ```text
-PDF → chunks
+XML → chunks
 chunks → Qdrant
 query → Qdrant → resultados
 API → RagService → respuesta
