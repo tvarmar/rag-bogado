@@ -115,29 +115,77 @@ def prepare_context(
 
     if not fits():
         raise ValueError("Question and instructions exceed the context budget")
-    for result in query["results"]:
+    results = query["results"]
+    has_articles = any(
+        (
+            r["chunk"].get("unit_type")
+            if isinstance(r["chunk"], dict)
+            else getattr(r["chunk"], "unit_type", None)
+        )
+        == "article"
+        for r in results
+    )
+    if has_articles:
+        results = sorted(
+            results,
+            key=lambda r: (
+                0
+                if (
+                    r["chunk"].get("unit_type")
+                    if isinstance(r["chunk"], dict)
+                    else getattr(r["chunk"], "unit_type", None)
+                )
+                == "article"
+                else 1
+            ),
+        )
+    for result in results:
         if len(sources) >= max_passages:
             break
         chunk = result["chunk"]
-        if not chunk["text"].strip():
+        text = chunk["text"] if isinstance(chunk, dict) else chunk.text
+        if not text.strip():
             continue
         if min_score is not None and result["score"] < min_score:
             continue
+        page = (
+            chunk.get("page_number", 0)
+            if isinstance(chunk, dict)
+            else chunk.page_number
+        )
+        source_name = (
+            chunk.get("source", "") if isinstance(chunk, dict) else chunk.source
+        )
+        chunk_id = (
+            chunk.get("chunk_id", 0) if isinstance(chunk, dict) else chunk.chunk_id
+        )
+        article = (
+            chunk.get("article")
+            if isinstance(chunk, dict)
+            else getattr(chunk, "article", None)
+        )
+        unit_type = (
+            chunk.get("unit_type")
+            if isinstance(chunk, dict)
+            else getattr(chunk, "unit_type", None)
+        )
         if any(
-            s["page"] == chunk["page_number"]
-            and s["document"] == chunk["source"]
-            and chunk["text"] in s["text"]
+            s["page"] == page and s["document"] == source_name and text in s["text"]
             for s in sources
         ):
             continue
         source = {
             "id": f"S{len(sources) + 1}",
-            "document": chunk["source"],
-            "page": chunk["page_number"],
-            "chunk_id": chunk["chunk_id"],
+            "document": source_name,
+            "page": page,
+            "chunk_id": chunk_id,
             "version_id": query["version_id"],
-            "text": chunk["text"],
+            "text": text,
         }
+        if article:
+            source["article"] = article
+        if unit_type:
+            source["unit_type"] = unit_type
         sources.append(source)
         if not fits():
             sources.pop()

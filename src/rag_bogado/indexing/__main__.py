@@ -1,4 +1,4 @@
-"""Index a local PDF, query its active version, or inspect indexing history."""
+"""Index an official XML document, query active versions, or inspect history."""
 
 import argparse
 import hashlib
@@ -8,9 +8,7 @@ from pathlib import Path
 from rag_bogado.indexing.catalog import DocumentCatalog
 from rag_bogado.indexing.configuration import index_configuration
 from rag_bogado.indexing.service import publish_index, query_active
-from rag_bogado.ingestion.chunker import chunk_page
-from rag_bogado.ingestion.loader import Page, load_pdf
-from rag_bogado.ingestion.normalizer import normalize_text
+from rag_bogado.ingestion.xml_loader import load_xml_chunks
 from rag_bogado.retrieval.embeddings import EmbeddingModel
 
 
@@ -21,16 +19,16 @@ def main() -> None:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     index = commands.add_parser("index", help="Build and activate a document version")
-    index.add_argument("pdf", type=Path)
+    index.add_argument("document", type=Path, help="XML document to index")
     index.add_argument("--document-id", required=True)
     index.add_argument("--title")
     index.add_argument("--store-path", type=Path, default=Path("data/qdrant"))
     index.add_argument("--model", default="intfloat/multilingual-e5-small")
     index.add_argument("--revision", default="614241f622f53c4eeff9890bdc4f31cfecc418b3")
-    index.add_argument("--chunk-size", type=int, default=800)
+    index.add_argument("--chunk-size", type=int, default=1200)
     index.add_argument("--overlap", type=int, default=120)
     query = commands.add_parser(
-        "query", help="Retrieve active evidence without reading a PDF"
+        "query", help="Retrieve active evidence without reading a document"
     )
     query.add_argument("--document-id", required=True)
     query.add_argument("question")
@@ -50,10 +48,11 @@ def main() -> None:
             elif args.command == "failures":
                 result = catalog.failed_runs()
             else:
-                original = args.pdf.read_bytes()
+                original = args.document.read_bytes()
                 digest = hashlib.sha256(original).hexdigest()
-                # Retain each original independently of future changes to the input PDF.
-                snapshot = args.catalog.parent / "originals" / digest / args.pdf.name
+                snapshot = (
+                    args.catalog.parent / "originals" / digest / args.document.name
+                )
                 snapshot.parent.mkdir(parents=True, exist_ok=True)
                 if snapshot.exists():
                     if hashlib.sha256(snapshot.read_bytes()).hexdigest() != digest:
@@ -63,17 +62,9 @@ def main() -> None:
                 else:
                     with snapshot.open("xb") as destination:
                         destination.write(original)
-                chunks = [
-                    chunk
-                    for page in load_pdf(snapshot)
-                    for chunk in chunk_page(
-                        Page(page.page_number, normalize_text(page.text), page.source),
-                        args.chunk_size,
-                        args.overlap,
-                    )
-                ]
+                chunks = load_xml_chunks(snapshot, max_chunk_size=args.chunk_size)
                 if not chunks:
-                    raise ValueError("PDF contains no indexable text")
+                    raise ValueError("Document contains no indexable text")
                 model = EmbeddingModel(
                     args.model, revision=args.revision, local_files_only=True
                 )
@@ -88,7 +79,7 @@ def main() -> None:
                 result = publish_index(
                     catalog,
                     document_id=args.document_id,
-                    title=args.title or args.pdf.stem,
+                    title=args.title or args.document.stem,
                     source_path=snapshot,
                     chunks=chunks,
                     configuration=configuration,

@@ -223,3 +223,34 @@ def test_default_rejects_invalid_selection_and_model_prose(
     )
     with pytest.raises(ValueError):
         generator.generate(query)
+
+
+def test_prepare_context_prioritizes_articles_over_recitals(query):
+    query["results"] = [
+        {
+            "score": 0.95,
+            "chunk": {
+                "text": "Recital text.",
+                "source": "law.xml",
+                "page_number": 0,
+                "chunk_id": 0,
+                "article": "Considerando (1)",
+                "unit_type": "recital",
+            },
+        },
+        {
+            "score": 0.85,
+            "chunk": {
+                "text": "Article text.",
+                "source": "law.xml",
+                "page_number": 0,
+                "chunk_id": 1,
+                "article": "Artículo 4",
+                "unit_type": "article",
+            },
+        },
+    ]
+    sources, _ = prepare_context(query, max_passages=1)
+    assert len(sources) == 1
+    assert sources[0]["article"] == "Artículo 4"
+    assert sources[0]["unit_type"] == "article"

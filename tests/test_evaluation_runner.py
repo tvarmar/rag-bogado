@@ -6,7 +6,7 @@ import sys
 from types import SimpleNamespace
 
 from rag_bogado.evaluation import runner
-from rag_bogado.ingestion.loader import Page
+from rag_bogado.ingestion.chunker import Chunk
 
 
 def test_evaluation_build_and_reuse_match_memory(tmp_path, monkeypatch):
@@ -49,7 +49,11 @@ def test_evaluation_build_and_reuse_match_memory(tmp_path, monkeypatch):
 
     monkeypatch.setattr(runner, "EmbeddingModel", Model)
     monkeypatch.setattr(
-        runner, "load_pdf", lambda path: [Page(1, "Evidence", corpus.name)]
+        runner,
+        "load_xml_chunks",
+        lambda path, **kw: [
+            Chunk(0, "Evidence", corpus.name, 0, "Artículo 1", "article")
+        ],
     )
     reports = []
     for backend, mode in [

@@ -16,8 +16,8 @@ from rag_bogado.generation.generator import (
 )
 from rag_bogado.indexing.catalog import DocumentCatalog
 from rag_bogado.indexing.service import query_active
-from rag_bogado.ingestion.loader import load_pdf
 from rag_bogado.ingestion.normalizer import normalize_text
+from rag_bogado.ingestion.xml_loader import load_xml
 
 
 def main():
@@ -38,11 +38,21 @@ def main():
     }
     (args.output_dir / "model.json").write_text(json.dumps(metadata, indent=2))
     with DocumentCatalog(Path("data/catalog/catalog.sqlite3")) as catalog:
-        active = catalog.active_index("eu_ai_act")
+        active = catalog.active_index("eu_ai_act_xml") or catalog.active_index(
+            "eu_ai_act"
+        )
     original = Path(active["source_path"])
     assert hashlib.sha256(original.read_bytes()).hexdigest() == active["content_hash"]
-    pages = {p.page_number: normalize_text(p.text) for p in load_pdf(original)}
-    article4 = pages[51].split("CAPÍTULO II")[0].strip()
+    if original.suffix == ".xml":
+        units = load_xml(original)
+        art4 = next(u for u in units if u.identifier == "Artículo 4")
+        article4 = (
+            f"{art4.identifier}. {art4.title}\n{art4.text}".strip()
+            if art4.title
+            else f"{art4.identifier}\n{art4.text}".strip()
+        )
+    else:
+        article4 = normalize_text(original.read_text(errors="ignore"))
     query = {
         "document_id": "eu_ai_act",
         "version_id": active["version_id"],
