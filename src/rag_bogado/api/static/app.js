@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const referencesCountBadge = document.getElementById("references-count");
   const sidebarBadgeCount = document.getElementById("sidebar-badge-count");
 
-  const modeSelect = document.getElementById("mode-select");
   const docsDropdownBtn = document.getElementById("docs-dropdown-btn");
   const docsDropdownMenu = document.getElementById("docs-dropdown-menu");
   const selectAllDocsBtn = document.getElementById("select-all-docs-btn");
@@ -126,9 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="welcome-body">
             <p>
               Hola, soy tu asistente para la consulta y análisis de normativa tecnológica.
-              Mis respuestas se generan con <strong>doble pasada multi-query (RRF)</strong> y
-              <strong>trazabilidad estricta</strong>: cada afirmación se contrasta contra las fuentes y,
-              si la evidencia no existe en el texto legal, declaro explícitamente la abstención en lugar de inventar.
+              Mis respuestas se generan con <strong>trazabilidad estricta</strong>: cada afirmación se contrasta
+              contra las fuentes y, si la evidencia no existe en el texto legal, declaro explícitamente la
+              abstención en lugar de inventar.
             </p>
             <div class="official-doc-box">
               <div class="official-doc-title">Corpus normativo de trabajo:</div>
@@ -210,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const payload = {
       question: text,
       document_id: "eu_ai_act",
-      answer_mode: modeSelect.value,
+      answer_mode: "evidence",
       search_count: 2,
       max_passages: 5
     };
@@ -326,10 +325,9 @@ document.addEventListener("DOMContentLoaded", () => {
           claimsBlock.className = "claims-block";
 
           ans.claims.forEach((claim) => {
-            const p = document.createElement("p");
-            p.className = "claim-p";
-            p.innerHTML = formatTextWithCitations(claim.text, claim.citations);
-            claimsBlock.appendChild(p);
+            const block = document.createElement("div");
+            block.innerHTML = formatLegalEvidenceHtml(claim.text, claim.citations);
+            claimsBlock.appendChild(block);
           });
           subContainer.appendChild(claimsBlock);
         }
@@ -409,12 +407,16 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "reference-card";
       card.id = `ref-card-${src.id}`;
 
+      const cleanPreview = (src.text || "")
+        .replace(/[\s;,]+(?:[a-z]|\d+|(?:i{1,3}|iv|v|vi{0,3}|ix|x))\)\s*$/, "")
+        .trim();
+
       card.innerHTML = `
         <div class="ref-card-header">
           <span class="badge badge-primary">${escapeHtml(src.id)}</span>
           <span class="ref-article-name">${escapeHtml(src.article || "Fragmento normativo")}</span>
         </div>
-        <p class="ref-text-preview">${escapeHtml(src.text)}</p>
+        <p class="ref-text-preview">${escapeHtml(cleanPreview)}</p>
         <div class="ref-actions">
           <button type="button" class="btn-ref-view" data-src-id="${escapeHtml(src.id)}">
             Ver pasaje completo
@@ -427,18 +429,87 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 9. Format Text with Clickable Citation Tags
-  function formatTextWithCitations(text, citations) {
-    let html = escapeHtml(text);
+  // 9. Format Legal Evidence with structured clauses, lists, and citations
+  function formatLegalEvidenceHtml(rawText, citations) {
+    if (!rawText) return "";
+
+    // 1. Clean trailing orphaned markers (e.g. "; b)" cut at chunk boundaries)
+    let text = rawText
+      .replace(/[\s;,]+(?:[a-z]|\d+|(?:i{1,3}|iv|v|vi{0,3}|ix|x))\)\s*$/, "")
+      .trim();
+
+    // 2. Extract article / recital header ONLY when separated by newline
+    let header = "";
+    const lines = text.split("\n");
+    if (
+      lines.length > 1 &&
+      /^(Artículo\s+\d+|Considerando\s+\(\d+\)|ANEXO\s+[IVXLCDM]+)/i.test(lines[0])
+    ) {
+      header = lines[0].trim();
+      text = lines.slice(1).join("\n").trim();
+    }
+
+    // Safety fallback: if text became empty, keep everything in text
+    if (!text) {
+      text = header || rawText;
+      header = "";
+    }
+
+    // 3. Break before numbered clauses (" 1. ", " 2. ") and lists ONLY when preceded by punctuation or newline
+    text = text.replace(/(?<=[.:;])\s+(?=\d+\.\s+)/g, "\n\n");
+    text = text.replace(/(?<=[.:;,])\s+(?=[a-z]\)\s+)/g, "\n\n");
+    text = text.replace(/(?<=[.:;,])\s+(?=(?:i{1,3}|iv|v|vi{0,3}|ix|x)\)\s+)/gi, "\n\n");
+
+    const segments = text.split(/\n{2,}/).map((s) => s.trim()).filter(Boolean);
+
+    let html = `<div class="legal-claim-block">`;
+    if (header) {
+      html += `<div class="legal-article-title">${escapeHtml(header)}</div>`;
+    }
+
+    segments.forEach((seg) => {
+      const letterMatch = seg.match(/^([a-z]\))\s*(.*)$/is);
+      const romanMatch = seg.match(/^((?:i{1,3}|iv|v|vi{0,3}|ix|x)\))\s*(.*)$/is);
+      const numberMatch = seg.match(/^(\d+\.)\s*(.*)$/is);
+
+      if (letterMatch) {
+        html += `
+          <div class="legal-list-item letter-item">
+            <span class="list-marker">${escapeHtml(letterMatch[1])}</span>
+            <div class="list-text">${escapeHtml(letterMatch[2])}</div>
+          </div>
+        `;
+      } else if (romanMatch) {
+        html += `
+          <div class="legal-list-item roman-item">
+            <span class="list-marker roman">${escapeHtml(romanMatch[1])}</span>
+            <div class="list-text">${escapeHtml(romanMatch[2])}</div>
+          </div>
+        `;
+      } else if (numberMatch) {
+        html += `
+          <div class="legal-clause">
+            <span class="clause-marker">${escapeHtml(numberMatch[1])}</span>
+            <div class="clause-text">${escapeHtml(numberMatch[2])}</div>
+          </div>
+        `;
+      } else {
+        html += `<p class="legal-para">${escapeHtml(seg)}</p>`;
+      }
+    });
+
+    // Clean citation tags placed directly at the end of the passage
     if (citations && citations.length > 0) {
       const tags = citations
         .map(
           (cid) =>
-            `<button type="button" class="citation-tag" data-citation="${escapeHtml(cid)}">${escapeHtml(cid)}</button>`
+            `<button type="button" class="citation-tag" data-citation="${escapeHtml(cid)}" title="Ver pasaje en referencias">${escapeHtml(cid)}</button>`
         )
         .join(" ");
-      html += ` ${tags}`;
+      html += `<div class="claim-citations">${tags}</div>`;
     }
+
+    html += `</div>`;
     return html;
   }
 
@@ -474,7 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalPage.textContent = source.page !== undefined ? `Pág. ${source.page} (XML estructurado)` : "Pág. 0";
     modalUnit.textContent = source.unit_type || "article";
     modalChunkId.textContent = source.chunk_id !== undefined ? `#${source.chunk_id}` : "—";
-    modalSourceText.textContent = source.text || "";
+    modalSourceText.innerHTML = formatLegalEvidenceHtml(source.text || "", []);
 
     sourceModal.classList.remove("hidden");
   }
