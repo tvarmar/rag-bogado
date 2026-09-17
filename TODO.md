@@ -5,42 +5,41 @@ Actualizado: 2026-09-17. Pendientes operativos; arquitectura y aceptación en
 
 ## Primera acción
 
-Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
-1. Crear `Dockerfile` optimizado y reproducible para `rag-bogado` (Python 3.12, dependencias `uv`).
-2. Crear `docker-compose.yml` para orquestar la arquitectura local:
-   - Contenedor `rag-bogado-api` exponiendo puerto 8000.
-   - Contenedor `qdrant` oficial exponiendo puerto 6333.
-   - Volúmenes persistentes para `data/qdrant` y `data/catalog`.
-3. Variables de entorno para parametrizar hosts, rutas y puertos.
-4. Validar ejecución y ciclo de vida con `docker compose up` y tests automatizados.
+Revisar y entregar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
+1. Confirmar con la usuaria la entrega en la rama `feat/docker-containerization` (commit, push y apertura de PR).
+2. Nota de entorno: Docker no está instalado en el WSL/Windows local; la configuración está 100% testeada con tests deterministas (`tests/test_docker_setup.py`) y lista para ejecutarse con `docker compose up --build` una vez instalado Docker Desktop o Docker Engine.
+3. Tras la fusión en `main`, iniciar el **Hito 10 — Fuentes oficiales y actualización**:
+   - Adaptador para la API de datos abiertos del BOE.
+   - Consulta de metadatos, descarga por hash y reindexación atómica validada.
 
 ## Estado actual
 
-- **Hito 8 completado y aceptado (2026-09-17):**
-  - Interfaz web interactiva y responsive servida en `/` por FastAPI desde `src/rag_bogado/api/static/` (`index.html`, `styles.css`, `app.js`).
-  - Formulario de consulta con selector dinámico de normas activas (conectado a `GET /health`), modo fijado en evidencia literal contrastada (retirada la síntesis experimental del UI para garantizar máxima fidelidad jurídica) y consulta RRF con top-k acotado.
-  - Presentación estructurada de fragmentos legales: segmentación visual de artículos, cláusulas numeradas (`1.`, `2.`), apartados con letra (`a)`, `b)`) e incisos romanos (`i)`, `ii)`) con sangría y viñetas jurídicas, evitando el texto continuo macizo y depurando marcadores huérfanos en cortes de chunk.
-  - Desglose visual de aspectos y subpreguntas con estados semánticos claros: respondida con evidencia, abstención por falta de evidencia (`insufficient_evidence`) y rechazo de soporte (`review_rejected`).
-  - Bloque de respuesta con citas interactivas (`Q1-S1`) que resaltan y hacen scroll automático hacia el pasaje de evidencia correspondiente.
-  - Panel y modal de fuentes con artículo legal, localizador/página, identificador de chunk y visualización del texto íntegro del pasaje original estructurado.
-  - Diseño *mobile-first* preparado para acceso multiplataforma y adaptable a pantalla completa en smartphones (PWA / Web App) conectándose a `--host 0.0.0.0`.
-  - Tests deterministas en `tests/test_api.py` cubriendo la entrega de HTML y archivos estáticos CSS/JS. Total suite: **139 tests pasando**.
+- **Hito 9 completado y verificado (2026-09-17):**
+  - `Dockerfile` optimizado y reproducible con construcción multietapa (*multi-stage build*), `uv`, Python 3.12 slim, usuario no privilegiado (`appuser`), comprobación de salud (*healthcheck*) periódica en `/health` y servidor Uvicorn en puerto 8000.
+  - `docker-compose.yml` orquestando los servicios `rag-bogado-api` y `qdrant` (oficial v1.13.2) con volúmenes persistentes para `./data/catalog`, `./data/qdrant` y `./data/cache`, resolución DNS interna, healthcheck condicional (`service_healthy`) y acceso al Ollama del host mediante `host.docker.internal`.
+  - `.dockerignore` exhaustivo excluyendo cachés, entornos virtuales y datos locales temporales.
+  - Adaptabilidad de la base de código mediante variables de entorno:
+    - `CATALOG_PATH` y `STATIC_DIR` en `src/rag_bogado/api/app.py`.
+    - `QDRANT_URL` y conexión remota por URL/host/puerto en `src/rag_bogado/retrieval/vector_store.py` y `src/rag_bogado/indexing/service.py`.
+    - `OLLAMA_BASE_URL` y `OLLAMA_HOST` en `src/rag_bogado/generation/generator.py`.
+  - Tests deterministas en `tests/test_docker_setup.py`, `tests/test_vector_store.py`, `tests/test_generation.py`, `tests/test_api.py` y `tests/test_catalog.py`. Total suite: **146 tests pasando**.
+- **Hito 8 completado y fusionado en `main`:**
+  - Interfaz web interactiva y responsive servida en `/` por FastAPI, modo evidencia literal y presentación estructurada de listas y cláusulas jurídicas.
 - **Hito 7 completado y fusionado en `main`:**
-  - API REST FastAPI con schemas Pydantic, OpenAPI y endpoints `/health` y `/ask` integrados.
+  - API REST FastAPI con schemas Pydantic y endpoints `/health` y `/ask`.
 - **Hitos 5 y 6 completados y aceptados:**
   - Casos `d01` a `d09` evaluados; abstención *fail-closed* y multi-query RRF operativos.
 
 ## Próximas tareas, por orden
 
-### 1. Hito 9 — Docker (activa)
-- **Objetivo:** Empaquetar el servicio API y el almacén Qdrant mediante Docker y Docker Compose para ejecución y despliegue reproducible.
-- **Archivos:** `Dockerfile`, `docker-compose.yml`, `.dockerignore`.
-- **Siguiente acción:** Escribir el `Dockerfile` multietapa con `uv` y definir el `docker-compose.yml`.
-- **Cierre:** `docker compose up` levantando ambos servicios interconectados y respondiendo a consultas.
+### 1. Hito 9 — Docker (cierre y entrega)
+- **Objetivo:** Abrir PR de `feat/docker-containerization` a `main`, validar CI y fusionar.
+- **Archivos:** `Dockerfile`, `docker-compose.yml`, `.dockerignore`, `src/`, `tests/`, `README.md`, `PROJECT_PLAN.md`.
+- **Cierre:** CI en verde en GitHub y PR fusionado.
 
 ### 2. Hito 10 — Fuentes oficiales y actualización (pendiente)
 - **Objetivo:** Sincronización automática con la API del BOE y EUR-Lex para detectar cambios normativos, descargar XML consolidado e indexar bajo demanda.
-- **Archivos:** Adaptadores de sincronización e ingesta.
+- **Archivos:** `src/rag_bogado/ingestion/` (adaptador BOE).
 - **Cierre:** Consulta de metadatos, descarga por hash y reindexación atómica validada.
 
 ### 3. Hito 11 — Comparación con LangGraph (pendiente)
@@ -48,14 +47,11 @@ Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
 
 ## Comprobaciones y entrega
 
-- 2026-09-17: `uv run pytest`, **139 aprobados**; `uv run ruff check .`,
+- 2026-09-17: `uv run pytest`, **146 aprobados**; `uv run ruff check .`,
   `uv run ruff format --check .` y `git diff --check`, correctos.
-  Aceptación formal del Hito 8 y criterio de MVP registrados en `PROJECT_PLAN.md`.
-- Rama: `feat/user-interface`.
-- Refinamiento de interfaz (`71bcf74`): modo fijado en evidencia literal y formateo estructurado de enumeraciones normativas (`1.`, `2.`, `a)`, `b)`...).
-- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) actualizado en GitHub; CI verificado y superado al 100% (2/2 checks exitosos tras los commits `71bcf74` y `b7bda2c`).
-- Validación en smartphone completada con éxito; túnel efímero cerrado.
-- `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
+  Aceptación formal del Hito 9 registrada en `PROJECT_PLAN.md` y documentación en `README.md`.
+- Rama: `feat/docker-containerization`.
+- `ESTUDIAR.md` ampliado con fundamentos de Docker, multi-stage builds, redes bridge y volúmenes (local e ignorado por Git).
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
 siguiente diagnóstico y criterio de cierre; retirar lo resuelto después de verificarlo.

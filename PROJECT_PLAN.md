@@ -527,14 +527,14 @@ Docker Compose
 └── qdrant
 ```
 
-- [ ] `Dockerfile`
-- [ ] `docker-compose.yml`
-- [ ] FastAPI en contenedor
-- [ ] Qdrant en contenedor
-- [ ] Persistencia mediante volumen
-- [ ] Variables de entorno
-- [ ] Comunicación entre servicios
-- [ ] Documentar ejecución
+- [x] `Dockerfile`
+- [x] `docker-compose.yml`
+- [x] FastAPI en contenedor
+- [x] Qdrant en contenedor
+- [x] Persistencia mediante volumen
+- [x] Variables de entorno
+- [x] Comunicación entre servicios
+- [x] Documentar ejecución
 
 ---
 
