@@ -55,11 +55,49 @@
         <div class="chat-input-wrapper">
           <!-- Control Pills Bar -->
           <div class="chat-controls-bar">
-            <div class="control-pill">
-              <label for="document-select" class="pill-label">Norma:</label>
-              <select id="document-select" class="pill-select">
-                <option value="eu_ai_act" selected>Reglamento de IA (DOUE-L-2024-81079)</option>
-              </select>
+            <!-- Archivos consultados selector popover -->
+            <div class="control-dropdown-container">
+              <button type="button" id="docs-dropdown-btn" class="control-pill control-pill-btn">
+                <span class="pill-label">Archivos consultados:</span>
+                <span id="docs-selected-label" class="pill-value">Reglamento de IA (1 activo)</span>
+                <span class="dropdown-arrow">▾</span>
+              </button>
+              <div id="docs-dropdown-menu" class="dropdown-popover hidden">
+                <div class="dropdown-popover-header">
+                  <span class="dropdown-popover-title">Corpus normativo</span>
+                  <button type="button" id="select-all-docs-btn" class="btn-text-action">Marcar todos</button>
+                </div>
+                <div class="dropdown-options-list">
+                  <label class="doc-checkbox-item">
+                    <input type="checkbox" id="doc-eu-ai-act" value="eu_ai_act" checked>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Reglamento de IA (DOUE-L-2024-81079)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 113 artículos, 180 considerandos</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-rgpd" value="rgpd" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">RGPD / LOPDGDD (Protección de Datos)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> BOE-A-2018-16673</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-dsa" value="dsa" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Reglamento de Servicios Digitales (DSA)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81577</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-nis2" value="nis2" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Directiva / Ley de Ciberseguridad (NIS2)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81997</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="control-pill">
@@ -67,14 +105,6 @@
               <select id="mode-select" class="pill-select">
                 <option value="evidence" selected>Evidencia (Pasajes literales)</option>
                 <option value="synthesis">Síntesis (Resumen verificado)</option>
-              </select>
-            </div>
-
-            <div class="control-pill">
-              <label for="search-count-select" class="pill-label">Búsquedas:</label>
-              <select id="search-count-select" class="pill-select">
-                <option value="2" selected>Multi-Query (2 con RRF)</option>
-                <option value="1">Directa (1 búsqueda)</option>
               </select>
             </div>
           </div>

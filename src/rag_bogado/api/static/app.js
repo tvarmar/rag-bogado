@@ -14,9 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const referencesCountBadge = document.getElementById("references-count");
   const sidebarBadgeCount = document.getElementById("sidebar-badge-count");
 
-  const documentSelect = document.getElementById("document-select");
   const modeSelect = document.getElementById("mode-select");
-  const searchCountSelect = document.getElementById("search-count-select");
+  const docsDropdownBtn = document.getElementById("docs-dropdown-btn");
+  const docsDropdownMenu = document.getElementById("docs-dropdown-menu");
+  const selectAllDocsBtn = document.getElementById("select-all-docs-btn");
+  const docsSelectedLabel = document.getElementById("docs-selected-label");
+  const docEuAiActCheckbox = document.getElementById("doc-eu-ai-act");
 
   // Modal elements
   const sourceModal = document.getElementById("source-modal");
@@ -67,29 +70,40 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesContainer.innerHTML = "";
     updateReferencesSidebar();
     renderWelcomeMessage();
-    checkHealth();
+    setupDropdownControls();
   }
 
-  // 2. Health check to load active documents
-  async function checkHealth() {
-    try {
-      const res = await fetch("/health");
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.active_documents && data.active_documents.length > 0) {
-        documentSelect.innerHTML = "";
-        data.active_documents.forEach((docId) => {
-          const opt = document.createElement("option");
-          opt.value = docId;
-          opt.textContent =
-            docId === "eu_ai_act"
-              ? "Reglamento de IA (DOUE-L-2024-81079 / BOE)"
-              : docId;
-          documentSelect.appendChild(opt);
-        });
+  // 2. Dropdown & Multi-Select Controls Setup
+  function setupDropdownControls() {
+    if (!docsDropdownBtn || !docsDropdownMenu) return;
+
+    docsDropdownBtn.onclick = (e) => {
+      e.stopPropagation();
+      docsDropdownMenu.classList.toggle("hidden");
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!docsDropdownMenu.classList.contains("hidden") && !docsDropdownMenu.contains(e.target)) {
+        docsDropdownMenu.classList.add("hidden");
       }
-    } catch (e) {
-      console.warn("Health check not reachable:", e);
+    });
+
+    if (selectAllDocsBtn) {
+      selectAllDocsBtn.onclick = (e) => {
+        e.stopPropagation();
+        docEuAiActCheckbox.checked = true;
+        docsSelectedLabel.textContent = "Todos los archivos (1 activo)";
+      };
+    }
+
+    if (docEuAiActCheckbox) {
+      docEuAiActCheckbox.onchange = () => {
+        if (docEuAiActCheckbox.checked) {
+          docsSelectedLabel.textContent = "Reglamento de IA (1 activo)";
+        } else {
+          docsSelectedLabel.textContent = "Ningún archivo";
+        }
+      };
     }
   }
 
@@ -112,18 +126,22 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="welcome-body">
             <p>
               Hola, soy tu asistente para la consulta y análisis de normativa tecnológica.
-              Mis respuestas se generan con <strong>trazabilidad estricta</strong>: cada afirmación
-              se contrasta contra las fuentes y, si la evidencia no existe en el texto legal,
-              declaro explícitamente la abstención en lugar de inventar.
+              Mis respuestas se generan con <strong>doble pasada multi-query (RRF)</strong> y
+              <strong>trazabilidad estricta</strong>: cada afirmación se contrasta contra las fuentes y,
+              si la evidencia no existe en el texto legal, declaro explícitamente la abstención en lugar de inventar.
             </p>
             <div class="official-doc-box">
-              <div class="official-doc-title">Documento activo para búsqueda:</div>
+              <div class="official-doc-title">Corpus normativo de trabajo:</div>
               <p><strong>${escapeHtml(OFFICIAL_DOC_INFO.title)}</strong></p>
-              <div class="official-doc-meta">
+              <div class="official-doc-meta" style="margin-bottom: 0.5rem;">
                 <span><strong>Identificador oficial:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.official_id)}</span> &bull;
                 <span><strong>Origen:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.platform)}</span> &bull;
-                <span><strong>Estructura:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.scope)}</span>
+                <span><strong>Estado:</strong> <span class="badge-mini badge-mini-active">Activo en catálogo</span></span>
               </div>
+              <p style="font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.4rem;">
+                <strong>Próximas incorporaciones del corpus:</strong> RGPD / LOPDGDD (Protección de Datos),
+                Reglamento de Servicios Digitales (DSA) y Ley de Ciberseguridad (NIS2).
+              </p>
             </div>
             <div class="suggested-questions-title">Consultas de ejemplo sugeridas:</div>
             <div class="suggestion-chips" id="welcome-suggestion-chips"></div>
@@ -171,6 +189,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = userInput.value.trim();
     if (!text) return;
 
+    if (docEuAiActCheckbox && !docEuAiActCheckbox.checked) {
+      appendBotErrorMessage(
+        "Ningún archivo seleccionado",
+        "Por favor, selecciona al menos un archivo en 'Archivos consultados' para realizar la consulta."
+      );
+      return;
+    }
+
     // Append User Message
     appendUserMessage(text);
     userInput.value = "";
@@ -183,9 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payload = {
       question: text,
-      document_id: documentSelect.value,
+      document_id: "eu_ai_act",
       answer_mode: modeSelect.value,
-      search_count: parseInt(searchCountSelect.value, 10),
+      search_count: 2,
       max_passages: 5
     };
 

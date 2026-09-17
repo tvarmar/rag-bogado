@@ -458,9 +458,157 @@ html, body {
   font-size: 0.75rem;
 }
 
+.control-pill-btn {
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.control-pill-btn:hover {
+  background-color: #334155;
+  border-color: #475569;
+}
+
 .pill-label {
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.pill-value {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.dropdown-arrow {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+}
+
+.control-dropdown-container {
+  position: relative;
+}
+
+.dropdown-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 340px;
+  background-color: #1e293b;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  padding: 0.85rem;
+  z-index: 50;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-popover-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.btn-text-action {
+  background: transparent;
+  border: none;
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-text-action:hover {
+  text-decoration: underline;
+}
+
+.dropdown-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doc-checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.doc-checkbox-item:hover:not(.doc-disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.doc-checkbox-item.doc-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.doc-checkbox-item input[type="checkbox"] {
+  margin-top: 0.2rem;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.doc-checkbox-item.doc-disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+.doc-checkbox-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.doc-checkbox-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.doc-checkbox-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-mini {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.badge-mini-active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.badge-mini-planned {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 .pill-select {
