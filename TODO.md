@@ -53,7 +53,7 @@ Iniciar el **Hito 8 — Interfaz de usuario** ([PROJECT_PLAN.md](PROJECT_PLAN.md
   `uv run ruff format --check .` y `git diff --check`, correctos.
   Aceptación formal del Hito 7 registrada en `PROJECT_PLAN.md` y estructura documentada en `README.md`.
 - Rama: `feat/fastapi-api`.
-- Pendiente de entrega: commit, push de la rama y creación de Pull Request.
+- [PR #5](https://github.com/tvarmar/rag-bogado/pull/5) abierto en GitHub; CI verificado y superado al 100% (2/2 checks exitosos).
 - `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
