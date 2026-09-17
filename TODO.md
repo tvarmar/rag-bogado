@@ -51,7 +51,7 @@ Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
   `uv run ruff format --check .` y `git diff --check`, correctos.
   Aceptación formal del Hito 8 registrada en `PROJECT_PLAN.md` y estructura en `README.md`.
 - Rama: `feat/user-interface`.
-- Pendiente de entrega: commit, push de la rama y creación de Pull Request para el Hito 8.
+- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) abierto en GitHub; CI verificado y superado al 100% (2/2 checks exitosos).
 - `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
