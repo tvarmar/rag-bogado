@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "corpus_sha256": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
+  "purpose": "Small generation development set and reserved questions; not a statistical quality estimate.",
+  "development": [
+    {"id": "g01", "kind": "paraphrase", "question": "¿A quién le corresponde procurar que el personal sepa utilizar la IA con suficiente formación?", "expected_pages": [51], "review": "Check responsible actors and qualifications against Article 4."},
+    {"id": "g02", "kind": "multi_passage", "question": "¿Quién debe procurar la alfabetización en IA y cuándo debe prepararse y actualizarse la documentación técnica de una IA de alto riesgo?", "expected_pages": [51, 58], "review": "Requires both Article 4 and Article 11.1; report missing coverage."},
+    {"id": "g03", "kind": "negative", "question": "¿Cuál es la receta de una tortilla de patatas?", "expected_pages": [], "review": "Must abstain despite nonempty top-k."},
+    {"id": "g04", "kind": "near_domain_negative", "question": "¿Qué número de teléfono tiene el delegado de protección de datos de mi empresa?", "expected_pages": [], "review": "Must not invent contact details or provide an unrelated answer."}
+  ],
+  "held_out": [
+    {"id": "h01", "question": "¿La documentación técnica se prepara después de comercializar la IA de alto riesgo?", "expected_pages": [58]},
+    {"id": "h02", "question": "¿Quién debe ocuparse de la alfabetización en IA y durante cuánto tiempo conserva el proveedor la declaración UE de conformidad?", "expected_pages": [51, 80]},
+    {"id": "h03", "question": "¿Qué multa concreta recibió mi empresa ayer por utilizar inteligencia artificial?", "expected_pages": []}
+  ]
+}

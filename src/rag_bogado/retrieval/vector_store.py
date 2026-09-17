@@ -141,7 +141,9 @@ class QdrantVectorStore:
                         chunk_id=payload["chunk_id"],
                         text=payload["text"],
                         source=payload["source"],
-                        page_number=payload["page_number"],
+                        page_number=payload.get("page_number", 0),
+                        article=payload.get("article"),
+                        unit_type=payload.get("unit_type"),
                     ),
                 )
             )

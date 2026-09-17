@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-14",
+  "case_id": "d01",
+  "status": "synthesis_readability_feedback_recorded_support_pending",
+  "source_report": "multi-query-evidence.json",
+  "source_run": {
+    "case": "simple",
+    "search_count": 1,
+    "answer_mode": "evidence"
+  },
+  "fresh_model_execution": false,
+  "question": "¿Quién debe procurar la alfabetización en IA?",
+  "user_review": {
+    "answers_request": "yes",
+    "coverage": null,
+    "preserves_conditions": null,
+    "no_unnecessary_information": null,
+    "notes": "La usuaria considera que el conjunto responde en general. Pasaje 1: responde definitivamente. Pasaje 2: responde más o menos y convendría ver más texto previo. Pasaje 3: resulta más raro. Espera que el LLM lea los fragmentos y redacte una respuesta comprensible.",
+    "passages": [
+      {
+        "source_id": "Q1-S2",
+        "relevance": "yes",
+        "notes": "Definitivamente responde."
+      },
+      {
+        "source_id": "Q1-S3",
+        "relevance": "partial",
+        "notes": "Sería útil más texto precedente."
+      },
+      {
+        "source_id": "Q1-S4",
+        "relevance": null,
+        "notes": "Más raro; no lo descarta explícitamente."
+      }
+    ],
+    "scope": "Relevance of retrieved passages; not approval of an LLM-generated answer or full legal support."
+  },
+  "assistant_observations": [
+    "The Article 4 passage includes responsible actors and qualifications.",
+    "The output also includes Article 5 and cut passages on other topics. Exact copying does not guarantee a focused answer."
+  ],
+  "next_case": "d02",
+  "next_action": "Address synthesis/citation support and aspect coverage with grouped questions. Do not misdiagnose reviewer rejection as missing question extraction.",
+  "product_preference": "Readable LLM synthesis with original sources available, rather than raw passages as the intended final user experience.",
+  "synthesis_review": {
+    "report": "d01-synthesis-review.json",
+    "fresh_model_execution": true,
+    "same_three_passages": true,
+    "automated_verdict": "passed",
+    "assistant_verdict": "not_accepted",
+    "user_review": {
+      "readability_feedback": "positive",
+      "notes": "La usuaria dice que le gusta bastante la respuesta y pregunta cómo resolver las referencias S1 a documento, página y fuente. No confirma explícitamente el respaldo jurídico ni la conservación de condiciones."
+    }
+  },
+  "batch_review": {
+    "cases": [
+      "d02",
+      "d03"
+    ],
+    "status": "awaiting_user_feedback",
+    "report": "development-review-d02-d03.json",
+    "presentation": "docs/development-review-batch.md",
+    "user_review": null,
+    "preference": "User wants answers together and free-form comments, not one-by-one scoring."
+  },
+  "grouping_followup": {
+    "status": "grouping_and_outcome_visibility_verified_synthesis_open",
+    "decomposition_report": "question-grouping.json",
+    "pipeline_report": "grouped-compound-review.json",
+    "observed_questions": 2,
+    "development_cases_reviewed": 9
+  }
+}

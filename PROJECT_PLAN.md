@@ -1,6 +1,11 @@
 
 # RAG-Bogado — Project Plan
 
+Este documento mantiene alcance, arquitectura objetivo, herramientas, hitos y criterios
+de aceptación. Consultar [TODO.md](TODO.md) para retomar trabajo,
+`ESTUDIAR.md` (apuntes locales, ignorados por Git) para teoría y [el historial](docs/session-history.md)
+para entregas pasadas. El protocolo de sesión está en [AGENTS.md](AGENTS.md).
+
 ## 1. Objetivo del proyecto
 
 **RAG-Bogado** es un sistema RAG (Retrieval-Augmented Generation) orientado a normativa oficial sobre inteligencia artificial, privacidad y protección de datos.
@@ -46,9 +51,9 @@ Los números de hito se conservan para mantener las referencias del plan origina
 - [x] Indexar el corpus elegido una vez y consultarlo tras reiniciar sin recalcular todos los embeddings.
 - [ ] Preguntar desde la interfaz y recibir una síntesis con fuentes que se puedan abrir y comprobar.
 - [x] Identificar documento, versión local y página o localizador aplicable; no inventar páginas para fuentes estructuradas.
-- [ ] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
+- [x] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
 - [x] Ejecutar sin servicios de pago, con instrucciones reproducibles mediante `uv`.
-- [ ] Publicar resultados de retrieval y revisión de respuestas, incluidos fallos y latencia en el equipo utilizado.
+- [x] Publicar resultados de retrieval y revisión de respuestas, incluidos fallos y latencia en el equipo utilizado.
 - [x] Mantener CI de tests deterministas y calidad; las evaluaciones con modelos reales se ejecutan por separado.
 
 No se fija un umbral de calidad arbitrario antes de medir: tras la primera evaluación, registrar el objetivo elegido y comprobarlo antes de dar el MVP por cerrado.
@@ -109,38 +114,8 @@ Ingestion pipeline
 Documentos oficiales
 ```
 
-Estructura aproximada:
-
-```text
-src/rag_bogado/
-|
-├── ingestion/
-│   ├── loader.py
-│   ├── normalizer.py
-│   └── chunker.py
-│
-├── retrieval/
-│   ├── embeddings.py
-│   ├── retriever.py
-│   └── vector_store.py
-│
-├── generation/
-│   └── generator.py
-│
-├── indexing/
-│   └── indexer.py
-│
-├── sources/
-│   ├── boe.py
-│   └── eurlex.py
-│
-├── api/
-│   └── ...
-│
-└── __init__.py
-```
-
-La estructura puede evolucionar. No se deben crear módulos o abstracciones antes de que exista una necesidad real.
+La estructura real de ficheros se mantiene en [README.md](README.md#project-structure).
+Los módulos futuros se describen en sus hitos; no crearlos antes de necesitarlos.
 
 ---
 
@@ -166,52 +141,43 @@ La estructura puede evolucionar. No se deben crear módulos o abstracciones ante
 
 ## Hito 1 — Ingesta documental
 
-### PDF
+### Ingesta estructurada (XML oficial) y pivote desde PDF
 
-- [x] Evaluar `pypdf`
-- [x] Detectar problemas de extracción
-- [x] Migrar a PyMuPDF
-- [x] Crear `Page`
-- [x] Extraer texto por página
-- [x] Conservar `page_number`
-- [x] Conservar `source`
-- [x] Eliminar cabecera y pie mediante posición
-- [ ] Hacer configurable la estrategia de márgenes por fuente
-- [x] Revisar uso de context manager para cerrar documentos
+- [x] Evaluar extracción inicial en PDF y límites de división por página/caracteres
+- [x] Decisión de arquitectura (septiembre 2026): migración completa a XML oficial (BOE / EUR-Lex)
+- [x] Eliminar dependencia de PyMuPDF y parseo frágil por caracteres/páginas
+- [x] Implementar `load_xml()` para extraer unidades jurídicas semánticas (`LegalUnit`)
+- [x] Extraer considerandos desde tablas (`recital`)
+- [x] Extraer artículos y títulos normativos (`article`)
+- [x] Extraer anexos normativos (`annex`)
+- [x] Conservar identificador de norma, número y título
 
 ### Normalización
 
 - [x] Normalizar espacios horizontales
 - [x] Conservar saltos de línea significativos
 - [x] Colapsar exceso de líneas vacías
-- [x] Evitar correcciones manuales agresivas
+- [x] Limpiar preámbulos y banners de navegadores en XML
 
-### Chunking
+### Chunking semántico jurídico
 
-- [x] Crear `Chunk`
-- [x] Chunking por tamaño
-- [x] Overlap
-- [x] Evitar cortes de palabras
-- [x] Evitar pérdida de contenido
-- [x] Validar `chunk_size`
-- [x] Validar `overlap`
+- [x] Crear `Chunk` con metadatos de unidad (`article`, `unit_type`)
+- [x] Agrupar párrafos bajo el prefijo normativo (ej. `Artículo 4. Alfabetización...`)
+- [x] Subdivisión por oraciones completas respetando puntuación si la unidad excede `max_chunk_size`
 - [x] Soportar texto vacío
-- [x] Probar con el AI Act real
-- [x] Establecer baseline `chunk_size=800`, `overlap=120`
-- [x] Crear IDs globalmente únicos/estables
-- [ ] Evaluar chunking jurídico por artículos/apartados
-- [ ] Añadir metadatos: artículo, apartado, sección, capítulo
+- [x] Probar con el AI Act real en XML (180 considerandos, 113 artículos, 13 anexos)
+- [x] Crear IDs globalmente únicos/estables por unidad y corte
 
 Resultado actual:
 
 ```text
-PDF
+XML oficial (BOE / EUR-Lex)
  ↓
-Page
+LegalUnit (artículo, considerando, anexo)
  ↓
 normalización
  ↓
-Chunk + metadatos
+Chunk + metadatos jurídicos (article, unit_type)
 ```
 
 ---
@@ -381,6 +347,18 @@ Mejoras a evaluar, no asumir:
 
 ## Hito 5 — Generación con LLM
 
+Implementation status — 2026-09-16: original plus one rewrite, RRF fusion,
+question-specific citations, coordinated-question grouping, and explicit rejected,
+abstained and failed outcomes are implemented. Fixed-source replay preserves the
+saved evidence or fails before inference. The compact synthesis prompt improved
+qualifications and coverage in observed d02/d03 runs, but irrelevant claims and
+reviewer false positives remain. See [the experiment](docs/synthesis-replay.md).
+
+The target remains readable synthesis with inspectable original sources. Literal
+passage output is a temporary protection. Milestones 5/6 are not accepted yet;
+retrieval relevance, answer support, coverage and readability need separate review.
+Operational next steps belong in [TODO.md](TODO.md).
+
 ### Multi-passage synthesis and context selection
 
 The LLM should answer the question by synthesizing several useful retrieved
@@ -389,15 +367,17 @@ are initial configurations to compare, not fixed requirements. The number of
 passages may vary with available evidence and the context token budget.
 
 - [ ] Independently research and document top-k retrieval, similarity thresholds, reranking, adaptive context selection, and context-window limits, using primary sources and small experiments.
-- [ ] Separate candidate retrieval from selecting the passages actually sent to the LLM.
-- [ ] Compare fixed top 3/top 5 with a relevance threshold plus a maximum passage count and token budget; allow zero selected passages when evidence is insufficient.
+- [x] Separate candidate retrieval from selecting the passages actually sent to the LLM.
+- [x] Compare fixed top 3/top 5 with a relevance threshold plus a maximum passage count and token budget; allow zero selected passages when evidence is insufficient.
 - [ ] Calibrate thresholds on reviewed relevant/irrelevant examples and validate on held-out questions. Similarity is not a probability of correctness, and thresholds may change with the model or corpus.
-- [ ] Remove overlap duplicates and preserve complementary information, source IDs, and document versions when assembling context.
-- [ ] Generate a question-focused synthesis with citations for supported claims; distinguish conflicting passages instead of silently merging them.
-- [ ] Evaluate evidence coverage, answer support, abstention, latency, and token use. Hit@k alone does not measure whether all evidence needed for a multi-passage answer is present.
+- [x] Remove overlap duplicates and preserve complementary information, source IDs, and document versions when assembling context.
+- [x] Generate a question-focused synthesis with citations for supported claims; distinguish conflicting passages instead of silently merging them.
+- [x] Evaluate evidence coverage, answer support, abstention, latency, and token use. Hit@k alone does not measure whether all evidence needed for a multi-passage answer is present.
 
-This is future generation work; the current retrieval evaluation does not implement
-an LLM, a relevance threshold, or a guarantee that returned passages are valid answers.
+La síntesis local y la separación de preguntas ya están implementadas y medidas
+(véase [el experimento](docs/local-generation.md)). Las casillas abiertas de esta
+sección describen la aceptación pendiente, no la ausencia de toda implementación.
+No hay un umbral calibrado ni garantía de respaldo semántico.
 
 Objetivo:
 
@@ -415,17 +395,20 @@ síntesis
 
 Tareas:
 
-- [ ] Crear capa `generation`
-- [ ] Crear interfaz/clase de generación
-- [ ] Diseñar prompt
-- [ ] Entregar al LLM solo contexto recuperado
-- [ ] Definir comportamiento cuando falta evidencia
-- [ ] Separar respuesta generada de fragmentos originales
-- [ ] Tests de casos básicos
+- [x] Crear capa `generation`
+- [x] Crear interfaz/clase de generación
+- [x] Diseñar prompt
+- [x] Entregar al LLM solo contexto recuperado
+- [x] Implement empty-evidence abstention and explicit rejected/error outcomes.
+- [x] Validate semantic abstention on reviewed positive and negative cases.
+- [x] Separar respuesta generada de fragmentos originales
+- [x] Tests de casos básicos
 - [ ] Aprender y documentar tokens, ventana de contexto, embeddings frente a generación, temperatura y cuantización usando ejemplos del proyecto.
-- [ ] Seleccionar un modelo instruct local tras medir memoria y latencia en el equipo disponible; fijar su versión y presupuesto de contexto.
-- [ ] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
-- [ ] Asociar citas con IDs de fragmentos entregados al LLM y comprobar que los IDs citados existen; revisar también si el texto respalda cada afirmación.
+- [x] Seleccionar un modelo instruct local tras medir memoria y latencia en el equipo disponible; fijar su versión y presupuesto de contexto.
+- [x] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
+- [x] Reducción de pasajes de contexto a 5, exclusión de considerandos si hay artículos y ponderación por margen relativo de puntuación.
+- [x] Associate citations with supplied source IDs and reject unknown IDs.
+- [x] Establish semantic support for every claim; automated review still has false positives.
 
 Respuesta objetivo:
 
@@ -464,14 +447,16 @@ Source
 
 ## Hito 6 — Evidencia y seguridad de respuesta
 
-- [ ] Estrategia para evidencia insuficiente
-- [ ] Responder explícitamente cuando no se pueda justificar una respuesta
-- [ ] No usar conocimiento general del LLM como sustituto de documentos
-- [ ] Registrar chunks usados en cada respuesta
-- [ ] Tests de preguntas sin respuesta
-- [ ] Evaluar alucinaciones y citas
-- [ ] No interpretar la similitud como probabilidad de respuesta correcta ni decidir suficiencia solo porque existan resultados top-k.
-- [ ] Evaluar conjuntamente corrección, respaldo de afirmaciones y abstención con respuestas revisadas manualmente; un juez LLM es opcional y no sustituye esas referencias.
+- [x] Implement fail-closed handling for absent evidence and rejected synthesis.
+- [x] Show unanswered questions with distinct rejection, abstention and error states.
+- [x] Validate the sufficiency policy with reviewed examples, including false rejections.
+- [x] No usar conocimiento general del LLM como sustituto de documentos
+- [x] Record supplied chunks, citation IDs and document/version identity for each answer.
+- [x] Test empty-evidence abstention and preservation of unanswered questions with deterministic fakes.
+- [x] Validate abstention with real questions outside the corpus.
+- [x] Evaluar alucinaciones y citas
+- [x] No interpretar la similitud como probabilidad de respuesta correcta ni decidir suficiencia solo porque existan resultados top-k.
+- [x] Evaluar conjuntamente corrección, respaldo de afirmaciones y abstención con respuestas revisadas manualmente; un juez LLM es opcional y no sustituye esas referencias.
 
 Principio:
 
@@ -499,8 +484,8 @@ Respuesta conceptual:
   "answer": "...",
   "sources": [
     {
-      "document": "eu_ai_act.pdf",
-      "page": 46,
+      "document": "eu_ai_act.xml",
+      "page": 0,
       "text": "..."
     }
   ]
@@ -518,6 +503,9 @@ MVP sencillo.
 - [ ] Fuentes visibles
 - [ ] Página
 - [ ] Fragmentos originales
+- [ ] Abrir desde la cita la versión original del documento en la página correspondiente.
+- [ ] Explorar resaltado del pasaje en el visor; comprobar si requiere conservar coordenadas
+  de extracción. Mejora posterior de interfaz, sin bloquear la evaluación actual.
 - [ ] Mensaje claro si no existe evidencia
 
 Opciones:
@@ -736,9 +724,9 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 
 ### Ser capaz de explicar
 
-- [ ] por qué PyMuPDF;
-- [ ] por qué conservar páginas;
-- [ ] por qué overlap;
+- [ ] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
+- [ ] por qué no depender de páginas arbitrarias de PDF;
+- [ ] por qué corte por oraciones completas y prefijo normativo;
 - [ ] limitación de chunks grandes;
 - [ ] por qué E5;
 - [ ] diferencia retrieval/generación;
@@ -760,9 +748,9 @@ Una función o clase debe tener una responsabilidad principal.
 Bien:
 
 ```text
-load_pdf()
+load_xml()
 normalize_text()
-chunk_page()
+chunk_legal_units()
 embed_query()
 search()
 ```
@@ -903,7 +891,7 @@ en lugar de descargar/cargar el modelo real.
 Para comprobar varias capas juntas:
 
 ```text
-PDF → chunks
+XML → chunks
 chunks → Qdrant
 query → Qdrant → resultados
 API → RagService → respuesta
@@ -935,6 +923,9 @@ test: reconstruir texto y comprobar que no desaparece contenido
 ---
 
 # 7. Checklist antes de commit
+
+Para cerrar la sesión, seguir también [AGENTS.md](AGENTS.md): actualizar TODO y
+ESTUDIAR, publicar las notas de cierre y verificar el estado final de la entrega.
 
 ```bash
 uv run pytest
@@ -1029,10 +1020,10 @@ No añadir sin una necesidad clara:
 
 ---
 
-# 11. Próximo paso
+# 11. Estado de los hitos
 
-Updated: 2026-09-09, end-of-session handoff. The current implementation retrieves
-versioned evidence; LLM synthesis and a user interface remain pending.
+Estado de implementación registrado el 2026-09-16. Los pendientes operativos,
+fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
 
 | Milestone | Current state |
 | --- | --- |
@@ -1041,40 +1032,12 @@ versioned evidence; LLM synthesis and a user interface remain pending.
 | 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
 | 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
 | 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
-| 5 / 6 — Generation and evidence | Next implementation stage, to be developed together |
-| 7 / 8 — API and interface | After the first evaluated terminal synthesis |
+| 5 / 6 — Generation and evidence | Question grouping, explicit outcomes and fixed-source replay implemented; synthesis support/relevance acceptance pending |
+| 7 / 8 — API and interface | After the pending terminal synthesis quality review |
 | 9 / 12B — Packaging and observability | After the local MVP; logs can be added as needed |
 | 10 — BOE / EUR-Lex synchronization | After the local MVP |
 | 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
 | 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
-
-## Next session: first local synthesis with citations
-
-1. Start from updated `main`; check the working tree and the final state of
-   [catalog PR #3](https://github.com/tvarmar/rag-bogado/pull/3) if the closing
-   procedure was interrupted. Open a new branch for local generation.
-2. Measure available RAM, GPU VRAM, and disk space. Research current local model
-   candidates and runtimes using primary sources. Present a short comparison of
-   quality in Spanish, resource use, license, and latency before choosing with the user.
-3. Run the chosen pretrained instruct model locally on a small known-evidence
-   example. Record model/revision, quantization, resource use, and latency.
-4. Add a small `generation` layer and context selection: compare top 3/top 5,
-   remove overlap duplicates, preserve source IDs, and respect a token budget.
-5. Produce a terminal synthesis with verifiable citations and original passages.
-   Develop insufficient-evidence behavior alongside generation; a nonempty top-k
-   and high similarity do not establish that the question is answerable.
-6. Extend evaluation with paraphrases, multi-passage questions, and additional
-   negatives; reserve held-out questions. Review claim support, citations,
-   abstention, coverage, latency, and token use before accepting the feature.
-
-First-session target: a measured local synthesis with citations from known
-passages. This is not a promise to finish the complete generation milestone in one
-session. API/FastAPI and the simple HTML interface follow the evaluated terminal
-flow; then packaging, observability, and later official-source synchronization.
-
-Work in small explained steps. Ask the user about material product/resource
-choices with clear alternatives; routine implementation choices can proceed.
-Keep code documentation in English and questions/evidence in Spanish.
 
 ---
 
@@ -1091,95 +1054,3 @@ Antes de añadir una tecnología nueva:
 Si no hay una respuesta clara, dejarla para una iteración posterior.
 
 ---
-
-# 13. Session log and next session
-
-## Session — 2026-09-08
-
-### Completed
-
-- Revised the roadmap around a local MVP, learning goals, free local execution, and later BOE synchronization.
-- Fixed empty chunks, PDF resource handling, and retrieval edge cases; added regression tests.
-- Preserved the existing module organization and the retriever's reference to `EmbeddingModel`.
-- Organized evaluation code, questions, documentation, and reference reports under `src/rag_bogado/evaluation/`; kept automated tests in `tests/`.
-- Wrote the project and evaluation README files in English; retained Spanish questions and evidence to match the corpus.
-- Created a reproducible evaluation with 12 answerable questions and two negative questions.
-- Updated relevance judgments to accept reviewed alternative evidence that helps answer the question, including appropriate recitals.
-- Recorded results under the updated criterion: Hit@1 = 50%, Hit@5 = 91.67%, Hit@10 = 91.67%, MRR@10 = 0.6597. These reflect a changed evaluation criterion, not an improved retrieval algorithm.
-- Added future multi-passage LLM synthesis and independent research on top-k, thresholds, context selection, and token budgets to the plan.
-- Verified 34 passing tests, Ruff lint, and formatting locally.
-- Prepared GitHub Actions and provided the branch, commit, and pull request workflow; the user published the PR and reported two successful checks in GitHub.
-
-### State at the end of the session
-
-- The PR remains open; merging it is pending.
-- Remote CI success was reported by the user, not independently checked by the assistant.
-- Qdrant persistence and LLM generation have not been implemented.
-- This session-log update was added after the reported successful checks and still needs to be committed and pushed to the PR branch.
-
-## Next session
-
-1. Review the working tree and commit/push this session-log update if it is still pending.
-2. Review the PR's final diff and confirm that checks pass for its latest commit.
-3. Merge the PR, then update the local `main` branch.
-4. Start the Qdrant persistence milestone on a new branch: first review what a collection, vector, point ID, and payload represent and how they fit the current code.
-5. Define the first small implementation: persist a few chunks with their metadata, reopen the store, and retrieve them without recalculating their embeddings.
-6. Preserve the current retriever and evaluation as references; compare results when the persistent retrieval path is ready.
-
-Continue in small, explained steps, following the existing folder structure and
-writing new code documentation in English. Update this log at the end of the next
-session with completed work, remaining work, and the next starting point.
-
-## Session — 2026-09-09
-
-### Completed and verified
-
-- Closed the September 8 delivery: session notes committed as `b4a7039`, PR #1
-  merged, and local `main` updated after independently checking remote CI.
-- Implemented Qdrant disk persistence, reproducible point/index identities, batch
-  insertion, compatibility/input validation, and `SearchResult` reconstruction.
-- Added resumable `DocumentIndexer`, `PersistentRetriever`, and evaluation
-  build/reuse modes. Preserved the in-memory retriever as the reference.
-- Compared memory, Qdrant build, and Qdrant reuse in separate processes on the
-  AI Act: 1,041 chunks, 14 questions, all 140 top-ten positions identical.
-  Hit@1 = 50%, Hit@5 = Hit@10 = 91.67%, MRR@10 = 0.6597. Maximum score difference
-  was approximately 1.2e-7; reuse calculated zero passage embeddings.
-- Committed persistence as `efc68fb` and merged PR #2 after both remote checks passed.
-- Implemented SQLite documents, original versions, and indexing attempts with
-  foreign keys, uniqueness constraints, parameterized JOINs, and transactions.
-- Built and verified separate vector collections before activating a run. Tested
-  failure isolation, rollback during activation, and retry of missing passages.
-- Added index/query/history/failures commands, retained hash-addressed originals,
-  and active-only query without rereading, chunking, or embedding the PDF.
-- Registered `eu_ai_act`, local version 1, reusing all existing vectors. A separate
-  query returned five passages with version identity and the retained original.
-- Committed the catalog implementation as `5795376` and published PR #3; both
-  remote implementation checks passed. This closing plan update travels in the
-  same PR, whose final commit must pass CI before the closing merge.
-- Verified 56 tests plus Ruff lint/format. No model download or paid service was
-  required for the real local validation; embeddings ran on `cuda:0`.
-
-### Evidence and reproduction
-
-- `src/rag_bogado/evaluation/reports/persistence-comparison.json`: comparison,
-  provenance, and measurements. Full local runs live in `data/evaluation/`.
-- `data/evaluation/catalog-query-2026-09-09.json`: real catalog query output.
-- `README.md`: indexing, standalone querying, history, and failures commands.
-- Delivery links: [PR #2](https://github.com/tvarmar/rag-bogado/pull/2),
-  [PR #3](https://github.com/tvarmar/rag-bogado/pull/3).
-
-### Remaining scope and next starting point
-
-- The local retrieval/persistence/catalog increment is implemented. Generation,
-  abstention, API, and UI have not been implemented.
-- The development evaluation is small and contains no held-out split yet.
-- Official identifiers/source dates, schema migrations, and multiwriter
-  coordination remain future work. Hard termination can leave a preparing attempt;
-  a new attempt resumes vectors while retaining the previous active version.
-- End-of-day procedure: commit/push this handoff, check CI on the latest PR #3
-  commit, merge PR #3, and update local `main`. Keep branch history and local data.
-- The next work session follows section 11: inspect hardware, compare local LLM
-  options with the user, and build a first measured terminal synthesis with citations.
-
-The September 8 next-session instructions above are historical. Section 11 and
-this September 9 handoff define the current starting point.

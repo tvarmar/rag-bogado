@@ -13,9 +13,7 @@ from time import perf_counter
 from rag_bogado.evaluation.metrics import evidence_rank, summarize
 from rag_bogado.indexing.configuration import index_configuration
 from rag_bogado.indexing.indexer import DocumentIndexer, index_identity
-from rag_bogado.ingestion.chunker import chunk_page
-from rag_bogado.ingestion.loader import Page, load_pdf
-from rag_bogado.ingestion.normalizer import normalize_text
+from rag_bogado.ingestion.xml_loader import load_xml_chunks
 from rag_bogado.retrieval.embeddings import EmbeddingModel
 from rag_bogado.retrieval.persistent_retriever import PersistentRetriever
 from rag_bogado.retrieval.retriever import Retriever
@@ -54,30 +52,11 @@ def run(stack: ExitStack) -> None:
     dataset = json.loads(dataset_bytes)
     if dataset.get("schema_version") != 2:
         parser.error("Expected question dataset schema_version 2")
-    pdf = args.documents / dataset["corpus"]
-    digest = hashlib.sha256(pdf.read_bytes()).hexdigest()
+    corpus_file = args.documents / dataset["corpus"]
+    digest = hashlib.sha256(corpus_file.read_bytes()).hexdigest()
     if digest != dataset["sha256"]:
         parser.error("Corpus hash differs: review evidence before evaluating")
-    pages = [
-        Page(page.page_number, normalize_text(page.text), page.source)
-        for page in load_pdf(pdf)
-    ]
-    for question in dataset["questions"]:
-        for alternative in question["evidence"]:
-            if not 1 <= alternative["page"] <= len(pages):
-                parser.error(f"Invalid evidence page: {question['id']}")
-            page = pages[alternative["page"] - 1]
-            if (
-                not alternative["anchor"].strip()
-                or " ".join(alternative["anchor"].split()).casefold()
-                not in " ".join(page.text.split()).casefold()
-            ):
-                parser.error(f"Evidence anchor not found: {question['id']}")
-    chunks = [
-        chunk
-        for page in pages
-        for chunk in chunk_page(page, args.chunk_size, args.overlap)
-    ]
+    chunks = load_xml_chunks(corpus_file, max_chunk_size=args.chunk_size)
 
     started = perf_counter()
     model = EmbeddingModel(args.model, revision=args.revision, local_files_only=True)
@@ -163,7 +142,7 @@ def run(stack: ExitStack) -> None:
         "device": str(model.model.device),
         "dependencies": {
             name: version(name)
-            for name in ("sentence-transformers", "torch", "pymupdf", "qdrant-client")
+            for name in ("sentence-transformers", "torch", "qdrant-client")
         },
         "indexing_seconds": indexing_seconds,
         "answerable_questions": len(ranks),
