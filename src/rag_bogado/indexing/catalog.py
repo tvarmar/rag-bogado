@@ -69,7 +69,7 @@ class DocumentCatalog:
         source_path: Path,
         index_id: str,
         collection: str,
-        store_path: Path,
+        store_path: Path | str,
         configuration: dict,
         expected_chunks: int,
     ) -> int:

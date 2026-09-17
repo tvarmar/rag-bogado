@@ -163,3 +163,55 @@ def test_missing_active_collection_fails_without_loading_model(tmp_path):
 
         with pytest.raises(ValueError, match="missing"):
             query_active(catalog, "act", "Question?", model_factory=unavailable)
+
+
+def test_query_active_and_publish_respect_qdrant_url(tmp_path, monkeypatch):
+    recorded_stores = []
+
+    class FakeStore:
+        def __init__(self, target, collection, **kwargs):
+            recorded_stores.append(str(target))
+            self.collection = collection
+            self.client = type(
+                "C",
+                (),
+                {
+                    "count": lambda self, col, exact=True: type(
+                        "Count", (), {"count": 1}
+                    )()
+                },
+            )()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    with DocumentCatalog(tmp_path / "catalog.sqlite3") as catalog:
+        publish(catalog, tmp_path)
+
+        monkeypatch.setattr("rag_bogado.indexing.service.QdrantVectorStore", FakeStore)
+        monkeypatch.setattr(
+            "rag_bogado.indexing.service.PersistentRetriever",
+            lambda store, model: type("R", (), {"search": lambda self, q, top_k: []})(),
+        )
+
+        # 1. Without env var or argument: uses active["store_path"]
+        query_active(catalog, "act", "Question?", model_factory=Model)
+        assert recorded_stores[-1] == str(tmp_path / "vectors")
+
+        # 2. With explicit qdrant_url
+        query_active(
+            catalog,
+            "act",
+            "Question?",
+            model_factory=Model,
+            qdrant_url="http://qdrant:6333",
+        )
+        assert recorded_stores[-1] == "http://qdrant:6333"
+
+        # 3. With QDRANT_URL environment variable
+        monkeypatch.setenv("QDRANT_URL", "http://env-qdrant:6333")
+        query_active(catalog, "act", "Question?", model_factory=Model)
+        assert recorded_stores[-1] == "http://env-qdrant:6333"

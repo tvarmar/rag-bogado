@@ -2,6 +2,7 @@
 
 import json
 import math
+import os
 import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -251,11 +252,20 @@ class OllamaGenerator:
         self,
         model: str = "qwen3:4b-instruct",
         *,
+        base_url: str | None = None,
         port: int = 11434,
         timeout: float = 180,
     ):
         self.model = model
-        self.base_url = f"http://127.0.0.1:{port}"
+        env_url = os.environ.get("OLLAMA_BASE_URL") or os.environ.get("OLLAMA_HOST")
+        if base_url:
+            self.base_url = base_url.rstrip("/")
+        elif env_url:
+            if not env_url.startswith(("http://", "https://")):
+                env_url = f"http://{env_url}"
+            self.base_url = env_url.rstrip("/")
+        else:
+            self.base_url = f"http://127.0.0.1:{port}"
         self.timeout = timeout
 
     def request(self, path: str, payload: dict | None = None) -> dict:

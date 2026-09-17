@@ -28,9 +28,13 @@ class QdrantVectorStore:
 
     def __init__(
         self,
-        path: Path,
-        collection: str,
+        path: Path | str | None = None,
+        collection: str = "",
         *,
+        url: str | None = None,
+        host: str | None = None,
+        port: int | None = None,
+        client: QdrantClient | None = None,
         dimension: int = 384,
         create_if_missing: bool = True,
     ) -> None:
@@ -40,7 +44,20 @@ class QdrantVectorStore:
             raise ValueError("collection cannot be blank")
         self.collection = collection
         self.dimension = dimension
-        self.client = QdrantClient(path=str(path))
+        if client is not None:
+            self.client = client
+        elif url is not None:
+            self.client = QdrantClient(url=url)
+        elif host is not None:
+            self.client = QdrantClient(host=host, port=port or 6333)
+        elif path is not None:
+            str_path = str(path)
+            if str_path.startswith(("http://", "https://")):
+                self.client = QdrantClient(url=str_path)
+            else:
+                self.client = QdrantClient(path=str_path)
+        else:
+            raise ValueError("Either path, url, host, or client must be provided")
         try:
             if self.client.collection_exists(collection):
                 config = self.client.get_collection(collection).config.params.vectors

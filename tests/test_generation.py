@@ -313,3 +313,24 @@ def test_prepare_context_retains_low_confidence_passages_without_strict_margin(q
     query["results"][1]["score"] = 0.55
     sources, _ = prepare_context(query, max_passages=5, relative_margin=0.025)
     assert len(sources) == 5
+
+
+def test_ollama_generator_base_url_configuration(monkeypatch):
+    # Default is 127.0.0.1:11434
+    gen = OllamaGenerator()
+    assert gen.base_url == "http://127.0.0.1:11434"
+
+    # Explicit base_url strips trailing slash
+    gen2 = OllamaGenerator(base_url="http://remote-ollama:11434/")
+    assert gen2.base_url == "http://remote-ollama:11434"
+
+    # OLLAMA_BASE_URL env var
+    monkeypatch.setenv("OLLAMA_BASE_URL", "http://ollama-service:11434")
+    gen3 = OllamaGenerator()
+    assert gen3.base_url == "http://ollama-service:11434"
+
+    # OLLAMA_HOST env var without scheme prefixes http://
+    monkeypatch.delenv("OLLAMA_BASE_URL", raising=False)
+    monkeypatch.setenv("OLLAMA_HOST", "host.docker.internal:11434")
+    gen4 = OllamaGenerator()
+    assert gen4.base_url == "http://host.docker.internal:11434"
