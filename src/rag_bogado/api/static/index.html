@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>RAG-Bogado — Consulta Jurídica Regulatoria</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">⚖️</div>
+        <div>
+          <h1 class="brand-title">RAG-Bogado</h1>
+          <p class="brand-subtitle">Consulta regulatoria con trazabilidad de citas</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span id="health-badge" class="badge badge-loading">Conectando...</span>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-main">
+      <!-- Query Panel -->
+      <section class="query-card card">
+        <form id="ask-form">
+          <div class="form-group">
+            <label for="question-input" class="form-label">
+              Pregunta jurídica o regulatoria
+            </label>
+            <textarea
+              id="question-input"
+              class="form-textarea"
+              rows="3"
+              placeholder="Ej.: ¿Quién debe procurar la alfabetización en IA del personal y qué factores deben considerarse?"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Configuration Controls -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="document-select" class="form-label">Norma activa</label>
+              <select id="document-select" class="form-select">
+                <option value="eu_ai_act">Reglamento de IA (eu_ai_act)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="mode-select" class="form-label">Modo de respuesta</label>
+              <select id="mode-select" class="form-select">
+                <option value="evidence" selected>Evidencia (Pasajes literales verificados)</option>
+                <option value="synthesis">Síntesis (Resumen con revisión de soporte)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="search-count-select" class="form-label">Búsqueda multi-query</label>
+              <select id="search-count-select" class="form-select">
+                <option value="2" selected>2 búsquedas (Original + Reformulación RRF)</option>
+                <option value="1">1 búsqueda (Consulta directa única)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="max-passages-input" class="form-label">Máx. pasajes (Top-K)</label>
+              <input
+                id="max-passages-input"
+                type="number"
+                class="form-input"
+                min="1"
+                max="10"
+                value="5"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-btn" class="btn btn-primary">
+              <span class="btn-text">Consultar legislación</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="state-card card hidden">
+        <div class="spinner"></div>
+        <p class="loading-title">Procesando consulta jurídica...</p>
+        <p class="loading-desc">Descomponiendo preguntas, recuperando pasajes por RRF y verificando evidencia.</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="state-card card state-error hidden">
+        <div class="state-icon">⚠️</div>
+        <h3 class="state-title" id="error-title">Error en la consulta</h3>
+        <p class="state-message" id="error-message"></p>
+      </div>
+
+      <!-- Results Container -->
+      <section id="results-container" class="results-section hidden">
+        <!-- Results Overview Header -->
+        <div class="results-header card">
+          <div class="results-status-bar">
+            <div>
+              <span class="meta-label">Estado general</span>
+              <div id="overall-status-badge" class="badge"></div>
+            </div>
+            <div>
+              <span class="meta-label">Tiempo de respuesta</span>
+              <span id="response-time" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">Aspectos detectados</span>
+              <span id="subquestions-count" class="meta-value">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Answers by Question -->
+        <div id="answers-list" class="answers-grid"></div>
+
+        <!-- Sources Inspection Section -->
+        <div class="sources-card card">
+          <div class="sources-header">
+            <h2 class="section-title">Fuentes y pasajes documentales citados</h2>
+            <span id="sources-count" class="badge badge-neutral">0 fuentes</span>
+          </div>
+          <div id="sources-list" class="sources-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Source Modal / Detail Drawer -->
+    <div id="source-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span id="modal-source-id" class="badge badge-primary">Q1-S1</span>
+            <h3 id="modal-article-title" class="modal-title">Artículo</h3>
+          </div>
+          <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-meta-grid">
+            <div>
+              <span class="meta-label">Documento</span>
+              <span id="modal-document" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">Página / Localizador</span>
+              <span id="modal-page" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">Unidad jurídica</span>
+              <span id="modal-unit" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">ID de Fragmento</span>
+              <span id="modal-chunk-id" class="meta-value">—</span>
+            </div>
+          </div>
+          <div class="modal-text-container">
+            <span class="meta-label">Texto íntegro del pasaje normativo</span>
+            <div id="modal-source-text" class="modal-source-text"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-dismiss-btn" class="btn btn-secondary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>RAG-Bogado — Sistema de consulta normativa local con trazabilidad estricta de citas.</p>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

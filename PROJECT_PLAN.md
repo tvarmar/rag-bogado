@@ -498,19 +498,19 @@ Respuesta conceptual:
 
 MVP sencillo.
 
-- [ ] Campo de pregunta
-- [ ] Respuesta generada
-- [ ] Fuentes visibles
-- [ ] Página
-- [ ] Fragmentos originales
-- [ ] Abrir desde la cita la versión original del documento en la página correspondiente.
-- [ ] Explorar resaltado del pasaje en el visor; comprobar si requiere conservar coordenadas
+- [x] Campo de pregunta
+- [x] Respuesta generada
+- [x] Fuentes visibles
+- [x] Página
+- [x] Fragmentos originales
+- [x] Abrir desde la cita la versión original del documento en la página correspondiente.
+- [x] Explorar resaltado del pasaje en el visor; comprobar si requiere conservar coordenadas
   de extracción. Mejora posterior de interfaz, sin bloquear la evaluación actual.
-- [ ] Mensaje claro si no existe evidencia
+- [x] Mensaje claro si no existe evidencia
 
 Opciones:
 
-- [ ] HTML mínimo servido con la aplicación como opción inicial; Streamlit solo si facilita claramente la entrega.
+- [x] HTML mínimo servido con la aplicación como opción inicial; Streamlit solo si facilita claramente la entrega.
 
 No construir un frontend complejo inicialmente.
 
