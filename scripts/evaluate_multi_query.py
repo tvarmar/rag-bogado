@@ -78,6 +78,14 @@ def main():
         action="store_true",
         help="Diagnostic: retain drafts separately from accepted answers",
     )
+    parser.add_argument("--max-passages", type=int, default=5)
+    parser.add_argument(
+        "--relative-margin",
+        type=float,
+        default=0.025,
+        help="Discard passages whose score drops below max_score - relative_margin",
+    )
+    parser.add_argument("--output-tokens", type=int, default=768)
     parser.add_argument(
         "--answer-mode", choices=("evidence", "synthesis"), default="evidence"
     )
@@ -127,9 +135,10 @@ def main():
         "configuration": {
             "answer_mode": args.answer_mode,
             "retrieve_k": 10,
-            "max_passages": 10,
+            "max_passages": args.max_passages,
+            "relative_margin": args.relative_margin,
             "context_tokens": 8192,
-            "output_tokens": 512,
+            "output_tokens": args.output_tokens,
         },
         "runs": [],
     }
@@ -158,8 +167,10 @@ def main():
                                 catalog, "eu_ai_act", text, top_k=10
                             ),
                             search_count=searches,
-                            max_passages=10,
+                            max_passages=args.max_passages,
+                            relative_margin=args.relative_margin,
                             context_tokens=8192,
+                            output_tokens=args.output_tokens,
                             answer_mode=args.answer_mode,
                         )
                 run["result"] = result

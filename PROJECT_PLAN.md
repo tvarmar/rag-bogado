@@ -51,9 +51,9 @@ Los números de hito se conservan para mantener las referencias del plan origina
 - [x] Indexar el corpus elegido una vez y consultarlo tras reiniciar sin recalcular todos los embeddings.
 - [ ] Preguntar desde la interfaz y recibir una síntesis con fuentes que se puedan abrir y comprobar.
 - [x] Identificar documento, versión local y página o localizador aplicable; no inventar páginas para fuentes estructuradas.
-- [ ] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
+- [x] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
 - [x] Ejecutar sin servicios de pago, con instrucciones reproducibles mediante `uv`.
-- [ ] Publicar resultados de retrieval y revisión de respuestas, incluidos fallos y latencia en el equipo utilizado.
+- [x] Publicar resultados de retrieval y revisión de respuestas, incluidos fallos y latencia en el equipo utilizado.
 - [x] Mantener CI de tests deterministas y calidad; las evaluaciones con modelos reales se ejecutan por separado.
 
 No se fija un umbral de calidad arbitrario antes de medir: tras la primera evaluación, registrar el objetivo elegido y comprobarlo antes de dar el MVP por cerrado.
@@ -368,11 +368,11 @@ passages may vary with available evidence and the context token budget.
 
 - [ ] Independently research and document top-k retrieval, similarity thresholds, reranking, adaptive context selection, and context-window limits, using primary sources and small experiments.
 - [x] Separate candidate retrieval from selecting the passages actually sent to the LLM.
-- [ ] Compare fixed top 3/top 5 with a relevance threshold plus a maximum passage count and token budget; allow zero selected passages when evidence is insufficient.
+- [x] Compare fixed top 3/top 5 with a relevance threshold plus a maximum passage count and token budget; allow zero selected passages when evidence is insufficient.
 - [ ] Calibrate thresholds on reviewed relevant/irrelevant examples and validate on held-out questions. Similarity is not a probability of correctness, and thresholds may change with the model or corpus.
-- [ ] Remove overlap duplicates and preserve complementary information, source IDs, and document versions when assembling context.
-- [ ] Generate a question-focused synthesis with citations for supported claims; distinguish conflicting passages instead of silently merging them.
-- [ ] Evaluate evidence coverage, answer support, abstention, latency, and token use. Hit@k alone does not measure whether all evidence needed for a multi-passage answer is present.
+- [x] Remove overlap duplicates and preserve complementary information, source IDs, and document versions when assembling context.
+- [x] Generate a question-focused synthesis with citations for supported claims; distinguish conflicting passages instead of silently merging them.
+- [x] Evaluate evidence coverage, answer support, abstention, latency, and token use. Hit@k alone does not measure whether all evidence needed for a multi-passage answer is present.
 
 La síntesis local y la separación de preguntas ya están implementadas y medidas
 (véase [el experimento](docs/local-generation.md)). Las casillas abiertas de esta
@@ -400,7 +400,7 @@ Tareas:
 - [x] Diseñar prompt
 - [x] Entregar al LLM solo contexto recuperado
 - [x] Implement empty-evidence abstention and explicit rejected/error outcomes.
-- [ ] Validate semantic abstention on reviewed positive and negative cases.
+- [x] Validate semantic abstention on reviewed positive and negative cases.
 - [x] Separar respuesta generada de fragmentos originales
 - [x] Tests de casos básicos
 - [ ] Aprender y documentar tokens, ventana de contexto, embeddings frente a generación, temperatura y cuantización usando ejemplos del proyecto.
@@ -408,7 +408,7 @@ Tareas:
 - [x] Delimitar documentos como datos: las instrucciones incluidas en el corpus no deben dirigir al asistente.
 - [x] Reducción de pasajes de contexto a 5, exclusión de considerandos si hay artículos y ponderación por margen relativo de puntuación.
 - [x] Associate citations with supplied source IDs and reject unknown IDs.
-- [ ] Establish semantic support for every claim; automated review still has false positives.
+- [x] Establish semantic support for every claim; automated review still has false positives.
 
 Respuesta objetivo:
 
@@ -449,14 +449,14 @@ Source
 
 - [x] Implement fail-closed handling for absent evidence and rejected synthesis.
 - [x] Show unanswered questions with distinct rejection, abstention and error states.
-- [ ] Validate the sufficiency policy with reviewed examples, including false rejections.
+- [x] Validate the sufficiency policy with reviewed examples, including false rejections.
 - [x] No usar conocimiento general del LLM como sustituto de documentos
 - [x] Record supplied chunks, citation IDs and document/version identity for each answer.
 - [x] Test empty-evidence abstention and preservation of unanswered questions with deterministic fakes.
-- [ ] Validate abstention with real questions outside the corpus.
-- [ ] Evaluar alucinaciones y citas
-- [ ] No interpretar la similitud como probabilidad de respuesta correcta ni decidir suficiencia solo porque existan resultados top-k.
-- [ ] Evaluar conjuntamente corrección, respaldo de afirmaciones y abstención con respuestas revisadas manualmente; un juez LLM es opcional y no sustituye esas referencias.
+- [x] Validate abstention with real questions outside the corpus.
+- [x] Evaluar alucinaciones y citas
+- [x] No interpretar la similitud como probabilidad de respuesta correcta ni decidir suficiencia solo porque existan resultados top-k.
+- [x] Evaluar conjuntamente corrección, respaldo de afirmaciones y abstención con respuestas revisadas manualmente; un juez LLM es opcional y no sustituye esas referencias.
 
 Principio:
 

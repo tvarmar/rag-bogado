@@ -254,3 +254,40 @@ exclusión de considerandos con artículos normativos y margen relativo `relativ
 - **Multi-query (1 vs. 2 búsquedas):**
   - La reformulación repitió exactamente la pregunta original.
   - `retrieve_questions` detectó la igualdad léxica (`rewrite.casefold() == question.strip().casefold()`) y no ejecutó una segunda búsqueda innecesaria. La salida con 1 y 2 búsquedas es exactamente idéntica.
+
+### Caso d04 (`enumerated_subjects`): ¿Qué obligaciones de transparencia tienen proveedores y responsables del despliegue?
+
+- **Comportamiento:** La descomposición mantiene la consulta unitaria con dos sujetos (`single_question_restored: true`).
+- **Respuesta y política fail-closed:** El borrador genera obligaciones detalladas citando el Artículo 50. Al someterse a la revisión de soporte, una de las afirmaciones no supera el respaldo estricto (`qualifications_preserved: false, supported: false`).
+- **Resultado:** La política de seguridad *fail-closed* rechaza el borrador y marca la pregunta como no respondida validada (`answer_state: "review_rejected"`), evitando devolver información jurídica imprecisa.
+
+### Caso d05 (`comparison`): ¿Qué diferencias hay entre las obligaciones de proveedores y responsables del despliegue?
+
+- **Comportamiento:** Pregunta comparativa amplia. El modelo recupera definiciones y fragmentos normativos.
+- **Resultado:** La revisión de soporte rechaza el borrador por falta de respaldo suficiente en las diferencias comparativas; el sistema se abstiene de forma segura (`status="insufficient_evidence"`, `review_rejected`).
+
+### Caso d06 (`explicit_questions`): ¿Quién debe procurar la alfabetización en IA? ¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?
+
+- **Descomposición:** Separación limpia en dos preguntas independientes:
+  - Q1: `¿Quién debe procurar la alfabetización en IA?`
+  - Q2: `¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?`
+- **Aislamiento de citas y respuesta:**
+  - Q1 responde citando exclusivamente el Artículo 4 (`Q1-S1`), con 100% de respaldo verificado.
+  - Q2 responde citando exclusivamente el Artículo 11 (`Q2-S1`), con 100% de respaldo verificado: *«La documentación técnica de un sistema de IA de alto riesgo debe prepararse antes de su introducción en el mercado o puesta en servicio.»*
+- **Resultado:** `status="answered"` en ambas búsquedas, sin cruce de citas ni contaminación de contexto.
+
+### Caso d07 (`mixed`): Documentación técnica + teléfono del DPD corporativo
+
+- **Descomposición:** Dos preguntas: Q1 técnica/normativa y Q2 dato corporativo privado.
+- **Resultado:** **`status="partial"`**.
+  - Q1: Responde con el Artículo 11 (`citations=['Q1-S1']`).
+  - Q2: Se abstiene rotundamente (`status="insufficient_evidence"`).
+  - La respuesta final expone la parte jurídica y declara explícitamente en `unanswered_questions` la parte no respondida por falta de evidencia (`reason="abstained"`), sin inventar ningún número de teléfono.
+
+### Caso d08 (`near_domain_negative`): ¿Qué número de teléfono tiene el delegado de protección de datos de mi empresa?
+
+- **Resultado:** **`status="insufficient_evidence"`**, `reason="abstained"`. Cero alucinaciones de números de teléfono ni suplantación de datos privados con artículos normativos.
+
+### Caso d09 (`negative` fuera de dominio): ¿Cuál es la receta de una tortilla de patatas?
+
+- **Resultado:** **`status="insufficient_evidence"`**, `reason="abstained"`. El sistema no utiliza la memoria paramétrica del LLM para responder preguntas fuera del corpus legal indexado.
