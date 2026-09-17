@@ -50,6 +50,7 @@ rag-bogado/
 │   ├── generation/           # generator.py, questions.py, service.py,
 │   │                        # multi_query.py, support.py, structured.py,
 │   │                        # __main__.py (synthesis CLI)
+│   ├── api/                  # app.py, schemas.py (FastAPI service)
 │   └── evaluation/           # metrics.py, runner.py, __main__.py,
 │                            # README.md, datasets/, reports/
 ├── tests/                    # Deterministic unit and integration tests
@@ -62,7 +63,7 @@ rag-bogado/
                              # model weights, runtime and evaluation runs
 ```
 
-API, UI, and official-source synchronization are planned in the roadmap.
+UI and official-source synchronization are planned in the roadmap.
 Update this map when adding, moving, or removing modules.
 
 ## Local evaluation
@@ -197,3 +198,17 @@ manual evaluation rubric, comparison command and limitations.
 
 See [the local generation experiment](docs/local-generation.md) for installation,
 saved-evidence replay, model provenance, measurements, and remaining limitations.
+
+## REST API service
+
+Run the local FastAPI server using Uvicorn:
+
+```bash
+uv run uvicorn rag_bogado.api.app:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Endpoints:
+- `GET /health`: Report service readiness, version, and active queryable documents in SQLite.
+- `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis.
+- `GET /docs`: Interactive OpenAPI documentation (Swagger UI).
+- `GET /redoc`: Alternative OpenAPI documentation (ReDoc).
