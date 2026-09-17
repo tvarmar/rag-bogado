@@ -18,10 +18,11 @@ Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
 
 - **Hito 8 completado y aceptado (2026-09-17):**
   - Interfaz web interactiva y responsive servida en `/` por FastAPI desde `src/rag_bogado/api/static/` (`index.html`, `styles.css`, `app.js`).
-  - Formulario de consulta con selector dinámico de normas activas (conectado a `GET /health`), selector de modo (`evidence` vs `synthesis`), control de búsquedas (1 o 2 RRF) y control de top-k.
+  - Formulario de consulta con selector dinámico de normas activas (conectado a `GET /health`), modo fijado en evidencia literal contrastada (retirada la síntesis experimental del UI para garantizar máxima fidelidad jurídica) y consulta RRF con top-k acotado.
+  - Presentación estructurada de fragmentos legales: segmentación visual de artículos, cláusulas numeradas (`1.`, `2.`), apartados con letra (`a)`, `b)`) e incisos romanos (`i)`, `ii)`) con sangría y viñetas jurídicas, evitando el texto continuo macizo y depurando marcadores huérfanos en cortes de chunk.
   - Desglose visual de aspectos y subpreguntas con estados semánticos claros: respondida con evidencia, abstención por falta de evidencia (`insufficient_evidence`) y rechazo de soporte (`review_rejected`).
   - Bloque de respuesta con citas interactivas (`Q1-S1`) que resaltan y hacen scroll automático hacia el pasaje de evidencia correspondiente.
-  - Panel y modal de fuentes con artículo legal, localizador/página, identificador de chunk y visualización del texto íntegro del pasaje original.
+  - Panel y modal de fuentes con artículo legal, localizador/página, identificador de chunk y visualización del texto íntegro del pasaje original estructurado.
   - Diseño *mobile-first* preparado para acceso multiplataforma y adaptable a pantalla completa en smartphones (PWA / Web App) conectándose a `--host 0.0.0.0`.
   - Tests deterministas en `tests/test_api.py` cubriendo la entrega de HTML y archivos estáticos CSS/JS. Total suite: **139 tests pasando**.
 - **Hito 7 completado y fusionado en `main`:**
@@ -51,7 +52,8 @@ Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
   `uv run ruff format --check .` y `git diff --check`, correctos.
   Aceptación formal del Hito 8 registrada en `PROJECT_PLAN.md` y estructura en `README.md`.
 - Rama: `feat/user-interface`.
-- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) abierto en GitHub; CI verificado y superado al 100% (2/2 checks exitosos).
+- Refinamiento de interfaz (`71bcf74`): modo fijado en evidencia literal y formateo estructurado de enumeraciones normativas (`1.`, `2.`, `a)`, `b)`...).
+- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) actualizado en GitHub; CI verificado y superado al 100% (2/2 checks exitosos tras el commit `71bcf74`).
 - `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
