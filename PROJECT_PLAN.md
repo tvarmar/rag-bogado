@@ -49,7 +49,7 @@ Los números de hito se conservan para mantener las referencias del plan origina
 ### Criterios de aceptación del MVP
 
 - [x] Indexar el corpus elegido una vez y consultarlo tras reiniciar sin recalcular todos los embeddings.
-- [ ] Preguntar desde la interfaz y recibir una síntesis con fuentes que se puedan abrir y comprobar.
+- [x] Preguntar desde la interfaz y recibir respuesta contrastada con fuentes oficiales que se puedan abrir y comprobar.
 - [x] Identificar documento, versión local y página o localizador aplicable; no inventar páginas para fuentes estructuradas.
 - [x] Mostrar una respuesta de evidencia insuficiente en los casos negativos del conjunto de evaluación.
 - [x] Ejecutar sin servicios de pago, con instrucciones reproducibles mediante `uv`.
@@ -499,20 +499,15 @@ Respuesta conceptual:
 MVP sencillo.
 
 - [x] Campo de pregunta
-- [x] Respuesta generada
+- [x] Respuesta generada contrastada con evidencia literal estructurada (apartados y listas legibles)
 - [x] Fuentes visibles
-- [x] Página
-- [x] Fragmentos originales
-- [x] Abrir desde la cita la versión original del documento en la página correspondiente.
-- [x] Explorar resaltado del pasaje en el visor; comprobar si requiere conservar coordenadas
-  de extracción. Mejora posterior de interfaz, sin bloquear la evaluación actual.
-- [x] Mensaje claro si no existe evidencia
-
-Opciones:
-
-- [x] HTML mínimo servido con la aplicación como opción inicial; Streamlit solo si facilita claramente la entrega.
-
-No construir un frontend complejo inicialmente.
+- [x] Página y localizador normativo oficial (DOUE-L-2024-81079)
+- [x] Fragmentos originales íntegros
+- [x] Abrir desde la cita la versión original del documento en la página correspondiente (panel lateral y modal de pasaje completo)
+- [x] Explorar resaltado del pasaje en el visor; citas interactivas (`Q1-S1`) con scroll y resaltado visual automático
+- [x] Mensaje claro si no existe evidencia (abstención fail-closed)
+- [x] Adaptación responsive mobile-first y soporte PWA validado en smartphone
+- [x] Servido directamente por FastAPI desde `src/rag_bogado/api/static/` sin dependencias frontend externas pesadas
 
 ---
 

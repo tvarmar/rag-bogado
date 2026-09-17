@@ -50,10 +50,11 @@ Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
 
 - 2026-09-17: `uv run pytest`, **139 aprobados**; `uv run ruff check .`,
   `uv run ruff format --check .` y `git diff --check`, correctos.
-  Aceptación formal del Hito 8 registrada en `PROJECT_PLAN.md` y estructura en `README.md`.
+  Aceptación formal del Hito 8 y criterio de MVP registrados en `PROJECT_PLAN.md`.
 - Rama: `feat/user-interface`.
 - Refinamiento de interfaz (`71bcf74`): modo fijado en evidencia literal y formateo estructurado de enumeraciones normativas (`1.`, `2.`, `a)`, `b)`...).
-- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) actualizado en GitHub; CI verificado y superado al 100% (2/2 checks exitosos tras el commit `71bcf74`).
+- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) actualizado en GitHub; CI verificado y superado al 100% (2/2 checks exitosos tras los commits `71bcf74` y `b7bda2c`).
+- Validación en smartphone completada con éxito; túnel efímero cerrado.
 - `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,
