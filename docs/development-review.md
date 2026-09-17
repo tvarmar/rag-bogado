@@ -219,3 +219,38 @@ procesa ambas preguntas: devuelve alfabetización y marca explícitamente el rec
 de preparación/actualización. El borrador cita S1 para un plazo que S1 no sostiene.
 La respuesta de alfabetización sigue omitiendo condiciones pese a la aprobación del
 revisor. No se da por resuelta la fiabilidad de la síntesis por corregir la separación.
+
+## Validación con fuentes XML estructuradas y selección de contexto refinada (2026-09-17)
+
+Verificación en vivo con catálogo oficial XML (`eu_ai_act.xml`, versión 3, 773 chunks),
+modelo local `qwen3:4b-instruct` y selección de contexto refinada (`max_passages=5`,
+exclusión de considerandos con artículos normativos y margen relativo `relative_margin=0.025`).
+
+### Caso d01 (`simple`): ¿Quién debe procurar la alfabetización en IA?
+
+- **Fuentes seleccionadas:** Exclusivamente el **Artículo 4** (`Q1-S1`, score 0.8918).
+  Todos los considerandos candidatos (56, 20, 58, 68, 53) fueron excluidos por la
+  regla de considerandos normativos; el Artículo 66 (score 0.8662) fue excluido por margen
+  relativo ($0.8918 - 0.025 = 0.8668$).
+- **Síntesis generada:**
+  > «Los proveedores y responsables del despliegue de sistemas de IA deben adoptar medidas para garantizar que, en la mayor medida posible, su personal y demás personas que se encarguen en su nombre del funcionamiento y la utilización de sistemas de IA tengan un nivel suficiente de alfabetización en materia de IA.» `[Q1-S1]`
+- **Diagnóstico y fidelidad:**
+  - Desaparición completa de los considerandos periféricos 20 y 21 que contaminaban la respuesta en PDF.
+  - Una única afirmación limpia que preserva todas las calificaciones del artículo («en la mayor medida posible», «en su nombre»).
+  - Soporte automático verificado (`qualifications_preserved: true`, `relevant: true`, `supported: true`).
+- **Multi-query (1 vs. 2 búsquedas):**
+  - Reformulación generada: *«¿Quién tiene la responsabilidad de garantizar la alfabetización en inteligencia artificial?»*.
+  - Modifica «procurar» por «garantizar» (elevando la fuerza del deber en la búsqueda). Ambas búsquedas posicionan el Artículo 4 en el puesto 1; la respuesta final es idéntica.
+
+### Caso d02 (`paraphrase`): ¿A quién le corresponde procurar que el personal sepa utilizar la IA con suficiente formación?
+
+- **Fuentes seleccionadas:** Artículo 4 (`Q1-S1`, score 0.8730), Anexo III (dos pasajes con scores 0.8704 y 0.8656, recuperados por solapamiento léxico de «educación y formación profesional»), Artículo 54 (0.8642) y Artículo 14 (0.8635). Todos los considerandos (73, 68, 107, 56, 58) fueron eliminados.
+- **Síntesis generada:**
+  > «Los proveedores y responsables del despliegue de sistemas de IA adoptarán medidas para garantizar que, en la mayor medida posible, su personal y demás personas que se encarguen en su nombre del funcionamiento y la utilización de sistemas de IA tengan un nivel suficiente de alfabetización en materia de IA, teniendo en cuenta sus conocimientos técnicos, su experiencia, su educación y su formación, así como el contexto previsto de uso de los sistemas de IA y las personas o los colectivos de personas en que se van a utilizar dichos sistemas.» `[Q1-S1]`
+- **Diagnóstico y fidelidad:**
+  - El generador ignoró el ruido periférico del Anexo III y de los artículos 54 y 14, respondiendo y citando únicamente el Artículo 4.
+  - Respaldo estricto del 100% y preservación de todas las calificaciones.
+  - Soporte automático verificado (`qualifications_preserved: true`, `relevant: true`, `supported: true`).
+- **Multi-query (1 vs. 2 búsquedas):**
+  - La reformulación repitió exactamente la pregunta original.
+  - `retrieve_questions` detectó la igualdad léxica (`rewrite.casefold() == question.strip().casefold()`) y no ejecutó una segunda búsqueda innecesaria. La salida con 1 y 2 búsquedas es exactamente idéntica.

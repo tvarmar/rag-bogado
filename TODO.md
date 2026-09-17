@@ -1,14 +1,15 @@
 # Pendientes para próximas sesiones
 
-Actualizado: 2026-09-16. Pendientes operativos; arquitectura y aceptación en
+Actualizado: 2026-09-17. Pendientes operativos; arquitectura y aceptación en
 [PROJECT_PLAN.md](PROJECT_PLAN.md), mapa en [README.md](README.md).
 
 ## Primera acción
 
-Revisar la evaluación cualitativa humana en [docs/development-review.md](docs/development-review.md)
-para los casos de desarrollo con la nueva selección de contexto y fuentes XML.
-Contrastar d01 y d02 con las nuevas fuentes limpias y verificar si las afirmaciones
-mantienen respaldo estricto y ausencia de considerandos periféricos.
+Evaluar la fidelidad y utilidad de las reformulaciones en casos de desarrollo variados
+([src/rag_bogado/generation/multi_query.py](src/rag_bogado/generation/multi_query.py),
+[scripts/evaluate_multi_query.py](scripts/evaluate_multi_query.py)).
+Analizar si la reformulación altera el deber normativo («procurar» vs. «garantizar»)
+y comparar cobertura, evidencia útil y latencia entre una y dos búsquedas.
 
 ## Estado actual
 
@@ -17,7 +18,11 @@ mantienen respaldo estricto y ausencia de considerandos periféricos.
   1) `max_passages` reducido de 10 a 5;
   2) filtrado estricto de considerandos (`recital`) cuando existen artículos normativos (`article`) en los resultados;
   3) filtro por margen relativo (`relative_margin=0.025`): cuando el mejor resultado tiene alta relevancia (score >= 0.85), se descartan pasajes con puntuación inferior a `max_score - relative_margin`.
-- En d03 (pregunta compuesta): Q1 selecciona exclusivamente el Artículo 4 (score 0.8918), eliminando el ruido periférico de considerandos; Q2 selecciona exclusivamente fragmentos del Artículo 11 y Artículo 18.
+- Verificado en vivo en `d01`, `d02` y `d03` con XML oficial y `qwen3:4b-instruct` (2026-09-17):
+  - En d01 (`simple`): selecciona exclusivamente el Artículo 4 (score 0.8918); se eliminan considerandos (20, 21, 56) y Artículo 66 por margen. Una única afirmación limpia respaldada al 100% con calificaciones completas.
+  - En d02 (`paraphrase`): se descartan todos los considerandos; la síntesis cita exclusivamente el Artículo 4 ignorando el solapamiento de Anexo III y los artículos 54 y 14.
+  - En d03 (`compound`): Q1 selecciona exclusivamente el Artículo 4 (score 0.8918); Q2 selecciona exclusivamente fragmentos del Artículo 11 y Artículo 18.
+  - Multi-query: en d01 la reformulación aumentó la obligación («procurar» → «garantizar»), aunque ambas recuperaron Art. 4 como #1; en d02 la reformulación repitió la original y evitó una segunda búsqueda redundante.
 - Migración completa de PDF a XML oficial (`src/rag_bogado/ingestion/xml_loader.py`):
   eliminado PyMuPDF (`pymupdf`), eliminado `loader.py` y `chunk_page`. Ahora se parsean
   unidades semánticas (`LegalUnit`: artículos, considerandos y anexos) y se dividen
@@ -29,21 +34,18 @@ mantienen respaldo estricto y ausencia de considerandos periféricos.
 
 ## Próximas tareas, por orden
 
-### 1. Pertinencia y selección de contexto resueltas en d03 (validación en curso)
+### 1. Pertinencia y selección de contexto resueltas en d01, d02 y d03 (verificado)
 
-- **Evidencia y resolución:** d03 Q1 incluía considerandos periféricos porque se enviaban
-  hasta 10 pasajes sin discriminación de unidades normativas. Implementado en
-  `src/rag_bogado/generation/generator.py`: `max_passages=5`, exclusión estricta de
+- **Evidencia y resolución:** d01 y d03 Q1 incluían considerandos periféricos porque se enviaban
+  hasta 10 pasajes sin discriminación de unidades normativas. Con `max_passages=5`, exclusión estricta de
   considerandos (`recital`) cuando existen artículos (`article`), y filtrado por margen
-  relativo (`relative_margin=0.025` cuando `max_score >= 0.85`).
-  Resultado en vivo: d03 Q1 selecciona únicamente el Artículo 4 (score 0.8918) con una única
-  afirmación limpia y respaldada al 100%; d03 Q2 selecciona exclusivamente Artículos 11 y 18.
+  relativo (`relative_margin=0.025` cuando `max_score >= 0.85`), se verificó en vivo:
+  d01 selecciona únicamente Artículo 4 (score 0.8918); d02 cita exclusivamente Artículo 4;
+  d03 Q1 selecciona únicamente Artículo 4 y Q2 Artículos 11 y 18.
 - **Archivos:** `src/rag_bogado/generation/generator.py`, `tests/test_generation.py`,
-  `src/rag_bogado/generation/__main__.py`.
-- **Siguiente acción:** Contrastar este filtrado en d01 y d02 y comprobar la revisión
-  de respaldo.
+  `src/rag_bogado/generation/__main__.py`, `docs/development-review.md`.
 - **Cierre:** ausencia de considerandos periféricos verificada en preguntas sobre obligaciones
-  normativas con artículos directos. Citas y calificaciones preservadas sin alucinaciones.
+  normativas con artículos directos. Citas y calificaciones preservadas sin alucinaciones. Resuelto.
 
 ### 2. Evaluar fidelidad y utilidad de las reformulaciones
 
@@ -88,11 +90,10 @@ mantienen respaldo estricto y ausencia de considerandos periféricos.
 
 ## Comprobaciones y entrega
 
-- 2026-09-16: `uv run pytest`, **128 aprobados**; `uv run ruff check .`,
+- 2026-09-17: `uv run pytest`, **128 aprobados**; `uv run ruff check .`,
   `uv run ruff format --check .` y `git diff --check`, correctos.
-  Dependencia `pymupdf` eliminada de `pyproject.toml` y `uv.lock`. Módulo `loader.py`
-  reemplazado por `xml_loader.py`.
-- Rama: `feat/local-generation`. Entrega de selección de contexto en commit `2d8c377`.
+  Verificación cualitativa de `d01` y `d02` registrada en `docs/development-review.md`.
+- Rama: `feat/local-generation`.
 - Push autorizado por la usuaria; verificación de CI pendiente tras el push.
 - Mantener [PR #4](https://github.com/tvarmar/rag-bogado/pull/4) como borrador.
 - `ESTUDIAR.md` revisado, local e ignorado por Git. No publicar ni marcar conceptos
