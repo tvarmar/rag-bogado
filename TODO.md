@@ -5,55 +5,56 @@ Actualizado: 2026-09-17. Pendientes operativos; arquitectura y aceptación en
 
 ## Primera acción
 
-Iniciar el **Hito 8 — Interfaz de usuario** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
-1. Diseñar el frontend mínimo (HTML/JS servido por FastAPI o componente ligero) para interactuar con la API local:
-   - Campo de entrada para la pregunta del usuario y selector de documento activo.
-   - Selector de modo de respuesta (`synthesis` vs `evidence`) y número de búsquedas (`search_count`).
-2. Visualización estructurada:
-   - Descomposición en preguntas individuales con sus estados (`answered`, `abstained`, `review_rejected`, `error`).
-   - Bloque de respuesta con citas interactivas vinculadas al panel de fuentes.
-   - Panel lateral o modal con el texto íntegro del pasaje recuperado, artículo normativo y localizador.
-   - Mensajes explicativos claros ante falta de evidencia o rechazo de soporte.
-3. Tests de integración y validación visual.
+Iniciar el **Hito 9 — Docker** ([PROJECT_PLAN.md](PROJECT_PLAN.md)):
+1. Crear `Dockerfile` optimizado y reproducible para `rag-bogado` (Python 3.12, dependencias `uv`).
+2. Crear `docker-compose.yml` para orquestar la arquitectura local:
+   - Contenedor `rag-bogado-api` exponiendo puerto 8000.
+   - Contenedor `qdrant` oficial exponiendo puerto 6333.
+   - Volúmenes persistentes para `data/qdrant` y `data/catalog`.
+3. Variables de entorno para parametrizar hosts, rutas y puertos.
+4. Validar ejecución y ciclo de vida con `docker compose up` y tests automatizados.
 
 ## Estado actual
 
-- **Hito 7 completado y aceptado (2026-09-17):**
-  - Añadidas dependencias `fastapi`, `uvicorn` y `httpx` (dev) mediante `uv`.
-  - Servicio FastAPI modular en `src/rag_bogado/api/app.py` con factoría `create_app()` e inyección de dependencias para desacoplar catálogo, generador y función de búsqueda.
-  - Endpoint `GET /health` reportando disponibilidad de SQLite y lista de documentos normativos activos.
-  - Endpoint `POST /ask` procesando consultas con descomposición de preguntas, multi-query RRF, selección de contexto, modos de respuesta (`synthesis` / `evidence`) y metadatos completos de citas.
-  - Modelos Pydantic en `src/rag_bogado/api/schemas.py` con validación estricta y generación de documentación OpenAPI interactiva en `/docs` y `/redoc`.
-  - Logging estructurado bajo el logger `rag_bogado.api`.
-  - 8 tests deterministas en `tests/test_api.py` cubriendo casos de éxito, 404 (documento inexistente), 422 (validación de entrada), degradación de catálogo y OpenAPI. Total de la suite: 136 tests pasando.
+- **Hito 8 completado y aceptado (2026-09-17):**
+  - Interfaz web interactiva y responsive servida en `/` por FastAPI desde `src/rag_bogado/api/static/` (`index.html`, `styles.css`, `app.js`).
+  - Formulario de consulta con selector dinámico de normas activas (conectado a `GET /health`), modo fijado en evidencia literal contrastada (retirada la síntesis experimental del UI para garantizar máxima fidelidad jurídica) y consulta RRF con top-k acotado.
+  - Presentación estructurada de fragmentos legales: segmentación visual de artículos, cláusulas numeradas (`1.`, `2.`), apartados con letra (`a)`, `b)`) e incisos romanos (`i)`, `ii)`) con sangría y viñetas jurídicas, evitando el texto continuo macizo y depurando marcadores huérfanos en cortes de chunk.
+  - Desglose visual de aspectos y subpreguntas con estados semánticos claros: respondida con evidencia, abstención por falta de evidencia (`insufficient_evidence`) y rechazo de soporte (`review_rejected`).
+  - Bloque de respuesta con citas interactivas (`Q1-S1`) que resaltan y hacen scroll automático hacia el pasaje de evidencia correspondiente.
+  - Panel y modal de fuentes con artículo legal, localizador/página, identificador de chunk y visualización del texto íntegro del pasaje original estructurado.
+  - Diseño *mobile-first* preparado para acceso multiplataforma y adaptable a pantalla completa en smartphones (PWA / Web App) conectándose a `--host 0.0.0.0`.
+  - Tests deterministas en `tests/test_api.py` cubriendo la entrega de HTML y archivos estáticos CSS/JS. Total suite: **139 tests pasando**.
+- **Hito 7 completado y fusionado en `main`:**
+  - API REST FastAPI con schemas Pydantic, OpenAPI y endpoints `/health` y `/ask` integrados.
 - **Hitos 5 y 6 completados y aceptados:**
-  - Casos `d01` a `d09` evaluados y documentados en [docs/development-review.md](docs/development-review.md).
-  - Selección de contexto, política *fail-closed*, abstención segura y multi-query RRF consolidados.
+  - Casos `d01` a `d09` evaluados; abstención *fail-closed* y multi-query RRF operativos.
 
 ## Próximas tareas, por orden
 
-### 1. Hito 8 — Interfaz de usuario (activa)
-- **Objetivo:** Proporcionar una interfaz web interactiva para realizar preguntas, visualizar respuestas, examinar fuentes originales y distinguir claramente preguntas respondidas de abstenciones.
-- **Archivos:** `src/rag_bogado/ui/` o frontend integrado en `src/rag_bogado/api/`.
-- **Siguiente acción:** Diseñar la interfaz mínima y conectarla con los endpoints `GET /health` y `POST /ask`.
-- **Cierre:** Consulta completa desde navegador con apertura y verificación visual de fuentes exactas.
+### 1. Hito 9 — Docker (activa)
+- **Objetivo:** Empaquetar el servicio API y el almacén Qdrant mediante Docker y Docker Compose para ejecución y despliegue reproducible.
+- **Archivos:** `Dockerfile`, `docker-compose.yml`, `.dockerignore`.
+- **Siguiente acción:** Escribir el `Dockerfile` multietapa con `uv` y definir el `docker-compose.yml`.
+- **Cierre:** `docker compose up` levantando ambos servicios interconectados y respondiendo a consultas.
 
-### 2. Hito 9 — Docker (pendiente)
-- **Objetivo:** Empaquetar el servicio API y el almacén Qdrant mediante Docker y Docker Compose para ejecución reproducible.
-- **Archivos:** `Dockerfile`, `docker-compose.yml`.
-- **Cierre:** `docker compose up` arrancando los servicios interconectados con persistencia por volumen.
-
-### 3. Hito 10 — Fuentes oficiales y actualización (pendiente)
-- **Objetivo:** Sincronización automática con la API del BOE y EUR-Lex para detectar cambios normativos y reindexar bajo demanda.
+### 2. Hito 10 — Fuentes oficiales y actualización (pendiente)
+- **Objetivo:** Sincronización automática con la API del BOE y EUR-Lex para detectar cambios normativos, descargar XML consolidado e indexar bajo demanda.
 - **Archivos:** Adaptadores de sincronización e ingesta.
+- **Cierre:** Consulta de metadatos, descarga por hash y reindexación atómica validada.
+
+### 3. Hito 11 — Comparación con LangGraph (pendiente)
+- **Objetivo:** Implementar un motor alternativo con LangGraph para comparar la orquestación basada en grafos con el pipeline nativo.
 
 ## Comprobaciones y entrega
 
-- 2026-09-17: `uv run pytest`, **136 aprobados**; `uv run ruff check .`,
+- 2026-09-17: `uv run pytest`, **139 aprobados**; `uv run ruff check .`,
   `uv run ruff format --check .` y `git diff --check`, correctos.
-  Aceptación formal del Hito 7 registrada en `PROJECT_PLAN.md` y estructura documentada en `README.md`.
-- Rama: `feat/fastapi-api`.
-- [PR #5](https://github.com/tvarmar/rag-bogado/pull/5) abierto en GitHub; CI verificado y superado al 100% (2/2 checks exitosos).
+  Aceptación formal del Hito 8 y criterio de MVP registrados en `PROJECT_PLAN.md`.
+- Rama: `feat/user-interface`.
+- Refinamiento de interfaz (`71bcf74`): modo fijado en evidencia literal y formateo estructurado de enumeraciones normativas (`1.`, `2.`, `a)`, `b)`...).
+- [PR #6](https://github.com/tvarmar/rag-bogado/pull/6) actualizado en GitHub; CI verificado y superado al 100% (2/2 checks exitosos tras los commits `71bcf74` y `b7bda2c`).
+- Validación en smartphone completada con éxito; túnel efímero cerrado.
 - `ESTUDIAR.md` revisado, local e ignorado por Git. Conservar sin marcar conceptos como aprendidos solo por haberlos implementado.
 
 Seguir [AGENTS.md](AGENTS.md) al cerrar: registrar fallos reproducibles con archivos,

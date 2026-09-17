@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>RAG-Bogado — Chat Conversacional Regulatorio</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="chat-app">
+    <!-- Top Navigation Header -->
+    <header class="chat-header">
+      <div class="header-brand">
+        <span class="brand-avatar">⚖️</span>
+        <div class="brand-info">
+          <h1 class="brand-title">RAG-Bogado</h1>
+          <p class="brand-meta">Asistente de regulación tecnológica con citas oficiales</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="reset-chat-btn" class="btn btn-header" title="Reiniciar chat">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label">Nuevo chat</span>
+        </button>
+        <button id="toggle-sidebar-btn" class="btn btn-header btn-icon-only" title="Ver referencias">
+          <span class="btn-icon">📑</span>
+          <span id="sidebar-badge-count" class="sidebar-counter">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container: Chat on left/center, References Drawer on right -->
+    <div class="chat-main-container">
+      <!-- Chat Conversation Section -->
+      <section class="chat-viewport">
+        <!-- Messages Flow -->
+        <div id="messages-container" class="messages-container">
+          <!-- Welcome message rendered via JavaScript -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator hidden">
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          <span class="typing-text">Consultando catálogo y verificando citas en la norma...</span>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-wrapper">
+          <!-- Control Pills Bar -->
+          <div class="chat-controls-bar">
+            <!-- Archivos consultados selector popover -->
+            <div class="control-dropdown-container">
+              <button type="button" id="docs-dropdown-btn" class="control-pill control-pill-btn">
+                <span class="pill-label">Archivos consultados:</span>
+                <span id="docs-selected-label" class="pill-value">Reglamento de IA (1 activo)</span>
+                <span class="dropdown-arrow">▾</span>
+              </button>
+              <div id="docs-dropdown-menu" class="dropdown-popover hidden">
+                <div class="dropdown-popover-header">
+                  <span class="dropdown-popover-title">Corpus normativo</span>
+                  <button type="button" id="select-all-docs-btn" class="btn-text-action">Marcar todos</button>
+                </div>
+                <div class="dropdown-options-list">
+                  <label class="doc-checkbox-item">
+                    <input type="checkbox" id="doc-eu-ai-act" value="eu_ai_act" checked>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Reglamento de IA (DOUE-L-2024-81079)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 113 artículos, 180 considerandos</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-rgpd" value="rgpd" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">RGPD / LOPDGDD (Protección de Datos)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> BOE-A-2018-16673</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-dsa" value="dsa" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Reglamento de Servicios Digitales (DSA)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81577</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
+                    <input type="checkbox" id="doc-nis2" value="nis2" disabled>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">Directiva / Ley de Ciberseguridad (NIS2)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81997</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="control-pill" title="Respuestas fundamentadas exclusivamente en pasajes literales de la norma oficial">
+              <span class="pill-label">Modo:</span>
+              <span class="pill-value">Evidencia literal</span>
+            </div>
+          </div>
+
+          <!-- Text input form -->
+          <form id="chat-form" class="chat-input-form">
+            <textarea
+              id="user-input"
+              class="chat-input"
+              placeholder="Haz una pregunta sobre el Reglamento de Inteligencia Artificial..."
+              rows="1"
+              required
+            ></textarea>
+            <button type="submit" id="send-btn" class="send-btn" aria-label="Enviar pregunta">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </form>
+          <div class="input-disclaimer">
+            Las respuestas se fundamentan exclusivamente en las fuentes oficiales citadas.
+          </div>
+        </div>
+      </section>
+
+      <!-- References Sidebar -->
+      <aside id="references-sidebar" class="references-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title-group">
+            <h2 class="sidebar-title">Referencias y fuentes</h2>
+            <span id="references-count" class="badge badge-neutral">0 fuentes</span>
+          </div>
+          <button id="close-sidebar-btn" class="close-sidebar-btn" aria-label="Cerrar panel">&times;</button>
+        </div>
+
+        <div class="sidebar-info-banner">
+          <div class="info-icon">🏛️</div>
+          <div class="info-content">
+            <strong>Fuente oficial:</strong> BOE / DOUE<br>
+            <span class="info-sub">Reglamento (UE) 2024/1689 (IA)</span>
+          </div>
+        </div>
+
+        <div id="references-list" class="references-list">
+          <div class="empty-references">
+            <span class="empty-icon">📖</span>
+            <p>Aún no hay referencias en la conversación.</p>
+            <small>Las citas normativas que respalden cada respuesta se irán acumulando en este panel.</small>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Modal for Full Passage Reading -->
+    <div id="source-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span id="modal-source-id" class="badge badge-primary">Q1-S1</span>
+            <h3 id="modal-article-title" class="modal-title">Artículo</h3>
+          </div>
+          <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-meta-grid">
+            <div>
+              <span class="meta-label">Documento oficial</span>
+              <span id="modal-document" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">Localizador</span>
+              <span id="modal-page" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">Unidad jurídica</span>
+              <span id="modal-unit" class="meta-value">—</span>
+            </div>
+            <div>
+              <span class="meta-label">ID de Fragmento</span>
+              <span id="modal-chunk-id" class="meta-value">—</span>
+            </div>
+          </div>
+          <div class="modal-text-container">
+            <span class="meta-label">Texto íntegro del pasaje normativo</span>
+            <div id="modal-source-text" class="modal-source-text"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-dismiss-btn" class="btn btn-secondary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

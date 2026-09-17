@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from rag_bogado.api.schemas import (
     AskRequest,
@@ -18,6 +20,7 @@ from rag_bogado.indexing.catalog import DocumentCatalog
 from rag_bogado.indexing.service import query_active
 
 logger = logging.getLogger("rag_bogado.api")
+DEFAULT_STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_app(
@@ -25,6 +28,7 @@ def create_app(
     catalog_path: Path | None = None,
     generator_factory: Callable[[], Any] | None = None,
     query_fn: Callable[[Any, str, str, int], dict] | None = None,
+    static_dir: Path | None = None,
 ) -> FastAPI:
     """Create a configured FastAPI application with injectable service dependencies."""
     default_catalog_path = catalog_path or Path("data/catalog/catalog.sqlite3")
@@ -34,6 +38,7 @@ def create_app(
             catalog, doc_id, text, top_k=top_k
         )
     )
+    resolved_static_dir = static_dir or DEFAULT_STATIC_DIR
 
     app = FastAPI(
         title="RAG-Bogado API",
@@ -46,6 +51,21 @@ def create_app(
         docs_url="/docs",
         redoc_url="/redoc",
     )
+
+    if resolved_static_dir.exists():
+        app.mount("/static", StaticFiles(directory=resolved_static_dir), name="static")
+
+    @app.get(
+        "/",
+        summary="Web User Interface",
+        description="Serve the interactive web client for RAG-Bogado.",
+        include_in_schema=False,
+    )
+    def index():
+        index_file = resolved_static_dir / "index.html"
+        if index_file.exists():
+            return FileResponse(index_file)
+        return {"message": "RAG-Bogado API is running"}
 
     @app.get(
         "/health",

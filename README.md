@@ -50,7 +50,7 @@ rag-bogado/
 │   ├── generation/           # generator.py, questions.py, service.py,
 │   │                        # multi_query.py, support.py, structured.py,
 │   │                        # __main__.py (synthesis CLI)
-│   ├── api/                  # app.py, schemas.py (FastAPI service)
+│   ├── api/                  # app.py, schemas.py, static/ (FastAPI & Web UI)
 │   └── evaluation/           # metrics.py, runner.py, __main__.py,
 │                            # README.md, datasets/, reports/
 ├── tests/                    # Deterministic unit and integration tests
@@ -199,16 +199,19 @@ manual evaluation rubric, comparison command and limitations.
 See [the local generation experiment](docs/local-generation.md) for installation,
 saved-evidence replay, model provenance, measurements, and remaining limitations.
 
-## REST API service
+## REST API service and Web Interface
 
 Run the local FastAPI server using Uvicorn:
 
 ```bash
-uv run uvicorn rag_bogado.api.app:app --host 127.0.0.1 --port 8000 --reload
+uv run uvicorn rag_bogado.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Endpoints:
+Endpoints and views:
+- `GET /`: Interactive web client for desktop and mobile devices.
 - `GET /health`: Report service readiness, version, and active queryable documents in SQLite.
 - `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis.
 - `GET /docs`: Interactive OpenAPI documentation (Swagger UI).
 - `GET /redoc`: Alternative OpenAPI documentation (ReDoc).
+
+To access the web interface from another device (such as a smartphone connected to the same local Wi-Fi network), navigate to your computer's local IP address (e.g. `http://192.168.1.XX:8000`).

@@ -253,3 +253,35 @@ def test_ask_endpoint_invalid_answer_mode_validation_error(
     }
     response = client.post("/ask", json=payload)
     assert response.status_code == 422
+
+
+def test_root_index_serves_html(catalog_with_document: Path):
+    app = create_app(catalog_path=catalog_with_document)
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    assert "RAG-Bogado" in response.text
+
+
+def test_static_assets_served(catalog_with_document: Path):
+    app = create_app(catalog_path=catalog_with_document)
+    client = TestClient(app)
+
+    css_res = client.get("/static/styles.css")
+    assert css_res.status_code == 200
+    assert "text/css" in css_res.headers.get("content-type", "")
+
+    js_res = client.get("/static/app.js")
+    assert js_res.status_code == 200
+    assert "javascript" in js_res.headers.get("content-type", "")
+
+
+def test_root_index_fallback_without_html(tmp_path: Path):
+    empty_static = tmp_path / "empty_static"
+    empty_static.mkdir()
+    app = create_app(catalog_path=tmp_path / "catalog.sqlite3", static_dir=empty_static)
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "RAG-Bogado API is running"}
