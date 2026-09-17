@@ -466,16 +466,16 @@ Principio:
 
 ## Hito 7 — API con FastAPI
 
-- [ ] Añadir FastAPI
-- [ ] Crear aplicación
-- [ ] Endpoint de salud
-- [ ] `POST /ask`
-- [ ] Modelos Pydantic
-- [ ] Validación de entrada
-- [ ] Manejo de errores
-- [ ] Logging
-- [ ] Tests de API
-- [ ] OpenAPI
+- [x] Añadir FastAPI
+- [x] Crear aplicación
+- [x] Endpoint de salud
+- [x] `POST /ask`
+- [x] Modelos Pydantic
+- [x] Validación de entrada
+- [x] Manejo de errores
+- [x] Logging
+- [x] Tests de API
+- [x] OpenAPI
 
 Respuesta conceptual:
 
