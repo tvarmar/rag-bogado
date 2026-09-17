@@ -1,26 +1,22 @@
-// RAG-Bogado Client-Side Logic
+// RAG-Bogado Conversational Chat Engine
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("ask-form");
-  const questionInput = document.getElementById("question-input");
+  const messagesContainer = document.getElementById("messages-container");
+  const chatForm = document.getElementById("chat-form");
+  const userInput = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send-btn");
+  const typingIndicator = document.getElementById("typing-indicator");
+
+  const resetChatBtn = document.getElementById("reset-chat-btn");
+  const toggleSidebarBtn = document.getElementById("toggle-sidebar-btn");
+  const closeSidebarBtn = document.getElementById("close-sidebar-btn");
+  const referencesSidebar = document.getElementById("references-sidebar");
+  const referencesList = document.getElementById("references-list");
+  const referencesCountBadge = document.getElementById("references-count");
+  const sidebarBadgeCount = document.getElementById("sidebar-badge-count");
+
   const documentSelect = document.getElementById("document-select");
   const modeSelect = document.getElementById("mode-select");
   const searchCountSelect = document.getElementById("search-count-select");
-  const maxPassagesInput = document.getElementById("max-passages-input");
-  const submitBtn = document.getElementById("submit-btn");
-
-  const healthBadge = document.getElementById("health-badge");
-  const loadingState = document.getElementById("loading-state");
-  const errorState = document.getElementById("error-state");
-  const errorTitle = document.getElementById("error-title");
-  const errorMessage = document.getElementById("error-message");
-
-  const resultsContainer = document.getElementById("results-container");
-  const overallStatusBadge = document.getElementById("overall-status-badge");
-  const responseTimeSpan = document.getElementById("response-time");
-  const subquestionsCountSpan = document.getElementById("subquestions-count");
-  const answersList = document.getElementById("answers-list");
-  const sourcesCountSpan = document.getElementById("sources-count");
-  const sourcesList = document.getElementById("sources-list");
 
   // Modal elements
   const sourceModal = document.getElementById("source-modal");
@@ -34,237 +30,422 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalChunkId = document.getElementById("modal-chunk-id");
   const modalSourceText = document.getElementById("modal-source-text");
 
-  let currentSourcesMap = new Map();
+  // Accumulated sources in the conversation session
+  const conversationSources = new Map();
 
-  // 1. Health check & document list initialization
+  // Official document metadata
+  const OFFICIAL_DOC_INFO = {
+    id: "eu_ai_act",
+    official_id: "DOUE-L-2024-81079",
+    platform: "Boletín Oficial del Estado (BOE) / Diario Oficial de la UE (DOUE)",
+    title: "Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de IA)",
+    scope: "113 artículos, 180 considerandos y 13 anexos estructurados."
+  };
+
+  const SUGGESTED_QUESTIONS = [
+    {
+      label: "Supervisión humana",
+      query: "¿Cómo deben diseñarse los sistemas de IA de alto riesgo para garantizar la supervisión humana?"
+    },
+    {
+      label: "Multas y sanciones",
+      query: "¿A cuánto pueden ascender las multas administrativas por utilizar prácticas de IA prohibidas?"
+    },
+    {
+      label: "Pregunta compuesta",
+      query: "¿Qué prácticas de IA están prohibidas y qué obligaciones tienen los responsables de su despliegue?"
+    },
+    {
+      label: "Prueba de abstención (materia ajena)",
+      query: "¿Qué requisitos de etiquetado nutricional se exigen a los alimentos ecológicos?"
+    }
+  ];
+
+  // 1. Initialize Conversation
+  function initConversation() {
+    conversationSources.clear();
+    messagesContainer.innerHTML = "";
+    updateReferencesSidebar();
+    renderWelcomeMessage();
+    checkHealth();
+  }
+
+  // 2. Health check to load active documents
   async function checkHealth() {
     try {
-      const response = await fetch("/health");
-      if (!response.ok) throw new Error("Servicio no disponible");
-      const data = await response.json();
-
-      if (data.status === "ok" && data.catalog_ready) {
-        healthBadge.className = "badge badge-ok";
-        healthBadge.textContent = `En línea (${data.active_documents.length} norma${data.active_documents.length === 1 ? "" : "s"})`;
-
-        // Populate document select
-        if (data.active_documents && data.active_documents.length > 0) {
-          documentSelect.innerHTML = "";
-          data.active_documents.forEach((docId) => {
-            const opt = document.createElement("option");
-            opt.value = docId;
-            opt.textContent = docId === "eu_ai_act" ? "Reglamento de IA (eu_ai_act)" : docId;
-            documentSelect.appendChild(opt);
-          });
-        }
-      } else {
-        healthBadge.className = "badge badge-warn";
-        healthBadge.textContent = "Catálogo degradado";
+      const res = await fetch("/health");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.active_documents && data.active_documents.length > 0) {
+        documentSelect.innerHTML = "";
+        data.active_documents.forEach((docId) => {
+          const opt = document.createElement("option");
+          opt.value = docId;
+          opt.textContent =
+            docId === "eu_ai_act"
+              ? "Reglamento de IA (DOUE-L-2024-81079 / BOE)"
+              : docId;
+          documentSelect.appendChild(opt);
+        });
       }
-    } catch (err) {
-      healthBadge.className = "badge badge-error";
-      healthBadge.textContent = "Desconectado";
+    } catch (e) {
+      console.warn("Health check not reachable:", e);
     }
   }
 
-  // 2. Form submission
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const question = questionInput.value.trim();
-    if (!question) return;
+  // 3. Render Welcome Card
+  function renderWelcomeMessage() {
+    const welcomeRow = document.createElement("div");
+    welcomeRow.className = "message-row bot";
 
-    // Reset UI states
-    errorState.classList.add("hidden");
-    resultsContainer.classList.add("hidden");
-    loadingState.classList.remove("hidden");
-    submitBtn.disabled = true;
-    submitBtn.classList.add("loading");
+    welcomeRow.innerHTML = `
+      <div class="msg-avatar">⚖️</div>
+      <div class="msg-content-wrapper">
+        <div class="welcome-card">
+          <div class="welcome-header">
+            <span class="welcome-icon">🏛️</span>
+            <div>
+              <h2 class="welcome-title">Bienvenida a RAG-Bogado</h2>
+              <p class="brand-meta">Asistente conversacional para consultas jurídicas y regulatorias</p>
+            </div>
+          </div>
+          <div class="welcome-body">
+            <p>
+              Hola, soy tu asistente para la consulta y análisis de normativa tecnológica.
+              Mis respuestas se generan con <strong>trazabilidad estricta</strong>: cada afirmación
+              se contrasta contra las fuentes y, si la evidencia no existe en el texto legal,
+              declaro explícitamente la abstención en lugar de inventar.
+            </p>
+            <div class="official-doc-box">
+              <div class="official-doc-title">Documento activo para búsqueda:</div>
+              <p><strong>${escapeHtml(OFFICIAL_DOC_INFO.title)}</strong></p>
+              <div class="official-doc-meta">
+                <span><strong>Identificador oficial:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.official_id)}</span> &bull;
+                <span><strong>Origen:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.platform)}</span> &bull;
+                <span><strong>Estructura:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.scope)}</span>
+              </div>
+            </div>
+            <div class="suggested-questions-title">Consultas de ejemplo sugeridas:</div>
+            <div class="suggestion-chips" id="welcome-suggestion-chips"></div>
+          </div>
+        </div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      </div>
+    `;
+
+    messagesContainer.appendChild(welcomeRow);
+
+    // Populate chips
+    const chipsContainer = welcomeRow.querySelector("#welcome-suggestion-chips");
+    SUGGESTED_QUESTIONS.forEach((item) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = item.label;
+      chip.title = item.query;
+      chip.onclick = () => {
+        userInput.value = item.query;
+        handleFormSubmit();
+      };
+      chipsContainer.appendChild(chip);
+    });
+
+    scrollToBottom();
+  }
+
+  // 4. Handle Form Submission
+  chatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    handleFormSubmit();
+  });
+
+  // Auto-resize textarea & Enter key support (Shift+Enter for new line)
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleFormSubmit();
+    }
+  });
+
+  async function handleFormSubmit() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    // Append User Message
+    appendUserMessage(text);
+    userInput.value = "";
+    adjustTextareaHeight(userInput);
+
+    // Show Typing Indicator & disable button
+    typingIndicator.classList.remove("hidden");
+    sendBtn.disabled = true;
+    scrollToBottom();
 
     const payload = {
-      question: question,
+      question: text,
       document_id: documentSelect.value,
       answer_mode: modeSelect.value,
       search_count: parseInt(searchCountSelect.value, 10),
-      max_passages: parseInt(maxPassagesInput.value, 10) || 5,
+      max_passages: 5
     };
 
     try {
       const res = await fetch("/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        const errorDetail = data.detail || "Error desconocido al procesar la consulta";
-        showError(`Error ${res.status}`, errorDetail);
+        appendBotErrorMessage(
+          `Error ${res.status}`,
+          data.detail || "Error desconocido al procesar la consulta en el servidor."
+        );
         return;
       }
 
-      renderResults(data);
+      appendBotAnswerMessage(data);
     } catch (err) {
-      showError("Fallo de conexión", err.message || "No se pudo comunicar con el servidor.");
+      appendBotErrorMessage(
+        "Fallo de comunicación",
+        err.message || "No se pudo conectar con el servidor local."
+      );
     } finally {
-      loadingState.classList.add("hidden");
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("loading");
+      typingIndicator.classList.add("hidden");
+      sendBtn.disabled = false;
+      scrollToBottom();
     }
-  });
+  }
 
-  // 3. Render Results
-  function renderResults(data) {
-    currentSourcesMap.clear();
+  // 5. Append User Message
+  function appendUserMessage(text) {
+    const row = document.createElement("div");
+    row.className = "message-row user";
 
-    // Top-level status
-    renderStatusBadge(overallStatusBadge, data.status);
-    responseTimeSpan.textContent = data.wall_seconds ? `${data.wall_seconds.toFixed(2)} s` : "—";
-    subquestionsCountSpan.textContent = data.answers ? data.answers.length : 0;
+    row.innerHTML = `
+      <div class="msg-content-wrapper">
+        <div class="msg-bubble">${escapeHtml(text)}</div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      </div>
+      <div class="msg-avatar">👤</div>
+    `;
 
-    // Render Answers
-    answersList.innerHTML = "";
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+  }
+
+  // 6. Append Bot Answer Message
+  function appendBotAnswerMessage(data) {
+    const row = document.createElement("div");
+    row.className = "message-row bot";
+
+    const contentWrapper = document.createElement("div");
+    contentWrapper.className = "msg-content-wrapper";
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+
+    // Header with status
+    const header = document.createElement("div");
+    header.className = "bot-answer-header";
+
+    const title = document.createElement("span");
+    title.className = "bot-answer-title";
+    title.textContent =
+      data.answers && data.answers.length > 1
+        ? `Consulta descompuesta en ${data.answers.length} aspectos`
+        : "Respuesta regulatoria fundamentada";
+
+    const statusBadge = document.createElement("span");
+    renderStatusBadge(statusBadge, data.status);
+
+    header.appendChild(title);
+    header.appendChild(statusBadge);
+    bubble.appendChild(header);
+
+    // Answers per subquestion
     if (data.answers && data.answers.length > 0) {
       data.answers.forEach((ans) => {
-        // Collect sources into map
+        // Ingest sources into conversation storage
         if (ans.sources) {
-          ans.sources.forEach((s) => currentSourcesMap.set(s.id, s));
+          ans.sources.forEach((s) => conversationSources.set(s.id, s));
         }
 
-        const card = document.createElement("div");
-        card.className = "answer-card";
+        const subContainer = document.createElement("div");
+        subContainer.style.marginBottom = "0.75rem";
 
-        const header = document.createElement("div");
-        header.className = "answer-header";
-
-        const title = document.createElement("h3");
-        title.className = "question-title";
-        title.textContent = `${ans.question_id}: ${ans.question}`;
-
-        const statusBadge = document.createElement("span");
-        renderStatusBadge(statusBadge, ans.status);
-
-        header.appendChild(title);
-        header.appendChild(statusBadge);
-        card.appendChild(header);
+        if (data.answers.length > 1) {
+          const subTitle = document.createElement("div");
+          subTitle.style.fontWeight = "700";
+          subTitle.style.fontSize = "0.85rem";
+          subTitle.style.color = "#93c5fd";
+          subTitle.style.margin = "0.4rem 0";
+          subTitle.textContent = `${ans.question_id}: ${ans.question}`;
+          subContainer.appendChild(subTitle);
+        }
 
         // Display message if abstained or rejected
         if (ans.display_message) {
-          const msgEl = document.createElement("p");
-          msgEl.className = "claim-item";
-          msgEl.style.borderLeftColor = ans.status === "answered" ? "var(--primary)" : "#d97706";
-          msgEl.textContent = ans.display_message;
-          card.appendChild(msgEl);
+          const msgP = document.createElement("p");
+          msgP.className = `claim-p ${ans.status === "insufficient_evidence" ? "abstention" : "rejected"}`;
+          msgP.textContent = `ℹ️ ${ans.display_message}`;
+          subContainer.appendChild(msgP);
         }
 
-        // Claims or extracted passages
+        // Claims / evidence passages
         if (ans.claims && ans.claims.length > 0) {
-          const claimsContainer = document.createElement("div");
-          claimsContainer.className = "claims-container";
+          const claimsBlock = document.createElement("div");
+          claimsBlock.className = "claims-block";
 
           ans.claims.forEach((claim) => {
-            const claimEl = document.createElement("div");
-            claimEl.className = "claim-item";
-
-            // Format claim text with clickable citation pills
-            claimEl.innerHTML = formatClaimWithCitations(claim.text, claim.citations);
-            claimsContainer.appendChild(claimEl);
+            const p = document.createElement("p");
+            p.className = "claim-p";
+            p.innerHTML = formatTextWithCitations(claim.text, claim.citations);
+            claimsBlock.appendChild(p);
           });
-          card.appendChild(claimsContainer);
+          subContainer.appendChild(claimsBlock);
         }
 
-        answersList.appendChild(card);
+        bubble.appendChild(subContainer);
       });
     }
 
-    // Render Sources Grid
-    sourcesList.innerHTML = "";
-    const allSources = Array.from(currentSourcesMap.values());
-    sourcesCountSpan.textContent = `${allSources.length} fuente${allSources.length === 1 ? "" : "s"}`;
+    // Meta Footer
+    const footer = document.createElement("div");
+    footer.className = "bot-meta-footer";
+    footer.innerHTML = `
+      <span>⏱️ ${data.wall_seconds ? data.wall_seconds.toFixed(2) + "s" : "—"}</span>
+      <span>📜 DOUE-L-2024-81079</span>
+    `;
+    bubble.appendChild(footer);
 
-    allSources.forEach((src) => {
-      const srcCard = document.createElement("div");
-      srcCard.className = "source-item";
-      srcCard.id = `source-${src.id}`;
+    contentWrapper.appendChild(bubble);
 
-      const srcHeader = document.createElement("div");
-      srcHeader.className = "source-item-header";
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "msg-time";
+    timeSpan.textContent = getCurrentTime();
+    contentWrapper.appendChild(timeSpan);
 
-      const idBadge = document.createElement("span");
-      idBadge.className = "badge badge-primary";
-      idBadge.textContent = src.id;
+    row.innerHTML = `<div class="msg-avatar">⚖️</div>`;
+    row.appendChild(contentWrapper);
 
-      const artName = document.createElement("span");
-      artName.className = "source-article-name";
-      artName.textContent = src.article || "Fragmento normativo";
+    messagesContainer.appendChild(row);
 
-      srcHeader.appendChild(idBadge);
-      srcHeader.appendChild(artName);
-      srcCard.appendChild(srcHeader);
-
-      const preview = document.createElement("p");
-      preview.className = "source-text-preview";
-      preview.textContent = src.text;
-      srcCard.appendChild(preview);
-
-      const actions = document.createElement("div");
-      actions.className = "source-actions";
-
-      const viewBtn = document.createElement("button");
-      viewBtn.className = "btn btn-secondary btn-sm";
-      viewBtn.textContent = "Ver pasaje original";
-      viewBtn.onclick = () => openSourceModal(src);
-
-      actions.appendChild(viewBtn);
-      srcCard.appendChild(actions);
-
-      sourcesList.appendChild(srcCard);
-    });
-
-    resultsContainer.classList.remove("hidden");
-    resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Update references drawer
+    updateReferencesSidebar();
+    scrollToBottom();
   }
 
-  // Format citations inside claim text as clickable elements
-  function formatClaimWithCitations(text, citations) {
+  // 7. Append Error Message
+  function appendBotErrorMessage(title, details) {
+    const row = document.createElement("div");
+    row.className = "message-row bot";
+
+    row.innerHTML = `
+      <div class="msg-avatar">⚠️</div>
+      <div class="msg-content-wrapper">
+        <div class="msg-bubble" style="border-left: 3px solid #ef4444;">
+          <strong style="color: #f87171;">${escapeHtml(title)}</strong>
+          <p style="font-size: 0.9rem; color: #cbd5e1; margin-top: 0.35rem;">
+            ${escapeHtml(details)}
+          </p>
+        </div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      </div>
+    `;
+
+    messagesContainer.appendChild(row);
+    scrollToBottom();
+  }
+
+  // 8. Update References Sidebar
+  function updateReferencesSidebar() {
+    const sources = Array.from(conversationSources.values());
+    sidebarBadgeCount.textContent = sources.length;
+    referencesCountBadge.textContent = `${sources.length} fuente${sources.length === 1 ? "" : "s"}`;
+
+    if (sources.length === 0) {
+      referencesList.innerHTML = `
+        <div class="empty-references">
+          <span class="empty-icon">📖</span>
+          <p>Aún no hay referencias en la conversación.</p>
+          <small>Las citas normativas que respalden cada respuesta se irán acumulando en este panel.</small>
+        </div>
+      `;
+      return;
+    }
+
+    referencesList.innerHTML = "";
+    sources.forEach((src) => {
+      const card = document.createElement("div");
+      card.className = "reference-card";
+      card.id = `ref-card-${src.id}`;
+
+      card.innerHTML = `
+        <div class="ref-card-header">
+          <span class="badge badge-primary">${escapeHtml(src.id)}</span>
+          <span class="ref-article-name">${escapeHtml(src.article || "Fragmento normativo")}</span>
+        </div>
+        <p class="ref-text-preview">${escapeHtml(src.text)}</p>
+        <div class="ref-actions">
+          <button type="button" class="btn-ref-view" data-src-id="${escapeHtml(src.id)}">
+            Ver pasaje completo
+          </button>
+        </div>
+      `;
+
+      card.querySelector(".btn-ref-view").onclick = () => openSourceModal(src);
+      referencesList.appendChild(card);
+    });
+  }
+
+  // 9. Format Text with Clickable Citation Tags
+  function formatTextWithCitations(text, citations) {
     let html = escapeHtml(text);
     if (citations && citations.length > 0) {
-      const citationsHtml = citations
+      const tags = citations
         .map(
           (cid) =>
-            `<button type="button" class="citation-pill" data-citation="${escapeHtml(cid)}">${escapeHtml(cid)}</button>`
+            `<button type="button" class="citation-tag" data-citation="${escapeHtml(cid)}">${escapeHtml(cid)}</button>`
         )
         .join(" ");
-      html += ` <span class="citations-block">${citationsHtml}</span>`;
+      html += ` ${tags}`;
     }
     return html;
   }
 
-  // Citation click handler (event delegation)
+  // 10. Handle Citation Tag Clicks
   document.addEventListener("click", (e) => {
-    const pill = e.target.closest(".citation-pill");
-    if (!pill) return;
+    const tag = e.target.closest(".citation-tag");
+    if (!tag) return;
 
-    const citationId = pill.getAttribute("data-citation");
+    const citationId = tag.getAttribute("data-citation");
     if (!citationId) return;
 
-    const sourceEl = document.getElementById(`source-${citationId}`);
-    if (sourceEl) {
-      sourceEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      sourceEl.classList.remove("highlighted");
-      void sourceEl.offsetWidth; // trigger reflow
-      sourceEl.classList.add("highlighted");
-    } else if (currentSourcesMap.has(citationId)) {
-      openSourceModal(currentSourcesMap.get(citationId));
+    // Ensure sidebar is open on smaller viewports
+    if (window.innerWidth <= 900) {
+      referencesSidebar.classList.add("open");
+    }
+
+    const refCard = document.getElementById(`ref-card-${citationId}`);
+    if (refCard) {
+      refCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      refCard.classList.remove("highlighted");
+      void refCard.offsetWidth; // force reflow
+      refCard.classList.add("highlighted");
+    } else if (conversationSources.has(citationId)) {
+      openSourceModal(conversationSources.get(citationId));
     }
   });
 
-  // Modal open & close
+  // 11. Modal Logic
   function openSourceModal(source) {
     modalSourceId.textContent = source.id;
     modalArticleTitle.textContent = source.article || "Fragmento normativo";
-    modalDocument.textContent = source.document || "—";
-    modalPage.textContent = source.page !== undefined ? `Pág. ${source.page}` : "Pág. 0 (XML)";
+    modalDocument.textContent = OFFICIAL_DOC_INFO.title;
+    modalPage.textContent = source.page !== undefined ? `Pág. ${source.page} (XML estructurado)` : "Pág. 0";
     modalUnit.textContent = source.unit_type || "article";
     modalChunkId.textContent = source.chunk_id !== undefined ? `#${source.chunk_id}` : "—";
     modalSourceText.textContent = source.text || "";
@@ -287,7 +468,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Helper: Status Badges
+  // 12. Reset Conversation
+  resetChatBtn.addEventListener("click", () => {
+    if (confirm("¿Deseas reiniciar la conversación y limpiar el historial de preguntas y referencias?")) {
+      initConversation();
+    }
+  });
+
+  // 13. Sidebar Toggle (Mobile / Drawer)
+  toggleSidebarBtn.addEventListener("click", () => {
+    referencesSidebar.classList.toggle("open");
+  });
+
+  closeSidebarBtn.addEventListener("click", () => {
+    referencesSidebar.classList.remove("open");
+  });
+
+  // Helpers
   function renderStatusBadge(element, status) {
     element.className = "badge";
     switch (status) {
@@ -309,7 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "error":
         element.classList.add("badge-error");
-        element.textContent = "Error de procesamiento";
+        element.textContent = "Error";
         break;
       default:
         element.classList.add("badge-neutral");
@@ -317,10 +514,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function showError(title, message) {
-    errorTitle.textContent = title;
-    errorMessage.textContent = message;
-    errorState.classList.remove("hidden");
+  function scrollToBottom() {
+    setTimeout(() => {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 50);
+  }
+
+  function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function adjustTextareaHeight(textarea) {
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
   }
 
   function escapeHtml(str) {
@@ -333,6 +540,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/'/g, "&#039;");
   }
 
-  // Initial check
-  checkHealth();
+  // Kick off initial state
+  initConversation();
 });

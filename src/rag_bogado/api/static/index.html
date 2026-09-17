@@ -6,139 +6,129 @@
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>RAG-Bogado — Consulta Jurídica Regulatoria</title>
+  <title>RAG-Bogado — Chat Conversacional Regulatorio</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">⚖️</div>
-        <div>
+  <div class="chat-app">
+    <!-- Top Navigation Header -->
+    <header class="chat-header">
+      <div class="header-brand">
+        <span class="brand-avatar">⚖️</span>
+        <div class="brand-info">
           <h1 class="brand-title">RAG-Bogado</h1>
-          <p class="brand-subtitle">Consulta regulatoria con trazabilidad de citas</p>
+          <p class="brand-meta">Asistente de regulación tecnológica con citas oficiales</p>
         </div>
       </div>
-      <div class="header-status">
-        <span id="health-badge" class="badge badge-loading">Conectando...</span>
+      <div class="header-actions">
+        <button id="reset-chat-btn" class="btn btn-header" title="Reiniciar chat">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label">Nuevo chat</span>
+        </button>
+        <button id="toggle-sidebar-btn" class="btn btn-header btn-icon-only" title="Ver referencias">
+          <span class="btn-icon">📑</span>
+          <span id="sidebar-badge-count" class="sidebar-counter">0</span>
+        </button>
       </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="app-main">
-      <!-- Query Panel -->
-      <section class="query-card card">
-        <form id="ask-form">
-          <div class="form-group">
-            <label for="question-input" class="form-label">
-              Pregunta jurídica o regulatoria
-            </label>
+    <!-- Main Container: Chat on left/center, References Drawer on right -->
+    <div class="chat-main-container">
+      <!-- Chat Conversation Section -->
+      <section class="chat-viewport">
+        <!-- Messages Flow -->
+        <div id="messages-container" class="messages-container">
+          <!-- Welcome message rendered via JavaScript -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator hidden">
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          <span class="typing-text">Consultando catálogo y verificando citas en la norma...</span>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-wrapper">
+          <!-- Control Pills Bar -->
+          <div class="chat-controls-bar">
+            <div class="control-pill">
+              <label for="document-select" class="pill-label">Norma:</label>
+              <select id="document-select" class="pill-select">
+                <option value="eu_ai_act" selected>Reglamento de IA (DOUE-L-2024-81079)</option>
+              </select>
+            </div>
+
+            <div class="control-pill">
+              <label for="mode-select" class="pill-label">Modo:</label>
+              <select id="mode-select" class="pill-select">
+                <option value="evidence" selected>Evidencia (Pasajes literales)</option>
+                <option value="synthesis">Síntesis (Resumen verificado)</option>
+              </select>
+            </div>
+
+            <div class="control-pill">
+              <label for="search-count-select" class="pill-label">Búsquedas:</label>
+              <select id="search-count-select" class="pill-select">
+                <option value="2" selected>Multi-Query (2 con RRF)</option>
+                <option value="1">Directa (1 búsqueda)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Text input form -->
+          <form id="chat-form" class="chat-input-form">
             <textarea
-              id="question-input"
-              class="form-textarea"
-              rows="3"
-              placeholder="Ej.: ¿Quién debe procurar la alfabetización en IA del personal y qué factores deben considerarse?"
+              id="user-input"
+              class="chat-input"
+              placeholder="Haz una pregunta sobre el Reglamento de Inteligencia Artificial..."
+              rows="1"
               required
             ></textarea>
-          </div>
-
-          <!-- Configuration Controls -->
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="document-select" class="form-label">Norma activa</label>
-              <select id="document-select" class="form-select">
-                <option value="eu_ai_act">Reglamento de IA (eu_ai_act)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="mode-select" class="form-label">Modo de respuesta</label>
-              <select id="mode-select" class="form-select">
-                <option value="evidence" selected>Evidencia (Pasajes literales verificados)</option>
-                <option value="synthesis">Síntesis (Resumen con revisión de soporte)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="search-count-select" class="form-label">Búsqueda multi-query</label>
-              <select id="search-count-select" class="form-select">
-                <option value="2" selected>2 búsquedas (Original + Reformulación RRF)</option>
-                <option value="1">1 búsqueda (Consulta directa única)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="max-passages-input" class="form-label">Máx. pasajes (Top-K)</label>
-              <input
-                id="max-passages-input"
-                type="number"
-                class="form-input"
-                min="1"
-                max="10"
-                value="5"
-              />
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" id="submit-btn" class="btn btn-primary">
-              <span class="btn-text">Consultar legislación</span>
-              <span class="btn-spinner" aria-hidden="true"></span>
+            <button type="submit" id="send-btn" class="send-btn" aria-label="Enviar pregunta">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
             </button>
+          </form>
+          <div class="input-disclaimer">
+            Las respuestas se fundamentan exclusivamente en las fuentes oficiales citadas.
           </div>
-        </form>
+        </div>
       </section>
 
-      <!-- Loading State -->
-      <div id="loading-state" class="state-card card hidden">
-        <div class="spinner"></div>
-        <p class="loading-title">Procesando consulta jurídica...</p>
-        <p class="loading-desc">Descomponiendo preguntas, recuperando pasajes por RRF y verificando evidencia.</p>
-      </div>
+      <!-- References Sidebar -->
+      <aside id="references-sidebar" class="references-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title-group">
+            <h2 class="sidebar-title">Referencias y fuentes</h2>
+            <span id="references-count" class="badge badge-neutral">0 fuentes</span>
+          </div>
+          <button id="close-sidebar-btn" class="close-sidebar-btn" aria-label="Cerrar panel">&times;</button>
+        </div>
 
-      <!-- Error State -->
-      <div id="error-state" class="state-card card state-error hidden">
-        <div class="state-icon">⚠️</div>
-        <h3 class="state-title" id="error-title">Error en la consulta</h3>
-        <p class="state-message" id="error-message"></p>
-      </div>
-
-      <!-- Results Container -->
-      <section id="results-container" class="results-section hidden">
-        <!-- Results Overview Header -->
-        <div class="results-header card">
-          <div class="results-status-bar">
-            <div>
-              <span class="meta-label">Estado general</span>
-              <div id="overall-status-badge" class="badge"></div>
-            </div>
-            <div>
-              <span class="meta-label">Tiempo de respuesta</span>
-              <span id="response-time" class="meta-value">—</span>
-            </div>
-            <div>
-              <span class="meta-label">Aspectos detectados</span>
-              <span id="subquestions-count" class="meta-value">0</span>
-            </div>
+        <div class="sidebar-info-banner">
+          <div class="info-icon">🏛️</div>
+          <div class="info-content">
+            <strong>Fuente oficial:</strong> BOE / DOUE<br>
+            <span class="info-sub">Reglamento (UE) 2024/1689 (IA)</span>
           </div>
         </div>
 
-        <!-- Answers by Question -->
-        <div id="answers-list" class="answers-grid"></div>
-
-        <!-- Sources Inspection Section -->
-        <div class="sources-card card">
-          <div class="sources-header">
-            <h2 class="section-title">Fuentes y pasajes documentales citados</h2>
-            <span id="sources-count" class="badge badge-neutral">0 fuentes</span>
+        <div id="references-list" class="references-list">
+          <div class="empty-references">
+            <span class="empty-icon">📖</span>
+            <p>Aún no hay referencias en la conversación.</p>
+            <small>Las citas normativas que respalden cada respuesta se irán acumulando en este panel.</small>
           </div>
-          <div id="sources-list" class="sources-grid"></div>
         </div>
-      </section>
-    </main>
+      </aside>
+    </div>
 
-    <!-- Source Modal / Detail Drawer -->
+    <!-- Modal for Full Passage Reading -->
     <div id="source-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <div class="modal-header">
@@ -151,11 +141,11 @@
         <div class="modal-body">
           <div class="modal-meta-grid">
             <div>
-              <span class="meta-label">Documento</span>
+              <span class="meta-label">Documento oficial</span>
               <span id="modal-document" class="meta-value">—</span>
             </div>
             <div>
-              <span class="meta-label">Página / Localizador</span>
+              <span class="meta-label">Localizador</span>
               <span id="modal-page" class="meta-value">—</span>
             </div>
             <div>
@@ -177,11 +167,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-      <p>RAG-Bogado — Sistema de consulta normativa local con trazabilidad estricta de citas.</p>
-    </footer>
   </div>
 
   <script src="/static/app.js"></script>
