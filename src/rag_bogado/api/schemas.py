@@ -161,7 +161,8 @@ class HealthResponse(BaseModel):
     """System health and readiness status."""
 
     status: str = Field(
-        ..., description="'ok' when catalog is ready, 'degraded' otherwise."
+        ...,
+        description="'ok' when catalog and services are ready, 'degraded' otherwise.",
     )
     version: str = Field(default="0.1.0", description="Application version.")
     catalog_ready: bool = Field(
@@ -171,3 +172,60 @@ class HealthResponse(BaseModel):
         default_factory=list,
         description="List of active document IDs ready to be queried.",
     )
+    ollama_ready: bool = Field(
+        default=False,
+        description="Whether the local Ollama LLM service is responsive.",
+    )
+
+
+class DocumentInfoModel(BaseModel):
+    """Metadata and readiness status of a regulatory corpus document."""
+
+    id: str = Field(..., description="Internal document identifier (e.g. 'eu_ai_act').")
+    official_id: str = Field(
+        ..., description="Official BOE/DOUE publication identifier."
+    )
+    title: str = Field(..., description="Full official legal title.")
+    short_name: str = Field(..., description="Human-friendly short name for UI.")
+    scope_description: str = Field(
+        ..., description="Summary of legal articles and recitals."
+    )
+    active: bool = Field(
+        ..., description="Whether this document has an active, queryable index."
+    )
+    sync_status: str | None = Field(
+        default=None, description="BOE synchronization status."
+    )
+    last_checked_at: str | None = Field(
+        default=None, description="ISO timestamp of last check."
+    )
+    last_updated: str | None = Field(
+        default=None, description="Official date of last amendment/update."
+    )
+    source_url: str | None = Field(
+        default=None, description="URL to official publication."
+    )
+
+
+class DocumentsListResponse(BaseModel):
+    """List of all target documents in the corpus and their status."""
+
+    documents: list[DocumentInfoModel] = Field(default_factory=list)
+    total: int = Field(..., description="Total documents defined in corpus.")
+    active_count: int = Field(..., description="Number of actively indexed documents.")
+
+
+class SyncResultModel(BaseModel):
+    """Result of an individual document sync operation."""
+
+    document_id: str
+    action: str
+    status: str
+    error: str | None = None
+
+
+class SyncResponse(BaseModel):
+    """Summary of corpus synchronization batch."""
+
+    status: str
+    results: list[SyncResultModel] = Field(default_factory=list)

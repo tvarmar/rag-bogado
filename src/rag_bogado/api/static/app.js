@@ -16,9 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const docsDropdownBtn = document.getElementById("docs-dropdown-btn");
   const docsDropdownMenu = document.getElementById("docs-dropdown-menu");
-  const selectAllDocsBtn = document.getElementById("select-all-docs-btn");
+  const syncDocsBtn = document.getElementById("sync-docs-btn");
   const docsSelectedLabel = document.getElementById("docs-selected-label");
-  const docEuAiActCheckbox = document.getElementById("doc-eu-ai-act");
+  const docsOptionsList = document.getElementById("docs-options-list");
+
+  // Current selected document state
+  let currentDocumentId = "eu_ai_act";
+  let availableDocuments = [];
 
   // Modal elements
   const sourceModal = document.getElementById("source-modal");
@@ -35,31 +39,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Accumulated sources in the conversation session
   const conversationSources = new Map();
 
-  // Official document metadata
-  const OFFICIAL_DOC_INFO = {
-    id: "eu_ai_act",
-    official_id: "DOUE-L-2024-81079",
-    platform: "Boletín Oficial del Estado (BOE) / Diario Oficial de la UE (DOUE)",
-    title: "Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de IA)",
-    scope: "113 artículos, 180 considerandos y 13 anexos estructurados."
-  };
-
   const SUGGESTED_QUESTIONS = [
     {
-      label: "Supervisión humana",
-      query: "¿Cómo deben diseñarse los sistemas de IA de alto riesgo para garantizar la supervisión humana?"
+      label: "Supervisión humana (IA)",
+      query: "¿Cómo deben diseñarse los sistemas de IA de alto riesgo para garantizar la supervisión humana?",
+      doc_id: "eu_ai_act"
     },
     {
-      label: "Multas y sanciones",
-      query: "¿A cuánto pueden ascender las multas administrativas por utilizar prácticas de IA prohibidas?"
+      label: "Multas y sanciones (IA)",
+      query: "¿A cuánto pueden ascender las multas administrativas por utilizar prácticas de IA prohibidas?",
+      doc_id: "eu_ai_act"
     },
     {
-      label: "Pregunta compuesta",
-      query: "¿Qué prácticas de IA están prohibidas y qué obligaciones tienen los responsables de su despliegue?"
+      label: "Derechos digitales (RGPD)",
+      query: "¿Qué derechos digitales reconoce la ley respecto al ámbito laboral y desconexión digital?",
+      doc_id: "rgpd"
+    },
+    {
+      label: "Plataformas en línea (DSA)",
+      query: "¿Qué obligaciones de diligencia debida tienen las plataformas en línea respecto a contenidos ilícitos?",
+      doc_id: "dsa"
+    },
+    {
+      label: "Entidades esenciales (NIS2)",
+      query: "¿Qué criterios definen a las entidades esenciales en materia de ciberseguridad?",
+      doc_id: "nis2"
     },
     {
       label: "Prueba de abstención (materia ajena)",
-      query: "¿Qué requisitos de etiquetado nutricional se exigen a los alimentos ecológicos?"
+      query: "¿Qué requisitos de etiquetado nutricional se exigen a los alimentos ecológicos?",
+      doc_id: "eu_ai_act"
     }
   ];
 
@@ -70,9 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateReferencesSidebar();
     renderWelcomeMessage();
     setupDropdownControls();
+    checkHealth();
   }
 
-  // 2. Dropdown & Multi-Select Controls Setup
+  // 2. Dropdown & Document Selection Setup
   function setupDropdownControls() {
     if (!docsDropdownBtn || !docsDropdownMenu) return;
 
@@ -87,22 +97,109 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    if (selectAllDocsBtn) {
-      selectAllDocsBtn.onclick = (e) => {
+    if (syncDocsBtn) {
+      syncDocsBtn.onclick = (e) => {
         e.stopPropagation();
-        docEuAiActCheckbox.checked = true;
-        docsSelectedLabel.textContent = "Todos los archivos (1 activo)";
+        handleSyncCorpus();
       };
     }
 
-    if (docEuAiActCheckbox) {
-      docEuAiActCheckbox.onchange = () => {
-        if (docEuAiActCheckbox.checked) {
-          docsSelectedLabel.textContent = "Reglamento de IA (1 activo)";
-        } else {
-          docsSelectedLabel.textContent = "Ningún archivo";
+    fetchCorpusDocuments();
+  }
+
+  async function fetchCorpusDocuments() {
+    try {
+      const res = await fetch("/api/documents");
+      if (!res.ok) return;
+      const data = await res.json();
+      availableDocuments = data.documents || [];
+      renderDropdownOptions();
+      updateSelectedDocDisplay();
+    } catch (err) {
+      console.warn("No se pudo cargar la lista de documentos:", err);
+    }
+  }
+
+  function renderDropdownOptions() {
+    if (!docsOptionsList || !availableDocuments.length) return;
+    docsOptionsList.innerHTML = "";
+    availableDocuments.forEach((doc) => {
+      const label = document.createElement("label");
+      label.className = "doc-checkbox-item";
+      const isChecked = doc.id === currentDocumentId;
+      const badgeClass = doc.active ? "badge-mini-active" : "badge-mini-planned";
+      const badgeText = doc.active
+        ? "Activo en catálogo"
+        : (doc.sync_status === "failed" ? "Fallo sincro" : "Pendiente BOE");
+
+      label.innerHTML = `
+        <input type="radio" name="selected-doc" value="${escapeHtml(doc.id)}" ${isChecked ? "checked" : ""}>
+        <div class="doc-checkbox-info">
+          <div class="doc-checkbox-title">${escapeHtml(doc.short_name)} (${escapeHtml(doc.official_id)})</div>
+          <div class="doc-checkbox-meta">
+            <span class="badge-mini ${badgeClass}">${badgeText}</span>
+            <span>${escapeHtml(doc.scope_description || doc.title)}</span>
+          </div>
+        </div>
+      `;
+
+      const radio = label.querySelector('input[type="radio"]');
+      radio.onchange = () => {
+        if (radio.checked) {
+          currentDocumentId = doc.id;
+          updateSelectedDocDisplay();
         }
       };
+
+      docsOptionsList.appendChild(label);
+    });
+  }
+
+  function updateSelectedDocDisplay() {
+    const doc = availableDocuments.find((d) => d.id === currentDocumentId);
+    if (doc) {
+      if (docsSelectedLabel) {
+        docsSelectedLabel.textContent = `${doc.short_name} (${doc.active ? "Activo" : "Sin indexar"})`;
+      }
+      if (userInput) {
+        userInput.placeholder = `Haz una pregunta sobre ${doc.short_name}...`;
+      }
+    }
+  }
+
+  async function handleSyncCorpus() {
+    if (!syncDocsBtn) return;
+    const origText = syncDocsBtn.innerHTML;
+    syncDocsBtn.innerHTML = "⏳ Sincronizando...";
+    syncDocsBtn.disabled = true;
+
+    try {
+      const res = await fetch("/api/documents/sync", { method: "POST" });
+      await fetchCorpusDocuments();
+      syncDocsBtn.innerHTML = "✅ Sincronizado";
+      setTimeout(() => {
+        syncDocsBtn.innerHTML = origText;
+        syncDocsBtn.disabled = false;
+      }, 2500);
+    } catch (err) {
+      syncDocsBtn.innerHTML = "❌ Error sincro";
+      setTimeout(() => {
+        syncDocsBtn.innerHTML = origText;
+        syncDocsBtn.disabled = false;
+      }, 2500);
+    }
+  }
+
+  async function checkHealth() {
+    try {
+      const res = await fetch("/health");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.ollama_ready === false) {
+        console.warn("Ollama daemon is not running on 127.0.0.1:11434");
+      }
+    } catch (err) {
+      console.warn("Health check unreachable:", err);
     }
   }
 
@@ -130,17 +227,16 @@ document.addEventListener("DOMContentLoaded", () => {
               abstención en lugar de inventar.
             </p>
             <div class="official-doc-box">
-              <div class="official-doc-title">Corpus normativo de trabajo:</div>
-              <p><strong>${escapeHtml(OFFICIAL_DOC_INFO.title)}</strong></p>
-              <div class="official-doc-meta" style="margin-bottom: 0.5rem;">
-                <span><strong>Identificador oficial:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.official_id)}</span> &bull;
-                <span><strong>Origen:</strong> ${escapeHtml(OFFICIAL_DOC_INFO.platform)}</span> &bull;
-                <span><strong>Estado:</strong> <span class="badge-mini badge-mini-active">Activo en catálogo</span></span>
+              <div class="official-doc-title">Corpus normativo integrado con el BOE:</div>
+              <ul style="margin: 0.4rem 0 0.6rem 1.2rem; padding: 0; font-size: 0.85rem; line-height: 1.5; color: #cbd5e1;">
+                <li><strong>Reglamento de IA</strong> (DOUE-L-2024-81079) &bull; Inteligencia artificial en la UE</li>
+                <li><strong>RGPD / LOPDGDD</strong> (BOE-A-2018-16673) &bull; Protección de datos personales</li>
+                <li><strong>Servicios Digitales (DSA)</strong> (DOUE-L-2022-81573) &bull; Mercado único digital</li>
+                <li><strong>Ciberseguridad (NIS 2)</strong> (DOUE-L-2022-81963) &bull; Ciberresiliencia europea</li>
+              </ul>
+              <div class="official-doc-meta" style="margin-bottom: 0.2rem;">
+                <span><strong>Sincronización:</strong> Verificación automática contra el BOE en el arranque o acceso</span>
               </div>
-              <p style="font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.4rem;">
-                <strong>Próximas incorporaciones del corpus:</strong> RGPD / LOPDGDD (Protección de Datos),
-                Reglamento de Servicios Digitales (DSA) y Ley de Ciberseguridad (NIS2).
-              </p>
             </div>
             <div class="suggested-questions-title">Consultas de ejemplo sugeridas:</div>
             <div class="suggestion-chips" id="welcome-suggestion-chips"></div>
@@ -161,6 +257,10 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.textContent = item.label;
       chip.title = item.query;
       chip.onclick = () => {
+        currentDocumentId = item.doc_id;
+        updateSelectedDocDisplay();
+        const radio = document.querySelector(`input[name="selected-doc"][value="${item.doc_id}"]`);
+        if (radio) radio.checked = true;
         userInput.value = item.query;
         handleFormSubmit();
       };
@@ -188,14 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = userInput.value.trim();
     if (!text) return;
 
-    if (docEuAiActCheckbox && !docEuAiActCheckbox.checked) {
-      appendBotErrorMessage(
-        "Ningún archivo seleccionado",
-        "Por favor, selecciona al menos un archivo en 'Archivos consultados' para realizar la consulta."
-      );
-      return;
-    }
-
     // Append User Message
     appendUserMessage(text);
     userInput.value = "";
@@ -208,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payload = {
       question: text,
-      document_id: "eu_ai_act",
+      document_id: currentDocumentId,
       answer_mode: "evidence",
       search_count: 2,
       max_passages: 5
@@ -224,6 +316,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 503 && (data.detail || "").includes("Ollama")) {
+          appendOllamaOfflineMessage(data.detail);
+          return;
+        }
         appendBotErrorMessage(
           `Error ${res.status}`,
           data.detail || "Error desconocido al procesar la consulta en el servidor."
@@ -242,6 +338,31 @@ document.addEventListener("DOMContentLoaded", () => {
       sendBtn.disabled = false;
       scrollToBottom();
     }
+  }
+
+  function appendOllamaOfflineMessage(detail) {
+    const row = document.createElement("div");
+    row.className = "message-row bot";
+    row.innerHTML = `
+      <div class="msg-avatar">⚠️</div>
+      <div class="msg-content-wrapper">
+        <div class="msg-bubble alert-callout-warning" style="max-width: 650px;">
+          <h4 style="margin: 0 0 0.4rem 0; color: #fbbf24; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>⚠️</span> Servicio LLM (Ollama) no disponible
+          </h4>
+          <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; line-height: 1.45; color: #fef3c7;">
+            ${escapeHtml(detail || "El servicio local de generación no está activo en 127.0.0.1:11434.")}
+          </p>
+          <p style="margin: 0 0 0.25rem 0; font-size: 0.8rem; color: #94a3b8;">
+            Para iniciar el motor LLM local, abre una terminal en la raíz del proyecto y ejecuta:
+          </p>
+          <pre style="background: #0f172a; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); margin: 0; font-family: monospace; color: #38bdf8;">bash scripts/serve_ollama.sh</pre>
+        </div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      </div>
+    `;
+    messagesContainer.appendChild(row);
+    scrollToBottom();
   }
 
   // 5. Append User Message
@@ -540,8 +661,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // 11. Modal Logic
   function openSourceModal(source) {
     modalSourceId.textContent = source.id;
-    modalArticleTitle.textContent = source.article || "Fragmento normativo";
-    modalDocument.textContent = OFFICIAL_DOC_INFO.title;
+    const matchingDoc = availableDocuments.find(
+      (d) => d.id === source.document || (source.document && source.document.includes(d.id)) || d.id === currentDocumentId
+    );
+    modalDocument.textContent = matchingDoc ? matchingDoc.title : (source.document || "Documento oficial BOE");
     modalPage.textContent = source.page !== undefined ? `Pág. ${source.page} (XML estructurado)` : "Pág. 0";
     modalUnit.textContent = source.unit_type || "article";
     modalChunkId.textContent = source.chunk_id !== undefined ? `#${source.chunk_id}` : "—";

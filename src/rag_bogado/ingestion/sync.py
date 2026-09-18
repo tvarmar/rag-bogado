@@ -15,6 +15,7 @@ from rag_bogado.ingestion.boe import (
     BoeError,
     compute_content_hash,
 )
+from rag_bogado.ingestion.corpus import resolve_document_identifiers
 from rag_bogado.ingestion.xml_loader import load_xml_chunks
 from rag_bogado.retrieval.embeddings import EmbeddingModel
 
@@ -46,7 +47,7 @@ class BoeSyncService:
         overlap: int = 120,
         dimension: int = 384,
         model_name: str = "intfloat/multilingual-e5-small",
-        revision: str = "e4ce9877abf4ed59fe848b943265004db73919e1",
+        revision: str = "614241f622f53c4eeff9890bdc4f31cfecc418b3",
     ) -> None:
         self.catalog = catalog
         self.boe_client = boe_client
@@ -59,17 +60,21 @@ class BoeSyncService:
         self.model_name = model_name
         self.revision = revision
 
-    def sync_document(self, document_id: str) -> BoeSyncResult:
+    def sync_document(
+        self, document_id: str, official_id: str | None = None
+    ) -> BoeSyncResult:
         """Check official metadata and atomically reindex only if content changed."""
-        doc_id = document_id.strip()
-        if not doc_id:
+        raw_id = document_id.strip()
+        if not raw_id:
             raise ValueError("Document identifier cannot be blank")
+
+        doc_id, off_id = resolve_document_identifiers(raw_id, official_id=official_id)
 
         now_utc = datetime.now(timezone.utc).isoformat()
 
         # Step 1: Consult official metadata
         try:
-            meta = self.boe_client.get_metadata(doc_id)
+            meta = self.boe_client.get_metadata(off_id)
         except (BoeError, Exception) as exc:
             self.catalog.record_sync_error(doc_id, str(exc), now_utc)
             return BoeSyncResult(
@@ -92,7 +97,7 @@ class BoeSyncService:
                 self.catalog.record_sync_metadata(
                     document_id=doc_id,
                     source=meta.source,
-                    official_id=meta.official_id,
+                    official_id=meta.official_id or off_id,
                     title=meta.title,
                     source_url=meta.source_url,
                     url_eli=meta.url_eli,
@@ -116,7 +121,7 @@ class BoeSyncService:
 
         # Step 3: Download official XML text
         try:
-            xml_content = self.boe_client.download_xml(doc_id)
+            xml_content = self.boe_client.download_xml(off_id)
         except (BoeError, Exception) as exc:
             self.catalog.record_sync_error(doc_id, str(exc), now_utc)
             return BoeSyncResult(
@@ -136,7 +141,7 @@ class BoeSyncService:
                 self.catalog.record_sync_metadata(
                     document_id=doc_id,
                     source=meta.source,
-                    official_id=meta.official_id,
+                    official_id=meta.official_id or off_id,
                     title=meta.title,
                     source_url=meta.source_url,
                     url_eli=meta.url_eli,
@@ -160,7 +165,7 @@ class BoeSyncService:
 
         # Step 6: Content changed or new document; write raw XML and reindex
         self.raw_dir.mkdir(parents=True, exist_ok=True)
-        xml_path = self.raw_dir / f"{doc_id}_{hash_val[:12]}.xml"
+        xml_path = self.raw_dir / f"{off_id}_{hash_val[:12]}.xml"
         xml_path.write_text(xml_content, encoding="utf-8")
 
         chunks = load_xml_chunks(xml_path, max_chunk_size=self.chunk_size)
@@ -183,6 +188,13 @@ class BoeSyncService:
             chunk_size=self.chunk_size,
             overlap=self.overlap,
         )
+
+        if self.model is None:
+            self.model = EmbeddingModel(
+                self.model_name,
+                revision=self.revision,
+                local_files_only=True,
+            )
 
         try:
             publish_res = publish_index(
@@ -209,7 +221,7 @@ class BoeSyncService:
         self.catalog.record_sync_metadata(
             document_id=doc_id,
             source=meta.source,
-            official_id=meta.official_id,
+            official_id=meta.official_id or off_id,
             title=meta.title,
             source_url=meta.source_url,
             url_eli=meta.url_eli,

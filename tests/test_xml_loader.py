@@ -139,3 +139,35 @@ def test_load_boe_xml_structure(tmp_path):
     assert len(chunks) == 2
     assert chunks[0].article == "Artículo 1"
     assert "Artículo 1. Objeto de la ley" in chunks[0].text
+
+
+def test_load_xml_ignores_analisis_texto_and_finds_main_texto(tmp_path):
+    xml_with_analisis = """<?xml version="1.0" encoding="UTF-8"?>
+<documento fecha_actualizacion="20260720122602">
+  <metadatos>
+    <identificador>BOE-A-2018-16673</identificador>
+    <titulo>Ley Orgánica 3/2018</titulo>
+  </metadatos>
+  <analisis>
+    <referencias>
+      <anterior referencia="BOE-A-2018-10753">
+        <palabra codigo="101">DEROGA</palabra>
+        <texto>el Real Decreto-ley 5/2018, de 27 de julio</texto>
+      </anterior>
+    </referencias>
+  </analisis>
+  <texto>
+    <p class="articulo">Artículo 1. Objeto de la ley.</p>
+    <p class="parrafo">1. La presente ley tiene por objeto la protección de datos.</p>
+    <p class="articulo">Artículo 2. Ámbito.</p>
+    <p class="parrafo">El ámbito de aplicación incluye el tratamiento de datos.</p>
+  </texto>
+</documento>"""
+    xml_file = tmp_path / "boe_with_analisis.xml"
+    xml_file.write_text(xml_with_analisis, encoding="utf-8")
+
+    units = load_xml(xml_file)
+    assert len(units) == 2
+    assert units[0].identifier == "Artículo 1"
+    assert "protección de datos" in units[0].text
+    assert units[1].identifier == "Artículo 2"

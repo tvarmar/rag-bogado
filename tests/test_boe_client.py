@@ -163,3 +163,66 @@ def test_download_xml_network_error():
 
     with pytest.raises(BoeNetworkError, match="Network error downloading BOE XML"):
         boe_client.download_xml("BOE-A-2018-16673")
+
+
+SAMPLE_DOUE_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<documento fecha_actualizacion="20260724102601">
+  <metadatos>
+    <identificador>DOUE-L-2024-81079</identificador>
+    <titulo>Reglamento (UE) 2024/1689 de Inteligencia Artificial</titulo>
+    <url_eli>https://data.europa.eu/eli/reg/2024/1689/spa</url_eli>
+    <fecha_publicacion>20240712</fecha_publicacion>
+    <fecha_vigencia>20240801</fecha_vigencia>
+    <vigencia_agotada>N</vigencia_agotada>
+    <estado_consolidacion codigo="3">Finalizado</estado_consolidacion>
+  </metadatos>
+  <texto>
+    <p class="articulo">Artículo 1. Objeto.</p>
+    <p class="parrafo">1. El presente Reglamento establece normas.</p>
+  </texto>
+</documento>"""
+
+
+def test_get_metadata_doue_xml():
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert "xml.php" in request.url.path
+        assert request.url.params["id"] == "DOUE-L-2024-81079"
+        return httpx.Response(200, text=SAMPLE_DOUE_XML)
+
+    mock_client = httpx.Client(transport=httpx.MockTransport(handler))
+    boe_client = BoeClient(client=mock_client)
+
+    meta = boe_client.get_metadata("DOUE-L-2024-81079")
+    assert meta.official_id == "DOUE-L-2024-81079"
+    assert "Inteligencia Artificial" in meta.title
+    assert meta.fecha_actualizacion == "20260724102601"
+    assert meta.url_eli == "https://data.europa.eu/eli/reg/2024/1689/spa"
+    assert meta.estado_consolidacion == "Finalizado"
+
+
+def test_download_xml_doue_success():
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert "xml.php" in request.url.path
+        return httpx.Response(200, text=SAMPLE_DOUE_XML)
+
+    mock_client = httpx.Client(transport=httpx.MockTransport(handler))
+    boe_client = BoeClient(client=mock_client)
+
+    xml_text = boe_client.download_xml("DOUE-L-2024-81079")
+    assert "<documento" in xml_text
+    assert "DOUE-L-2024-81079" in xml_text
+
+
+def test_download_xml_doue_not_found():
+    error_xml = (
+        "<?xml version='1.0'?><error><descripcion>No se encontró</descripcion></error>"
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, text=error_xml)
+
+    mock_client = httpx.Client(transport=httpx.MockTransport(handler))
+    boe_client = BoeClient(client=mock_client)
+
+    with pytest.raises(BoeDocumentNotFoundError, match="not found in XML search"):
+        boe_client.download_xml("DOUE-L-9999-99999")

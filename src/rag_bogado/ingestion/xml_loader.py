@@ -73,7 +73,14 @@ def load_xml(path: Path) -> list[LegalUnit]:
     """Parse structured legal units (recitals, articles, annexes) from XML."""
     content = _clean_xml_content(path)
     root = ET.fromstring(content)
-    texto = root.find(".//texto")
+    texto = root.find("./texto")
+    if texto is None:
+        texto = root.find(".//data/texto")
+    if texto is None:
+        for candidate in root.iter("texto"):
+            if list(candidate):
+                texto = candidate
+                break
     if texto is None:
         texto = root
 

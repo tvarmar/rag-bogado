@@ -64,36 +64,36 @@
               </button>
               <div id="docs-dropdown-menu" class="dropdown-popover hidden">
                 <div class="dropdown-popover-header">
-                  <span class="dropdown-popover-title">Corpus normativo</span>
-                  <button type="button" id="select-all-docs-btn" class="btn-text-action">Marcar todos</button>
+                  <span class="dropdown-popover-title">Corpus normativo BOE</span>
+                  <button type="button" id="sync-docs-btn" class="btn-text-action" title="Comprobar y sincronizar actualizaciones en el BOE">🔄 Sincronizar BOE</button>
                 </div>
-                <div class="dropdown-options-list">
+                <div id="docs-options-list" class="dropdown-options-list">
                   <label class="doc-checkbox-item">
-                    <input type="checkbox" id="doc-eu-ai-act" value="eu_ai_act" checked>
+                    <input type="radio" name="selected-doc" id="doc-eu-ai-act" value="eu_ai_act" checked>
                     <div class="doc-checkbox-info">
                       <div class="doc-checkbox-title">Reglamento de IA (DOUE-L-2024-81079)</div>
                       <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 113 artículos, 180 considerandos</div>
                     </div>
                   </label>
-                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
-                    <input type="checkbox" id="doc-rgpd" value="rgpd" disabled>
+                  <label class="doc-checkbox-item">
+                    <input type="radio" name="selected-doc" id="doc-rgpd" value="rgpd">
                     <div class="doc-checkbox-info">
-                      <div class="doc-checkbox-title">RGPD / LOPDGDD (Protección de Datos)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> BOE-A-2018-16673</div>
+                      <div class="doc-checkbox-title">RGPD / LOPDGDD (BOE-A-2018-16673)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Protección de Datos</div>
                     </div>
                   </label>
-                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
-                    <input type="checkbox" id="doc-dsa" value="dsa" disabled>
+                  <label class="doc-checkbox-item">
+                    <input type="radio" name="selected-doc" id="doc-dsa" value="dsa">
                     <div class="doc-checkbox-info">
-                      <div class="doc-checkbox-title">Reglamento de Servicios Digitales (DSA)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81577</div>
+                      <div class="doc-checkbox-title">Servicios Digitales - DSA (DOUE-L-2022-81573)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Mercado único digital</div>
                     </div>
                   </label>
-                  <label class="doc-checkbox-item doc-disabled" title="Se integrará automáticamente con la API del BOE en el Hito 10">
-                    <input type="checkbox" id="doc-nis2" value="nis2" disabled>
+                  <label class="doc-checkbox-item">
+                    <input type="radio" name="selected-doc" id="doc-nis2" value="nis2">
                     <div class="doc-checkbox-info">
-                      <div class="doc-checkbox-title">Directiva / Ley de Ciberseguridad (NIS2)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Próxima sincro BOE</span> DOUE-L-2022-81997</div>
+                      <div class="doc-checkbox-title">Ciberseguridad - NIS2 (DOUE-L-2022-81963)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Directiva de Ciberseguridad</div>
                     </div>
                   </label>
                 </div>
