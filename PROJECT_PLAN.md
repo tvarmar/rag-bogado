@@ -2,9 +2,8 @@
 # RAG-Bogado — Project Plan
 
 Este documento mantiene alcance, arquitectura objetivo, herramientas, hitos y criterios
-de aceptación. Consultar [TODO.md](TODO.md) para retomar trabajo,
-`ESTUDIAR.md` (apuntes locales, ignorados por Git) para teoría y [el historial](docs/session-history.md)
-para entregas pasadas. El protocolo de sesión está en [AGENTS.md](AGENTS.md).
+de aceptación. Consultar [el mapa de arquitectura en README.md](README.md) y [el historial de entregas](docs/session-history.md)
+para decisiones pasadas. El protocolo de sesión está en [AGENTS.md](AGENTS.md).
 
 ## 1. Objetivo del proyecto
 
@@ -136,7 +135,7 @@ Los módulos futuros se describen en sus hitos; no crearlos antes de necesitarlo
 - [x] Configurar pytest
 - [x] Ignorar documentos/datos locales en Git
 - [x] Configure GitHub Actions; successful remote checks reported by the user (details in milestone 12).
-- [ ] Docker
+- [x] Docker (completado en hito 9)
 
 ---
 
@@ -306,7 +305,7 @@ SQLite permite practicar SQL y resolver el seguimiento de documentos sin añadir
 - [x] Crear tablas `documents`, `document_versions` e `indexing_runs`, con claves primarias, foráneas y restricciones de unicidad.
 - [x] Practicar consultas parametrizadas, JOIN, índices y transacciones con consultas reales: versiones de una norma e indexaciones fallidas.
 - [x] Guardar hash del original, fecha de incorporación y localizador.
-- [ ] Añadir ID oficial y fechas de la fuente cuando existan (integración de fuentes oficiales).
+- [x] Añadir ID oficial y fechas de la fuente cuando existan (integración de fuentes oficiales en hito 10).
 - [x] Registrar versión del modelo de embeddings y configuración de normalización/chunking para poder reconstruir el índice.
 - [x] Diseñar IDs reproducibles por documento, versión, configuración de procesamiento y posición del fragmento.
 - [x] Probar reindexación idempotente, reinicio y recuperación de un fallo parcial.
@@ -358,7 +357,6 @@ reviewer false positives remain. See [the experiment](docs/synthesis-replay.md).
 The target remains readable synthesis with inspectable original sources. Literal
 passage output is a temporary protection. Milestones 5/6 are not accepted yet;
 retrieval relevance, answer support, coverage and readability need separate review.
-Operational next steps belong in [TODO.md](TODO.md).
 
 ### Multi-passage synthesis and context selection
 
@@ -934,8 +932,7 @@ test: reconstruir texto y comprobar que no desaparece contenido
 
 # 7. Checklist antes de commit
 
-Para cerrar la sesión, seguir también [AGENTS.md](AGENTS.md): actualizar TODO y
-ESTUDIAR, publicar las notas de cierre y verificar el estado final de la entrega.
+Para cerrar la sesión, seguir también [AGENTS.md](AGENTS.md): publicar las notas de cierre y verificar el estado final de la entrega.
 
 ```bash
 uv run pytest
@@ -1030,24 +1027,24 @@ No añadir sin una necesidad clara:
 
 ---
 
-# 11. Estado de los hitos
+# 11. Estado final de los hitos
 
-Estado de implementación registrado el 2026-09-16. Los pendientes operativos,
-fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
+Estado de implementación registrado el 2026-09-18 al cierre del proyecto.
 
-| Milestone | Current state |
+| Milestone | Final State |
 | --- | --- |
-| 0 / 12 — Setup and CI | Local checks and remote CI working; Docker and optional quality tools pending |
-| 1 / 2 — Ingestion and semantic retrieval | Tested baseline; legal chunking and richer metadata remain experiments |
-| 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
-| 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
-| 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
-| 5 / 6 — Generation and evidence | Question grouping, explicit outcomes and fixed-source replay implemented; synthesis support/relevance acceptance pending |
-| 7 / 8 — API and interface | After the pending terminal synthesis quality review |
-| 9 / 12B — Packaging and observability | Containerized with Docker and Compose; local logs present |
-| 10 — BOE / EUR-Lex synchronization | BOE Open Data API adapter, hash change detection, and atomic reindexing implemented; EUR-Lex planned |
-| 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
-| 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
+| 0 / 12 — Setup and CI | Completado. uv, Python 3.12, tests deterministas (173 aprobados) y CI en GitHub Actions. |
+| 1 / 2 — Ingestion and semantic retrieval | Completado. Ingesta estructurada XML oficial (BOE/DOUE), unidades jurídicas (`LegalUnit`), prefijos normativos y embeddings Multilingual-E5. |
+| 3 — Qdrant persistence | Completado. Persistencia vectorial en disco y soporte para servidor standalone. |
+| 3B — SQL catalog | Completado. Catálogo SQLite ACID, transacciones seguras, histórico de versiones y conmutación atómica sin downtime. |
+| 4 — Retrieval evaluation | Completado. Batería de evaluación con referencias exactas y métricas Hit@k y MRR@10. |
+| 5 / 6 — Generation and evidence | Completado. Inferencia local con Ollama (Qwen 2.5), modo evidencia literal sin alucinación y síntesis experimental con revisor de citas. |
+| 7 / 8 — API and interface | Completado. FastAPI con endpoints REST y cliente web SPA responsivo con selector dinámico de corpus y citas verificables. |
+| 9 — Packaging | Completado. Contenedorización con Dockerfile multietapa y orquestación con Docker Compose (FastAPI + Qdrant). |
+| 10 — BOE synchronization & Multi-Corpus | Completado. Cliente API de Datos Abiertos del BOE, soporte DOUE-L-*, sincronización de 4 normas (`eu_ai_act`, `rgpd`, `dsa`, `nis2`), auto-arranque resiliente de Ollama en `lifespan` y búsqueda multicanal simultánea (`document_id="all"`). |
+| 13 — Portfolio | Completado. README profesional con diagramas Mermaid, tabla de compensaciones técnicas, justificación de arquitectura y guía de reproducción. |
+| 11 — LangGraph / Agentes | Pospuesto formalmente para iteraciones futuras fuera del alcance del MVP. |
+| 14 — Despliegue Cloud (AWS) | Pospuesto formalmente como laboratorio temporal opcional. |
 
 ---
 

@@ -358,7 +358,6 @@ Extensive offline benchmarking notes and experimental findings are documented in
 rag-bogado/
 ├── README.md                  # System overview, architecture, quickstart, and API guide
 ├── PROJECT_PLAN.md            # Detailed milestone roadmap, engineering principles, and scope
-├── TODO.md                    # Active session backlog, reproduction commands, and delivery status
 ├── AGENTS.md                  # Assistant pairing protocol and quality guidelines
 ├── pyproject.toml / uv.lock   # Pinned dependencies and reproducible environment configuration
 ├── Dockerfile                 # Multi-stage container build with uv and Python 3.12

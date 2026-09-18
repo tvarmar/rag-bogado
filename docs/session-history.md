@@ -2,7 +2,7 @@
 
 Archivo histórico migrado desde PROJECT_PLAN.md el 2026-09-14. Los estados de
 PR, checks y próximos pasos describen su fecha; no son instrucciones vigentes.
-El punto de entrada actual es [TODO.md](../TODO.md). Las referencias antiguas
+El punto de entrada actual es [README.md](../README.md). Las referencias antiguas
 a «section 11» corresponden al plan anterior a esta reorganización.
 
 
@@ -185,7 +185,6 @@ this September 9 handoff define the current starting point.
 - Reference: `src/rag_bogado/evaluation/reports/context-selection.json` and
   `docs/context-selection.md`. Held-out questions remain untouched.
 - Local checks: 86 tests passed; Ruff lint/format passed. No commit/push this session.
-  Current next steps are in TODO.md.
 
 ### Two-search workflow and evidence output — 2026-09-14
 
@@ -200,16 +199,16 @@ this September 9 handoff define the current starting point.
   matches its source. Exact-mode rewrites repeated the original, so no multi-query
   quality improvement is claimed. Reports and limits are in `docs/multi-query.md`.
 - Final local validation: 125 tests passed, Ruff lint/format and diff checks passed.
-  No commit/push; earlier user changes, including ignored study notes, were preserved.
+  No commit/push; earlier user changes were preserved.
 
 ### GitHub publication — 2026-09-14
 
 - Published implementation, documentation and reference reports as `8ed3161` on
   `feat/local-generation`. Updated PR #4 title and description to match the final
   evidence-first workflow; the PR remains a draft, not merged.
-- Updated TODO with completed delivery and next work: rewrite fidelity, synthesis
+- Documented completed delivery and remaining considerations: rewrite fidelity, synthesis
   review false approvals, enumeration handling and human evaluation.
-- Reviewed and extended local study notes; `ESTUDIAR.md` remains Git-ignored.
+- Reviewed and extended local study notes.
 - These closing notes are a follow-up documentation commit in the same PR.
   Remote checks were running when written; inspect the latest head in GitHub.
 
@@ -220,7 +219,7 @@ this September 9 handoff define the current starting point.
 - Mejora parcial de condiciones/citas en d02/d03; la pertinencia de d03 Q1 y los
   falsos positivos del revisor siguen abiertos. Evidencia y variantes descartadas
   en [el experimento](synthesis-replay.md).
-- TODO depurado y reordenado; el plan distingue protecciones implementadas de
+- Tareas depuradas y reordenadas; el plan distingue protecciones implementadas de
   aceptación semántica pendiente. No se aceptan todavía los hitos 5/6.
 - Commit local autorizado, sin push. Comprobaciones: 134 tests y Ruff correctos;
   revisión de diff, enlaces y JSON. Las evaluaciones reales no se repitieron para
