@@ -225,3 +225,31 @@ this September 9 handoff define the current starting point.
 - Commit local autorizado, sin push. Comprobaciones: 134 tests y Ruff correctos;
   revisión de diff, enlaces y JSON. Las evaluaciones reales no se repitieron para
   este cierre documental. Los apuntes de estudio permanecen locales.
+
+## Sesiones de consolidación, API y contenedorización — 2026-09-17
+
+- **Hitos 7 y 8 (FastAPI y Web UI):** Desarrollada la interfaz web interactiva y los
+  endpoints `/ask`, `/health`, y documentación OpenAPI. Soporte de citas con metadatos
+  jurídicos completos y control de abstención.
+- **Hito 9 (Docker):** Contenedorización multietapa con `uv` y Python 3.12 (`Dockerfile`),
+  orquestación con `docker-compose.yml` para FastAPI y base de datos vectorial Qdrant
+  independiente, con persistencia en volúmenes locales.
+
+## Sincronización BOE, Corpus de 4 Normas y Cierre de Portfolio — 2026-09-18
+
+- **Hito 10 (Sincronización oficial BOE):** Cliente API de Datos Abiertos del BOE (`BoeClient`),
+  detección de cambios mediante hash SHA-256, parseo de XML oficial estructurado (`LegalUnit`)
+  y activación atómica de versiones en SQLite sin downtime vectorial. Fusionado en `main` (PR #8).
+- **Ampliación práctica del corpus (4 normas digitales):** Integración completa de las 4 normas
+  clave (`eu_ai_act`, `rgpd`, `dsa`, `nis2`), soporte de identificadores europeos `DOUE-L-*`
+  mediante redirecciones en `xml.php` del BOE.
+- **Resiliencia de inferencia y ciclo de vida de Ollama:** Auto-arranque del demonio Ollama
+  en el arranque (`lifespan`) de FastAPI y parada limpia en el apagado. Degradación a HTTP 503
+  accionable si Ollama se desconecta durante una consulta.
+- **Búsqueda multicanal:** Soporte para `document_id="all"`, agregando y clasificando
+  candidatos de las 4 normas simultáneamente con Reciprocal Rank Fusion (RRF).
+- **Hito 13 (Portfolio y Documentación):** Renovación exhaustiva de `README.md` con
+  diagramas Mermaid de arquitectura y flujo de sincronización, justificación técnica de
+  diseño, comparativa de compensaciones y catálogo de API.
+- **Verificación final:** 173 tests pasando sin fallos, Ruff check/format limpios,
+  y CI verificado en verde en GitHub Actions (PR #9).

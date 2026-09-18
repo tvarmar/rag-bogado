@@ -360,7 +360,6 @@ rag-bogado/
 ├── PROJECT_PLAN.md            # Detailed milestone roadmap, engineering principles, and scope
 ├── TODO.md                    # Active session backlog, reproduction commands, and delivery status
 ├── AGENTS.md                  # Assistant pairing protocol and quality guidelines
-├── ESTUDIAR.md                # (Local/Git-ignored) Study notes and technical interview preparation
 ├── pyproject.toml / uv.lock   # Pinned dependencies and reproducible environment configuration
 ├── Dockerfile                 # Multi-stage container build with uv and Python 3.12
 ├── docker-compose.yml         # Containerized FastAPI and standalone Qdrant services
