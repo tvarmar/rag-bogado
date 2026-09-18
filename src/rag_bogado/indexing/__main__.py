@@ -36,6 +36,10 @@ def main() -> None:
     history = commands.add_parser("history", help="Show versions and indexing attempts")
     history.add_argument("--document-id", required=True)
     commands.add_parser("failures", help="Show failed indexing attempts")
+    sync_status = commands.add_parser(
+        "sync-status", help="Show source sync metadata for a document"
+    )
+    sync_status.add_argument("--document-id", required=True)
     args = parser.parse_args()
     try:
         with DocumentCatalog(args.catalog) as catalog:
@@ -47,6 +51,10 @@ def main() -> None:
                 result = catalog.history(args.document_id)
             elif args.command == "failures":
                 result = catalog.failed_runs()
+            elif args.command == "sync-status":
+                result = catalog.get_sync_metadata(args.document_id)
+                if result is None:
+                    result = {"status": "not_found", "document_id": args.document_id}
             else:
                 original = args.document.read_bytes()
                 digest = hashlib.sha256(original).hexdigest()

@@ -73,7 +73,7 @@ def load_xml(path: Path) -> list[LegalUnit]:
     """Parse structured legal units (recitals, articles, annexes) from XML."""
     content = _clean_xml_content(path)
     root = ET.fromstring(content)
-    texto = root.find("texto")
+    texto = root.find(".//texto")
     if texto is None:
         texto = root
 
@@ -122,7 +122,13 @@ def load_xml(path: Path) -> list[LegalUnit]:
             if curr_art:
                 units.append(_build_article_unit(curr_art, path.name, order))
                 order += 1
-            curr_art = {"header": txt, "title": "", "paras": []}
+            ident, title = _parse_article_header(txt)
+            curr_art = {
+                "header": txt,
+                "identifier": ident,
+                "title": title,
+                "paras": [],
+            }
             curr_annex = None
         elif cls in ("anexo_num", "anexo") or re.match(
             r"^ANEXO\s+[IVXLCDM]+", txt, re.IGNORECASE
@@ -175,16 +181,28 @@ def load_xml(path: Path) -> list[LegalUnit]:
     return units
 
 
+def _parse_article_header(header: str) -> tuple[str, str]:
+    """Extract (identifier, title) from an article header line if combined."""
+    art_match = re.match(
+        r"^(Artículo\s+\d+[\wºª]*)[.:\-–\s]+(.+)$", header.strip(), re.IGNORECASE
+    )
+    if art_match:
+        return art_match.group(1).strip(), art_match.group(2).strip()
+    return header.strip(), ""
+
+
 def _build_article_unit(data: dict, source: str, order: int) -> LegalUnit:
     """Construct an article LegalUnit from accumulated paragraphs."""
     header = data["header"]
     match = re.search(r"\d+", header)
     num = match.group() if match else str(order)
+    identifier = data.get("identifier") or header
+    title = data.get("title", "")
     return LegalUnit(
         unit_id=f"art_{num}",
         unit_type="article",
-        identifier=header,
-        title=data.get("title", ""),
+        identifier=identifier,
+        title=title,
         text=normalize_text("\n".join(data.get("paras", []))),
         source=source,
         order=order,

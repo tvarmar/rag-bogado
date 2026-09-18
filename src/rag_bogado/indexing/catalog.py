@@ -49,6 +49,26 @@ class DocumentCatalog:
                 ON indexing_runs(document_id) WHERE active = 1;
             CREATE INDEX IF NOT EXISTS runs_by_status ON indexing_runs(status);
             CREATE INDEX IF NOT EXISTS runs_by_version ON indexing_runs(version_id);
+            CREATE TABLE IF NOT EXISTS source_metadata (
+                document_id TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                official_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                source_url TEXT,
+                url_eli TEXT,
+                last_updated TEXT,
+                estado_consolidacion TEXT,
+                estado_consolidacion_codigo TEXT,
+                fecha_publicacion TEXT,
+                fecha_vigencia TEXT,
+                vigencia_agotada INTEGER NOT NULL DEFAULT 0,
+                content_hash TEXT,
+                last_checked_at TEXT NOT NULL,
+                downloaded_at TEXT,
+                sync_status TEXT NOT NULL DEFAULT 'synced'
+                    CHECK(sync_status IN ('synced', 'error')),
+                last_error TEXT
+            );
         """)
 
     def close(self) -> None:
@@ -176,3 +196,111 @@ class DocumentCatalog:
                 "WHERE r.status = 'failed' ORDER BY r.id"
             )
         ]
+
+    def has_active_index(self, document_id: str) -> bool:
+        row = self.connection.execute(
+            "SELECT 1 FROM indexing_runs "
+            "WHERE document_id = ? AND active = 1 AND status = 'ready'",
+            (document_id,),
+        ).fetchone()
+        return row is not None
+
+    def record_sync_metadata(
+        self,
+        *,
+        document_id: str,
+        source: str,
+        official_id: str,
+        title: str,
+        source_url: str = "",
+        url_eli: str = "",
+        last_updated: str = "",
+        estado_consolidacion: str = "",
+        estado_consolidacion_codigo: str = "",
+        fecha_publicacion: str = "",
+        fecha_vigencia: str = "",
+        vigencia_agotada: bool = False,
+        content_hash: str | None = None,
+        last_checked_at: str,
+        downloaded_at: str | None = None,
+        sync_status: str = "synced",
+        last_error: str | None = None,
+    ) -> None:
+        with self.connection:
+            self.connection.execute(
+                """
+                INSERT INTO source_metadata(
+                    document_id, source, official_id, title, source_url, url_eli,
+                    last_updated, estado_consolidacion, estado_consolidacion_codigo,
+                    fecha_publicacion, fecha_vigencia, vigencia_agotada,
+                    content_hash, last_checked_at, downloaded_at,
+                    sync_status, last_error
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(document_id) DO UPDATE SET
+                    title = excluded.title,
+                    source_url = excluded.source_url,
+                    url_eli = excluded.url_eli,
+                    last_updated = excluded.last_updated,
+                    estado_consolidacion = excluded.estado_consolidacion,
+                    estado_consolidacion_codigo = excluded.estado_consolidacion_codigo,
+                    fecha_publicacion = excluded.fecha_publicacion,
+                    fecha_vigencia = excluded.fecha_vigencia,
+                    vigencia_agotada = excluded.vigencia_agotada,
+                    content_hash = COALESCE(
+                        excluded.content_hash, source_metadata.content_hash
+                    ),
+                    last_checked_at = excluded.last_checked_at,
+                    downloaded_at = COALESCE(
+                        excluded.downloaded_at, source_metadata.downloaded_at
+                    ),
+                    sync_status = excluded.sync_status,
+                    last_error = excluded.last_error
+                """,
+                (
+                    document_id,
+                    source,
+                    official_id,
+                    title,
+                    source_url,
+                    url_eli,
+                    last_updated,
+                    estado_consolidacion,
+                    estado_consolidacion_codigo,
+                    fecha_publicacion,
+                    fecha_vigencia,
+                    1 if vigencia_agotada else 0,
+                    content_hash,
+                    last_checked_at,
+                    downloaded_at,
+                    sync_status,
+                    last_error,
+                ),
+            )
+
+    def get_sync_metadata(self, document_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT * FROM source_metadata WHERE document_id = ?", (document_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        res = dict(row)
+        res["vigencia_agotada"] = bool(res["vigencia_agotada"])
+        return res
+
+    def record_sync_error(
+        self, document_id: str, error: str, last_checked_at: str
+    ) -> None:
+        with self.connection:
+            self.connection.execute(
+                """
+                INSERT INTO source_metadata(
+                    document_id, source, official_id, title, last_checked_at,
+                    sync_status, last_error
+                ) VALUES (?, 'UNKNOWN', ?, '', ?, 'error', ?)
+                ON CONFLICT(document_id) DO UPDATE SET
+                    last_checked_at = excluded.last_checked_at,
+                    sync_status = 'error',
+                    last_error = excluded.last_error
+                """,
+                (document_id, document_id, last_checked_at, error),
+            )

@@ -45,8 +45,8 @@ rag-bogado/
 ├── .dockerignore              # Excluded development and cache files
 ├── .github/workflows/ci.yml   # Automated tests and Ruff checks
 ├── src/rag_bogado/
-│   ├── ingestion/            # xml_loader.py, normalizer.py, chunker.py
-│   ├── retrieval/            # embeddings.py, retriever.py,
+│   ├── ingestion/            # xml_loader.py, normalizer.py, chunker.py,
+│   │                        # boe.py, sync.py, __main__.py (BOE sync CLI)
 │   │                        # persistent_retriever.py, vector_store.py
 │   ├── indexing/             # indexer.py, catalog.py, configuration.py,
 │   │                        # service.py, __main__.py (catalog CLI)
@@ -161,8 +161,24 @@ does not support concurrent writers across independently configured store paths.
 Queries select only the active collection and reject a missing/incomplete one.
 Failures before a run starts (such as invalid XML documents or an unavailable model) are
 reported by the command but are not indexing-run records. Catalog paths are local
-absolute paths; moving data requires updating/rebuilding the catalog. Automatic
-schema migrations and official-source/version metadata remain future work.
+absolute paths; moving data requires updating/rebuilding the catalog.
+
+## Official sources and BOE synchronization
+
+Fetch official metadata or synchronize and atomically index consolidated legal texts from the Spanish Official State Gazette (BOE) Open Data API:
+
+```bash
+# Query official metadata (title, consolidation status, update timestamps):
+uv run python -m rag_bogado.ingestion metadata BOE-A-2018-16673
+
+# Synchronize one or more official documents:
+uv run python -m rag_bogado.ingestion sync BOE-A-2018-16673
+
+# Inspect sync status and consolidation metadata:
+uv run python -m rag_bogado.indexing sync-status --document-id BOE-A-2018-16673
+```
+
+The synchronization service checks official registry timestamps, computes SHA-256 hashes of the downloaded XML content, skips reindexing when content is unchanged, and activates new versions in Qdrant only after full vector verification.
 
 ## Local evidence answers and experimental synthesis
 

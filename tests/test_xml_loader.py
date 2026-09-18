@@ -101,3 +101,41 @@ def test_chunk_legal_units_splits_long_units(tmp_path):
     assert all(c.article == "Artículo 10" for c in chunks)
     assert all(c.unit_type == "article" for c in chunks)
     assert all("Artículo 10. Gobernanza de datos" in c.text for c in chunks)
+
+
+def test_load_boe_xml_structure(tmp_path):
+    boe_xml = """<?xml version="1.0" encoding="utf-8"?>
+<response>
+  <status>
+    <code>200</code>
+    <text>ok</text>
+  </status>
+  <data>
+    <metadatos>
+      <identificador>BOE-A-2018-16673</identificador>
+      <titulo>Ley Orgánica de Protección de Datos</titulo>
+    </metadatos>
+    <texto>
+      <p class="articulo">Artículo 1. Objeto de la ley.</p>
+      <p class="parrafo">1. La presente ley orgánica tiene por objeto...</p>
+      <p class="articulo">Artículo 2. Ámbito de aplicación.</p>
+      <p class="parrafo">El régimen de protección de datos se aplicará a...</p>
+    </texto>
+  </data>
+</response>"""
+    xml_file = tmp_path / "boe.xml"
+    xml_file.write_text(boe_xml, encoding="utf-8")
+
+    units = load_xml(xml_file)
+    assert len(units) == 2
+    assert units[0].unit_type == "article"
+    assert units[0].identifier == "Artículo 1"
+    assert units[0].title == "Objeto de la ley."
+    assert "La presente ley orgánica" in units[0].text
+    assert units[1].identifier == "Artículo 2"
+    assert units[1].title == "Ámbito de aplicación."
+
+    chunks = chunk_legal_units(units, max_chunk_size=500)
+    assert len(chunks) == 2
+    assert chunks[0].article == "Artículo 1"
+    assert "Artículo 1. Objeto de la ley" in chunks[0].text
