@@ -285,3 +285,43 @@ def test_root_index_fallback_without_html(tmp_path: Path):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "RAG-Bogado API is running"}
+
+
+def test_create_app_environment_variables(tmp_path: Path, monkeypatch):
+    custom_cat = tmp_path / "env_catalog.sqlite3"
+    with DocumentCatalog(custom_cat) as catalog:
+        run_id = catalog.start_run(
+            document_id="env_doc",
+            title="Env Regulatory Doc",
+            content_hash="envhash123",
+            source_path=tmp_path / "env_doc.xml",
+            index_id="idx_env",
+            collection="index_idx_env",
+            store_path=tmp_path / "qdrant",
+            configuration={
+                "corpus_sha256": "envhash123",
+                "dimension": 384,
+                "model": "fake",
+            },
+            expected_chunks=1,
+        )
+        catalog.activate(run_id)
+
+    custom_static = tmp_path / "custom_static"
+    custom_static.mkdir()
+    (custom_static / "index.html").write_text("<h1>Custom Static UI</h1>")
+
+    monkeypatch.setenv("CATALOG_PATH", str(custom_cat))
+    monkeypatch.setenv("STATIC_DIR", str(custom_static))
+
+    app = create_app()
+    client = TestClient(app)
+
+    health_res = client.get("/health")
+    assert health_res.status_code == 200
+    assert health_res.json()["catalog_ready"] is True
+    assert "env_doc" in health_res.json()["active_documents"]
+
+    index_res = client.get("/")
+    assert index_res.status_code == 200
+    assert "Custom Static UI" in index_res.text

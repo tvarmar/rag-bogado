@@ -96,3 +96,57 @@ def test_empty_input_and_invalid_arguments(tmp_path):
             store.upsert([], [], index_id="v1", batch_size=0)
         with pytest.raises(ValueError, match="top_k"):
             store.search([1.0, 0.0, 0.0], top_k=-1)
+
+
+def test_qdrant_vector_store_initialization_options(monkeypatch):
+    recorded_calls = []
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            recorded_calls.append(kwargs)
+
+        def collection_exists(self, name):
+            return True
+
+        def get_collection(self, name):
+            class Config:
+                params = type(
+                    "P",
+                    (),
+                    {
+                        "vectors": models.VectorParams(
+                            size=384, distance=models.Distance.DOT
+                        )
+                    },
+                )()
+
+            return type("C", (), {"config": Config()})()
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr("rag_bogado.retrieval.vector_store.QdrantClient", FakeClient)
+
+    # 1. Via URL
+    with QdrantVectorStore(collection="col1", url="http://qdrant:6333"):
+        pass
+    assert recorded_calls[-1] == {"url": "http://qdrant:6333"}
+
+    # 2. Via host and port
+    with QdrantVectorStore(collection="col2", host="qdrant", port=6333):
+        pass
+    assert recorded_calls[-1] == {"host": "qdrant", "port": 6333}
+
+    # 3. Via path starting with http://
+    with QdrantVectorStore("http://qdrant:6333", "col3"):
+        pass
+    assert recorded_calls[-1] == {"url": "http://qdrant:6333"}
+
+    # 4. Via explicit client
+    client_instance = FakeClient()
+    with QdrantVectorStore(collection="col4", client=client_instance) as store:
+        assert store.client is client_instance
+
+    # 5. Missing target raises ValueError
+    with pytest.raises(ValueError, match="Either path, url, host, or client"):
+        QdrantVectorStore(collection="col5")

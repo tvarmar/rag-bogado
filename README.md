@@ -40,6 +40,9 @@ rag-bogado/
 ├── ESTUDIAR.md                # Theory and learning progress
 ├── AGENTS.md                  # Session maintenance instructions
 ├── pyproject.toml / uv.lock   # Dependencies and reproducible environment
+├── Dockerfile                 # Multi-stage container build with uv and Python 3.12
+├── docker-compose.yml         # API and standalone Qdrant vector store services
+├── .dockerignore              # Excluded development and cache files
 ├── .github/workflows/ci.yml   # Automated tests and Ruff checks
 ├── src/rag_bogado/
 │   ├── ingestion/            # xml_loader.py, normalizer.py, chunker.py
@@ -215,3 +218,24 @@ Endpoints and views:
 - `GET /redoc`: Alternative OpenAPI documentation (ReDoc).
 
 To access the web interface from another device (such as a smartphone connected to the same local Wi-Fi network), navigate to your computer's local IP address (e.g. `http://192.168.1.XX:8000`).
+
+## Containerized execution (Docker & Docker Compose)
+
+Build and run the entire stack (FastAPI web application and standalone Qdrant vector database) with persistent storage:
+
+```bash
+docker compose up --build
+```
+
+Services started:
+- `rag-bogado-api` on port `8000` (`http://localhost:8000`).
+- `rag-bogado-qdrant` on port `6333` (`http://localhost:6333`).
+
+Environment configuration variables:
+- `CATALOG_PATH`: Location of the SQLite catalog database (default in compose: `/app/data/catalog/catalog.sqlite3`).
+- `STATIC_DIR`: Path to web frontend assets (default: `/app/src/rag_bogado/api/static`).
+- `QDRANT_URL`: Standalone Qdrant service URL (default in compose: `http://qdrant:6333`).
+- `OLLAMA_BASE_URL`: URL to access Ollama on the host machine (default in compose: `http://host.docker.internal:11434`).
+- `HF_HOME`: Directory to cache downloaded embedding model weights (default in compose: `/app/data/cache/huggingface`).
+
+All vector collections in `./data/qdrant` and catalog documents in `./data/catalog` are persisted on the host machine across container restarts.

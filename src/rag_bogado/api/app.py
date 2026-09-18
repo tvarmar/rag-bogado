@@ -1,6 +1,7 @@
 """FastAPI application factory and route definitions for RAG-Bogado."""
 
 import logging
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -31,14 +32,18 @@ def create_app(
     static_dir: Path | None = None,
 ) -> FastAPI:
     """Create a configured FastAPI application with injectable service dependencies."""
-    default_catalog_path = catalog_path or Path("data/catalog/catalog.sqlite3")
+    default_catalog_path = catalog_path or Path(
+        os.environ.get("CATALOG_PATH", "data/catalog/catalog.sqlite3")
+    )
     default_generator_factory = generator_factory or (lambda: OllamaGenerator())
     default_query_fn = query_fn or (
         lambda catalog, doc_id, text, top_k: query_active(
             catalog, doc_id, text, top_k=top_k
         )
     )
-    resolved_static_dir = static_dir or DEFAULT_STATIC_DIR
+    resolved_static_dir = static_dir or Path(
+        os.environ.get("STATIC_DIR", str(DEFAULT_STATIC_DIR))
+    )
 
     app = FastAPI(
         title="RAG-Bogado API",

@@ -1,5 +1,6 @@
 """Coordinate complete vector indexes with the catalog's active version."""
 
+import os
 from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
@@ -20,7 +21,7 @@ def publish_index(
     source_path: Path,
     chunks: list[Chunk],
     configuration: dict,
-    store_path: Path,
+    store_path: Path | str | None = None,
     model: EmbeddingModel,
     batch_size: int = 64,
 ) -> dict:
@@ -31,10 +32,11 @@ def publish_index(
     A hard process termination may leave a preparing run; retry creates a new
     attempt and resumes existing vectors. Old attempts remain as history.
     """
+    target_store = store_path or os.environ.get("QDRANT_URL") or Path("data/qdrant")
     identity = index_identity(chunks, configuration)
     collection = "index_" + identity
     with QdrantVectorStore(
-        store_path, collection, dimension=configuration["dimension"]
+        target_store, collection, dimension=configuration["dimension"]
     ) as store:
         run_id = catalog.start_run(
             document_id=document_id,
@@ -43,7 +45,7 @@ def publish_index(
             source_path=source_path,
             index_id=identity,
             collection=collection,
-            store_path=store_path,
+            store_path=target_store,
             configuration=configuration,
             expected_chunks=len(chunks),
         )
@@ -65,6 +67,7 @@ def query_active(
     *,
     top_k: int = 5,
     model_factory=EmbeddingModel,
+    qdrant_url: str | None = None,
 ) -> dict:
     """Query only the active version, loading its pinned model without the PDF."""
     if not question.strip() or top_k < 0:
@@ -76,8 +79,11 @@ def query_active(
     ).items():
         if version(dependency) != expected_version:
             raise ValueError("Embedding dependencies changed; reindex before querying")
+    target_store = (
+        qdrant_url or os.environ.get("QDRANT_URL") or Path(active["store_path"])
+    )
     with QdrantVectorStore(
-        Path(active["store_path"]),
+        target_store,
         active["collection_name"],
         dimension=config["dimension"],
         create_if_missing=False,
