@@ -20,8 +20,9 @@ Documentación y presentación de portfolio (Hito 13):
     - `nis2`: `DOUE-L-2022-81963` (Directiva de Ciberseguridad NIS 2)
   - Soporte `DOUE-L-*` en `BoeClient` vía `xml.php` y extracción robusta de `<texto>` en `xml_loader.py`.
   - Sincronización automática no bloqueante en el arranque (`lifespan`) de FastAPI y endpoint manual `POST /api/documents/sync`.
-  - Selector dinámico de normas y estado de sincronización en la interfaz web (`index.html` y `app.js`).
-  - Resiliencia de Ollama: detección de fallos de conexión en `/ask` devolviendo HTTP 503 con comando de inicio (`bash scripts/serve_ollama.sh`) y alerta visual en la UI.
+  - Selector dinámico de normas y estado de sincronización en la interfaz web (`index.html` y `app.js`), predeterminado en «Todo el corpus (4 normas activas)» y con cache-busting en assets estáticos (`?v=2`).
+  - Auto-arranque de Ollama en `lifespan`: si el demonio de Ollama no está activo al iniciar FastAPI (`uvicorn`), la aplicación lo arranca automáticamente en segundo plano con las variables de entorno correspondientes y lo detiene al apagar el servidor. Si se detuviera de forma imprevista durante una consulta, `/ask` degrada a HTTP 503 accionable.
+  - Modo multicanal en `query_active` y `/ask`: soporte para `document_id="all"` que recupera y ordena candidatos de las 4 normas activas simultáneamente.
   - Catálogo local con los 4 documentos indexados y activos.
 - **Hito 10 (Sincronización BOE básica) completado y fusionado en `main` (PR #8).**
 - **Hito 11 (LangGraph / Agentes):** Relegado a hitos futuros/opcionales por decisión de alcance.

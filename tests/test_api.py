@@ -119,7 +119,8 @@ def json_question(payload: dict) -> str:
 
 
 def fake_query_active(catalog, doc_id, text, top_k):
-    active = catalog.active_index(doc_id)
+    target_id = "test_doc" if doc_id == "all" else doc_id
+    active = catalog.active_index(target_id)
     return {
         "document_id": doc_id,
         "version_id": active["version_id"],
@@ -203,6 +204,22 @@ def test_ask_endpoint_success(catalog_with_document: Path):
     assert len(answer["sources"]) == 1
     assert answer["sources"][0]["id"] == "Q1-S1"
     assert answer["sources"][0]["article"] == "Artículo 1"
+
+
+def test_ask_endpoint_all_documents_queries_corpus(catalog_with_document: Path):
+    app = create_app(
+        catalog_path=catalog_with_document,
+        generator_factory=lambda: FakeGenerator("answered"),
+        query_fn=fake_query_active,
+    )
+    client = TestClient(app)
+    payload = {
+        "question": "¿Quién tiene la obligación?",
+        "document_id": "all",
+    }
+    response = client.post("/ask", json=payload)
+    assert response.status_code == 200
+    assert response.json()["status"] == "answered"
 
 
 def test_ask_endpoint_unknown_document_returns_404(catalog_with_document: Path):

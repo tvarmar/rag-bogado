@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import logging
 import os
+import subprocess
 import sys
+import time
 import urllib.request
 from collections.abc import Callable
 from contextlib import asynccontextmanager
@@ -44,6 +46,44 @@ def check_ollama_alive(ollama_url: str = "http://127.0.0.1:11434") -> bool:
             return response.status == 200
     except Exception:
         return False
+
+
+def ensure_ollama_running() -> subprocess.Popen | None:
+    """Ensure local Ollama daemon is running, starting it in background if necessary."""
+    if check_ollama_alive():
+        return None
+
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
+    ollama_bin = project_root / "data/runtime/ollama/bin/ollama"
+    if not ollama_bin.exists():
+        logger.warning("Local Ollama binary not found at %s", ollama_bin)
+        return None
+
+    models_dir = project_root / "data/models/ollama"
+    env = os.environ.copy()
+    env["OLLAMA_HOST"] = "127.0.0.1:11434"
+    env["OLLAMA_MODELS"] = str(models_dir)
+    env["OLLAMA_NO_CLOUD"] = "1"
+    env["OLLAMA_NUM_PARALLEL"] = "1"
+
+    logger.info("Starting local Ollama daemon in background...")
+    try:
+        proc = subprocess.Popen(
+            [str(ollama_bin), "serve"],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        for _ in range(30):
+            if check_ollama_alive():
+                logger.info("Local Ollama daemon is ready on 127.0.0.1:11434")
+                return proc
+            time.sleep(0.2)
+        logger.warning("Ollama process launched but not responding on port 11434")
+        return proc
+    except Exception as err:
+        logger.error("Failed to auto-start Ollama: %s", err)
+        return None
 
 
 def sync_official_corpus(
@@ -144,6 +184,9 @@ def create_app(
 
     @asynccontextmanager
     async def app_lifespan(app_instance: FastAPI):
+        ollama_proc = None
+        if not is_testing:
+            ollama_proc = ensure_ollama_running()
         if should_sync:
             logger.info("Comprobando sincronización del corpus BOE en el arranque...")
             try:
@@ -155,6 +198,13 @@ def create_app(
                     exc,
                 )
         yield
+        if ollama_proc is not None:
+            logger.info("Deteniendo proceso de Ollama iniciado automáticamente...")
+            ollama_proc.terminate()
+            try:
+                ollama_proc.wait(timeout=2)
+            except Exception:
+                ollama_proc.kill()
 
     app = FastAPI(
         title="RAG-Bogado API",
@@ -339,21 +389,34 @@ def create_app(
             )
         try:
             with DocumentCatalog(default_catalog_path) as catalog:
-                try:
-                    catalog.active_index(request.document_id)
-                except ValueError as err:
-                    logger.warning(
-                        "Document %r not found or not active: %s",
-                        request.document_id,
-                        err,
-                    )
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=(
-                            f"Document {request.document_id!r} not found or "
-                            f"has no active index: {err}"
-                        ),
-                    ) from err
+                if request.document_id == "all":
+                    active_count = catalog.connection.execute(
+                        "SELECT COUNT(*) FROM indexing_runs WHERE active = 1"
+                    ).fetchone()[0]
+                    if active_count == 0:
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail=(
+                                "No hay documentos activos en el catálogo "
+                                "para consultar."
+                            ),
+                        )
+                else:
+                    try:
+                        catalog.active_index(request.document_id)
+                    except ValueError as err:
+                        logger.warning(
+                            "Document %r not found or not active: %s",
+                            request.document_id,
+                            err,
+                        )
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail=(
+                                f"Document {request.document_id!r} not found or "
+                                f"has no active index: {err}"
+                            ),
+                        ) from err
 
                 generator = default_generator_factory()
                 result = answer_questions(

@@ -17,10 +17,13 @@ class AskRequest(BaseModel):
         examples=["¿Quién debe procurar la alfabetización en IA?"],
     )
     document_id: str = Field(
-        default="eu_ai_act",
+        default="all",
         min_length=1,
-        description="Identifier of the target document in the active catalog.",
-        examples=["eu_ai_act"],
+        description=(
+            "Identifier of the target document in the active catalog, "
+            "or 'all' to query across the entire active corpus."
+        ),
+        examples=["all", "eu_ai_act", "rgpd"],
     )
     answer_mode: Literal["synthesis", "evidence"] = Field(
         default="synthesis",

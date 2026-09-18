@@ -231,15 +231,15 @@ uv run uvicorn rag_bogado.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Endpoints and views:
-- `GET /`: Interactive web client with dynamic document switcher across the 4 corpus regulations and inline sync status.
+- `GET /`: Interactive web client with dynamic document switcher supporting both simultaneous multi-regulation search ("Todo el corpus") and per-regulation filters across the 4 core BOE texts.
 - `GET /health`: Report service readiness, version, Ollama availability (`ollama_ready`), and active queryable documents in SQLite.
 - `GET /api/documents`: List the 4 official corpus documents, titles, scopes, and synchronization readiness.
 - `POST /api/documents/sync`: Trigger automated BOE verification and synchronization across the corpus.
-- `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis. Returns HTTP 503 if Ollama is unreachable, with instructions to run `bash scripts/serve_ollama.sh`.
+- `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis. Supports `document_id: "all"` to search across the entire 4-document active corpus or an explicit regulation ID.
 - `GET /docs`: Interactive OpenAPI documentation (Swagger UI).
 - `GET /redoc`: Alternative OpenAPI documentation (ReDoc).
 
-During FastAPI startup (`lifespan`), the server checks the BOE for the 4 official documents and synchronizes any missing or updated texts before allowing queries (fail-safe on network errors).
+During FastAPI startup (`lifespan`), the server automatically boots the local Ollama daemon in the background if it is not already running, verifies the BOE for the 4 official documents, synchronizes any missing or updated texts, and cleanly terminates the spawned Ollama daemon upon shutdown.
 
 To access the web interface from another device (such as a smartphone connected to the same local Wi-Fi network), navigate to your computer's local IP address (e.g. `http://192.168.1.XX:8000`).
 

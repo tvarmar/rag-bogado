@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>RAG-Bogado — Chat Conversacional Regulatorio</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css?v=2">
 </head>
 <body>
   <div class="chat-app">
@@ -59,7 +59,7 @@
             <div class="control-dropdown-container">
               <button type="button" id="docs-dropdown-btn" class="control-pill control-pill-btn">
                 <span class="pill-label">Archivos consultados:</span>
-                <span id="docs-selected-label" class="pill-value">Reglamento de IA (1 activo)</span>
+                <span id="docs-selected-label" class="pill-value">Todo el corpus (4 normas activas)</span>
                 <span class="dropdown-arrow">▾</span>
               </button>
               <div id="docs-dropdown-menu" class="dropdown-popover hidden">
@@ -69,7 +69,14 @@
                 </div>
                 <div id="docs-options-list" class="dropdown-options-list">
                   <label class="doc-checkbox-item">
-                    <input type="radio" name="selected-doc" id="doc-eu-ai-act" value="eu_ai_act" checked>
+                    <input type="radio" name="selected-doc" id="doc-all" value="all" checked>
+                    <div class="doc-checkbox-info">
+                      <div class="doc-checkbox-title">📚 Todo el corpus oficial (4 normas)</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> Búsqueda simultánea en IA, RGPD, DSA y NIS2</div>
+                    </div>
+                  </label>
+                  <label class="doc-checkbox-item">
+                    <input type="radio" name="selected-doc" id="doc-eu-ai-act" value="eu_ai_act">
                     <div class="doc-checkbox-info">
                       <div class="doc-checkbox-title">Reglamento de IA (DOUE-L-2024-81079)</div>
                       <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 113 artículos, 180 considerandos</div>
@@ -79,21 +86,21 @@
                     <input type="radio" name="selected-doc" id="doc-rgpd" value="rgpd">
                     <div class="doc-checkbox-info">
                       <div class="doc-checkbox-title">RGPD / LOPDGDD (BOE-A-2018-16673)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Protección de Datos</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 97 artículos, 22 disp. adicionales</div>
                     </div>
                   </label>
                   <label class="doc-checkbox-item">
                     <input type="radio" name="selected-doc" id="doc-dsa" value="dsa">
                     <div class="doc-checkbox-info">
                       <div class="doc-checkbox-title">Servicios Digitales - DSA (DOUE-L-2022-81573)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Mercado único digital</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 93 artículos, 156 considerandos</div>
                     </div>
                   </label>
                   <label class="doc-checkbox-item">
                     <input type="radio" name="selected-doc" id="doc-nis2" value="nis2">
                     <div class="doc-checkbox-info">
                       <div class="doc-checkbox-title">Ciberseguridad - NIS2 (DOUE-L-2022-81963)</div>
-                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-planned">Comprobando BOE...</span> Directiva de Ciberseguridad</div>
+                      <div class="doc-checkbox-meta"><span class="badge-mini badge-mini-active">Activo en catálogo</span> 46 artículos, 144 considerandos</div>
                     </div>
                   </label>
                 </div>
@@ -111,7 +118,7 @@
             <textarea
               id="user-input"
               class="chat-input"
-              placeholder="Haz una pregunta sobre el Reglamento de Inteligencia Artificial..."
+              placeholder="Haz una pregunta sobre el corpus normativo (IA, RGPD, DSA, NIS2)..."
               rows="1"
               required
             ></textarea>
@@ -127,24 +134,18 @@
         </div>
       </section>
 
-      <!-- References Sidebar -->
+      <!-- Right Panel: Legal References Sidebar -->
       <aside id="references-sidebar" class="references-sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-title-group">
-            <h2 class="sidebar-title">Referencias y fuentes</h2>
-            <span id="references-count" class="badge badge-neutral">0 fuentes</span>
+          <div class="sidebar-header-title">
+            <span class="sidebar-icon">📑</span>
+            <h3>Pasajes Oficiales Citados</h3>
           </div>
-          <button id="close-sidebar-btn" class="close-sidebar-btn" aria-label="Cerrar panel">&times;</button>
-        </div>
-
-        <div class="sidebar-info-banner">
-          <div class="info-icon">🏛️</div>
-          <div class="info-content">
-            <strong>Fuente oficial:</strong> BOE / DOUE<br>
-            <span class="info-sub">Reglamento (UE) 2024/1689 (IA)</span>
+          <div class="sidebar-header-actions">
+            <span id="references-count" class="badge badge-secondary">0 fuentes</span>
+            <button id="close-sidebar-btn" class="btn btn-icon-only btn-ghost" title="Cerrar panel">✕</button>
           </div>
         </div>
-
         <div id="references-list" class="references-list">
           <div class="empty-references">
             <span class="empty-icon">📖</span>
@@ -155,15 +156,15 @@
       </aside>
     </div>
 
-    <!-- Modal for Full Passage Reading -->
-    <div id="source-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
-      <div class="modal-card">
+    <!-- Modal for Full Legal Passage -->
+    <div id="source-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog">
         <div class="modal-header">
-          <div>
-            <span id="modal-source-id" class="badge badge-primary">Q1-S1</span>
-            <h3 id="modal-article-title" class="modal-title">Artículo</h3>
+          <div class="modal-header-info">
+            <span id="modal-source-id" class="badge badge-primary">S1</span>
+            <h3 id="modal-article-title" class="modal-title">Artículo oficial</h3>
           </div>
-          <button id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+          <button id="modal-close-btn" class="btn btn-icon-only btn-ghost" title="Cerrar">✕</button>
         </div>
         <div class="modal-body">
           <div class="modal-meta-grid">
@@ -196,6 +197,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2"></script>
 </body>
 </html>

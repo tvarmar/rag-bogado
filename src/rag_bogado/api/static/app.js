@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const docsSelectedLabel = document.getElementById("docs-selected-label");
   const docsOptionsList = document.getElementById("docs-options-list");
 
-  // Current selected document state
-  let currentDocumentId = "eu_ai_act";
+  // Current selected document state (defaults to whole corpus)
+  let currentDocumentId = "all";
   let availableDocuments = [];
 
   // Modal elements
@@ -123,6 +123,31 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderDropdownOptions() {
     if (!docsOptionsList || !availableDocuments.length) return;
     docsOptionsList.innerHTML = "";
+
+    // 1. All documents option
+    const allLabel = document.createElement("label");
+    allLabel.className = "doc-checkbox-item";
+    const isAllChecked = currentDocumentId === "all";
+    allLabel.innerHTML = `
+      <input type="radio" name="selected-doc" value="all" ${isAllChecked ? "checked" : ""}>
+      <div class="doc-checkbox-info">
+        <div class="doc-checkbox-title">📚 Todo el corpus oficial (4 normas)</div>
+        <div class="doc-checkbox-meta">
+          <span class="badge-mini badge-mini-active">Activo en catálogo</span>
+          <span>Búsqueda simultánea en IA, RGPD, DSA y NIS2</span>
+        </div>
+      </div>
+    `;
+    const allRadio = allLabel.querySelector('input[type="radio"]');
+    allRadio.onchange = () => {
+      if (allRadio.checked) {
+        currentDocumentId = "all";
+        updateSelectedDocDisplay();
+      }
+    };
+    docsOptionsList.appendChild(allLabel);
+
+    // 2. Individual documents
     availableDocuments.forEach((doc) => {
       const label = document.createElement("label");
       label.className = "doc-checkbox-item";
@@ -156,6 +181,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateSelectedDocDisplay() {
+    if (currentDocumentId === "all") {
+      if (docsSelectedLabel) {
+        const activeCount = availableDocuments.filter((d) => d.active).length || 4;
+        docsSelectedLabel.textContent = `Todo el corpus (${activeCount} normas activas)`;
+      }
+      if (userInput) {
+        userInput.placeholder = "Haz una pregunta sobre el corpus normativo (IA, RGPD, DSA, NIS2)...";
+      }
+      return;
+    }
     const doc = availableDocuments.find((d) => d.id === currentDocumentId);
     if (doc) {
       if (docsSelectedLabel) {
