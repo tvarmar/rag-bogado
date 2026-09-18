@@ -44,7 +44,7 @@ Los números de hito se conservan para mantener las referencias del plan origina
 6. Empaquetar, observar y preparar entregas reproducibles (hitos 9 y 12B).
 7. Incorporar sincronización y versiones BOE (hito 10).
 8. Sincronización completa del corpus oficial (4 normas) y resiliencia en API (ampliación práctica del hito 10 / pre-cierre).
-9. Documentar el portfolio y arquitectura para showcase profesional (hito 13 completado); hitos futuros y opcionales (hitos 11 y 14 pospuestos para futuras fases si se retoma el proyecto).
+9. Documentar el portfolio y arquitectura para showcase profesional (hito 13 completado); hitos opcionales de extensión (hitos 11, 12B y 14) formalmente pospuestos como trabajo futuro fuera del alcance del proyecto.
 
 ### Criterios de aceptación del MVP
 
@@ -614,9 +614,9 @@ La actualización documental debe ser determinista si puede resolverse de forma 
 
 ---
 
-## Hito 11 — LangChain y agentes (pospuesto / hito futuro)
+## Hito 11 — LangChain y agentes (Opcional / Trabajo futuro fuera de alcance)
 
-> **Nota de alcance (2026-09-18):** Este hito queda pospuesto como línea de trabajo futura en caso de retomar el proyecto. Se prioriza la robustez operativa del producto actual (sincronización del corpus de 4 normas del BOE y resiliencia en la API).
+> **Nota de alcance:** Este hito es opcional y queda formalmente pospuesto como línea de trabajo futura en caso de retomar el proyecto. Se priorizó la robustez operativa del producto actual (sincronización del corpus de 4 normas del BOE, interfaz interactiva y resiliencia en la API).
 
 ### LangChain
 
@@ -665,7 +665,7 @@ implementations on September 9. Recheck CI for each latest commit before merging
 - [ ] Practice issues with acceptance criteria.
 - [ ] Practice resolving merge conflicts when an appropriate case arises.
 
-### Type checking
+### Type checking (Opcional / Trabajo futuro)
 
 Evaluar:
 
@@ -679,7 +679,7 @@ Opcional:
 - [ ] Ruff
 - [ ] comprobaciones rápidas
 
-### Hito 12B — Observabilidad y entrega
+### Hito 12B — Observabilidad y entrega (Opcional / Trabajo futuro)
 
 - [ ] Logs estructurados con ID de petición, duración de retrieval/generación, modelo y versiones documentales consultadas.
 - [ ] Medir latencia, errores, abstenciones y estado/antigüedad de sincronización; evitar almacenar preguntas completas por defecto.
@@ -690,7 +690,7 @@ Opcional:
 
 Empezar con logs y resúmenes locales. OpenTelemetry, Prometheus o Grafana quedan condicionados a una necesidad de diagnóstico concreta.
 
-### Hito 14 — Laboratorios opcionales posteriores
+### Hito 14 — Laboratorios opcionales posteriores (Fuera de alcance)
 
 | Competencia | Experimento y condición para incorporarlo |
 | --- | --- |

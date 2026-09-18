@@ -26,4 +26,7 @@ data/raw/
 data/runtime/
 data/models/
 
+# Local study and scratch notes
 ESTUDIAR.md
+TODO.md
+*.local.md
