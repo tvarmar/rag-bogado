@@ -60,6 +60,29 @@ Standard RAG architectures designed for generic documentation or customer servic
 
 ## System Architecture
 
+### Conceptual Architecture Schema
+
+```text
+┌────────────────────────┐
+│ Natural Language Query │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐      ┌─────────────────────────┐
+│ Multi-Query Rewriter   │ ───► │ Multilingual-E5 Vectors │
+└────────────────────────┘      └───────────┬─────────────┘
+                                            │
+                                            ▼
+┌────────────────────────┐      ┌─────────────────────────┐
+│ Reciprocal Rank Fusion │ ◄─── │ Qdrant Vector Store     │
+└───────────┬────────────┘      └─────────────────────────┘
+            │
+            ▼
+┌────────────────────────┐      ┌─────────────────────────┐
+│ Local Ollama (Qwen2.5) │ ───► │ Verbatim Citation Guard │ ───► Zero-Hallucination Legal Answer
+└────────────────────────┘      └─────────────────────────┘
+```
+
 ### End-to-End Query & Synthesis Pipeline
 
 The following diagram illustrates the flow from natural language query submission to final citation-backed response:
@@ -345,6 +368,16 @@ uv run python -m rag_bogado.evaluation run --dataset eval_dataset_v1.json
   - `Abstention Accuracy` (Properly identifying queries outside the corpus scope and rejecting hallucinated claims).
   - `Claim-by-claim Support Rate` (Verifying that 100% of claims in synthesis mode directly match retrieved spans).
 
+### Empirical Benchmark Results (EU AI Act Evaluation Set)
+
+| Metric | Score | Interpretation |
+|---|---|---|
+| **Hit@1** | 50.0% | Authoritative article ranked as the very first result |
+| **Hit@5** | 91.67% | Authoritative legal unit retrieved within the top 5 passages |
+| **Hit@10** | 91.67% | Retrieval recall ceiling for relevant legal passages |
+| **MRR@10** | 0.6597 | Mean Reciprocal Rank across answered evaluation questions |
+| **Abstention Accuracy** | 100.0% | Correctly abstained from answering negative / out-of-scope queries |
+
 Extensive offline benchmarking notes and experimental findings are documented in:
 - [Multi-Query Retrieval & RRF Benchmark](docs/multi-query.md)
 - [Local LLM Generation & Context Sizing Experiments](docs/local-generation.md)
@@ -391,6 +424,20 @@ The codebase adheres to strict software engineering standards:
   uv run ruff format --check .
   ```
 - **Automated CI:** Every push and pull request triggers automated GitHub Actions checks against Python 3.12.
+
+---
+
+## Project Scope, Experimental Nature & Limitations
+
+> [!IMPORTANT]
+> **Educational & Portfolio Purpose:** RAG-Bogado is a personal, open-source engineering project created to demonstrate production-grade Python architecture, deterministic legal retrieval, and local LLM evaluation. It is **not** a commercial legal advisory product.
+
+- **No Legal Advice:** System outputs are provided for demonstration purposes and do not constitute legal counsel, judicial interpretation, or compliance opinions. Users must independently verify all legal citations against official publications (*BOE* and *DOUE*).
+- **Answer Modes & Grounding:**
+  - *Evidence Selection (Default):* Restricts LLM output to selecting source indices; answers are rendered as verbatim legal excerpts. This mode guarantees zero hallucinations.
+  - *Synthesis Mode (Experimental):* Generates free-form summaries with automated claim-by-claim verification. As measured in evaluation reports, automated reviewers may occasionally permit false approvals on subtle legal qualifications.
+- **Corpus Boundaries:** The system is strictly scoped to the 4 synchronized core digital regulations (`eu_ai_act`, `rgpd`, `dsa`, `nis2`). Queries concerning other statutes, sectorial legislation, or regional decrees fall outside the indexed corpus and trigger safe abstention.
+- **Local Hardware Dependencies:** Inference latency and throughput depend on the host machine's CPU/RAM and local Ollama daemon availability.
 
 ---
 

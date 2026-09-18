@@ -176,7 +176,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Quién debe procurar la alfabetización en IA?",
             "sources": [
@@ -325,7 +325,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién debe procurar la alfabetización en IA?",
                   "results": [
@@ -481,7 +481,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Quién debe procurar la alfabetización en IA?",
             "sources": [
@@ -668,7 +668,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién debe procurar la alfabetización en IA?",
                   "results": [
@@ -768,7 +768,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién tiene la responsabilidad de garantizar la alfabetización en inteligencia artificial?",
                   "results": [
@@ -927,7 +927,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Quién debe procurar la alfabetización en IA?",
             "sources": [
@@ -1076,7 +1076,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién debe procurar la alfabetización en IA?",
                   "results": [
@@ -1181,7 +1181,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?",
             "sources": [
@@ -1326,7 +1326,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?",
                   "results": [
@@ -1431,7 +1431,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo debe actualizarse la documentación técnica de una IA de alto riesgo?",
             "sources": [
@@ -1576,7 +1576,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo debe actualizarse la documentación técnica de una IA de alto riesgo?",
                   "results": [
@@ -1776,7 +1776,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Quién debe procurar la alfabetización en IA?",
             "sources": [
@@ -1963,7 +1963,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién debe procurar la alfabetización en IA?",
                   "results": [
@@ -2063,7 +2063,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Quién tiene la responsabilidad de garantizar la alfabetización en inteligencia artificial?",
                   "results": [
@@ -2168,7 +2168,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?",
             "sources": [
@@ -2337,7 +2337,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo debe prepararse la documentación técnica de una IA de alto riesgo?",
                   "results": [
@@ -2442,7 +2442,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo debe actualizarse la documentación técnica de una IA de alto riesgo?",
             "sources": [
@@ -2592,7 +2592,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo debe actualizarse la documentación técnica de una IA de alto riesgo?",
                   "results": [
@@ -2793,7 +2793,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo?",
             "sources": [
@@ -2939,7 +2939,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo?",
                   "results": [
@@ -3044,7 +3044,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuál es el número de teléfono del delegado de protección de datos de mi empresa?",
             "sources": [
@@ -3155,7 +3155,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuál es el número de teléfono del delegado de protección de datos de mi empresa?",
                   "results": [
@@ -3333,7 +3333,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo?",
             "sources": [
@@ -3484,7 +3484,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuándo se elabora la documentación técnica de un sistema de IA de alto riesgo?",
                   "results": [
@@ -3589,7 +3589,7 @@
             "document_id": "eu_ai_act",
             "version_id": 1,
             "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-            "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+            "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
             "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
             "question": "¿Cuál es el número de teléfono del delegado de protección de datos de mi empresa?",
             "sources": [
@@ -3705,7 +3705,7 @@
                   "document_id": "eu_ai_act",
                   "version_id": 1,
                   "content_hash": "29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c",
-                  "source_path": "/home/tania/projects/rag-bogado/data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
+                  "source_path": "data/catalog/originals/29e6d41f41cc0efea6b5f8a1418a7ef31e9422f9eba0c297ddc7e7ed7f357b1c/eu_ai_act.pdf",
                   "index_id": "046dce6a2abc214d72dbd1a7e225f508757b8fd1bf26e00533117a27e898b700",
                   "question": "¿Cuál es el número de teléfono del delegado de protección de datos de mi empresa?",
                   "results": [
