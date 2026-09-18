@@ -231,7 +231,14 @@ def create_app(
     def index():
         index_file = resolved_static_dir / "index.html"
         if index_file.exists():
-            return FileResponse(index_file)
+            return FileResponse(
+                index_file,
+                headers={
+                    "Cache-Control": "no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
         return {"message": "RAG-Bogado API is running"}
 
     @app.get(

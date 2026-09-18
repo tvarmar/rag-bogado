@@ -645,12 +645,14 @@ html, body {
   cursor: not-allowed;
 }
 
+.doc-checkbox-item input[type="radio"],
 .doc-checkbox-item input[type="checkbox"] {
   margin-top: 0.2rem;
   cursor: pointer;
   accent-color: var(--primary);
 }
 
+.doc-checkbox-item.doc-disabled input[type="radio"],
 .doc-checkbox-item.doc-disabled input[type="checkbox"] {
   cursor: not-allowed;
 }
