@@ -560,7 +560,7 @@ consultar metadatos
 
 Primera fuente prevista:
 
-- [ ] BOE
+- [x] BOE
 - [ ] EUR-Lex posteriormente, como adaptador separado
 
 Metadatos deseables:
@@ -578,24 +578,24 @@ DocumentMetadata
 
 Tareas:
 
-- [ ] Investigar API oficial
-- [ ] Consultar metadatos
-- [ ] Descargar documento
-- [ ] Guardar versión local
-- [ ] Calcular hash
-- [ ] Detectar cambios
-- [ ] Reindexar solo si cambia
-- [ ] Conservar el original y la versión anterior; activar la nueva solo después de completar y validar la indexación
-- [ ] Tests con HTTP simulado
+- [x] Investigar API oficial
+- [x] Consultar metadatos
+- [x] Descargar documento
+- [x] Guardar versión local
+- [x] Calcular hash
+- [x] Detectar cambios
+- [x] Reindexar solo si cambia
+- [x] Conservar el original y la versión anterior; activar la nueva solo después de completar y validar la indexación
+- [x] Tests con HTTP simulado
 
 Empezar con una lista explícita de identificadores BOE y una sincronización manual. Añadir después una ejecución programada sencilla, sin agente. Preferir el texto estructurado de la API para preservar artículos y apartados.
 
-- [ ] Separar `last_checked_at`, fecha de actualización del registro, fecha de publicación de versión y fechas de vigencia cuando estén disponibles.
-- [ ] Mostrar el estado de consolidación y la fecha de comprobación; si falla la sincronización, conservar la versión utilizable e indicar el fallo.
-- [ ] Detectar cambios de contenido por hash y actualizar metadatos sin recalcular embeddings cuando el texto no cambie.
-- [ ] Implementar timeouts, reintentos limitados, paginación cuando corresponda y registro de errores.
-- [ ] Probar sin cambios, texto modificado, cambio solo de metadatos, fallo de descarga y fallo de indexación; impedir mezcla accidental de versiones.
-- [ ] Consultar por defecto la versión activa, conservando el historial para auditoría; las preguntas históricas se incorporarán más adelante.
+- [x] Separar `last_checked_at`, fecha de actualización del registro, fecha de publicación de versión y fechas de vigencia cuando estén disponibles.
+- [x] Mostrar el estado de consolidación y la fecha de comprobación; si falla la sincronización, conservar la versión utilizable e indicar el fallo.
+- [x] Detectar cambios de contenido por hash y actualizar metadatos sin recalcular embeddings cuando el texto no cambie.
+- [x] Implementar timeouts, reintentos limitados, paginación cuando corresponda y registro de errores.
+- [x] Probar sin cambios, texto modificado, cambio solo de metadatos, fallo de descarga y fallo de indexación; impedir mezcla accidental de versiones.
+- [x] Consultar por defecto la versión activa, conservando el historial para auditoría; las preguntas históricas se incorporarán más adelante.
 
 La API permite acceder a metadatos y versiones por bloques. El BOE distingue la actualización del registro de una nueva versión del texto y publica un estado de consolidación. La consolidación tiene carácter informativo y puede estar pendiente de incorporar modificaciones; debe identificarse como tal en la interfaz. Por ello, “última versión descargada” no debe presentarse como garantía de vigencia jurídica. Fuente: [FAQ oficial de legislación consolidada](https://www.boe.es/datosabiertos/faq/consolidada.php), consultada el 08/09/2026. Contrato técnico: [API de datos abiertos del BOE](https://www.boe.es/datosabiertos/api/api.php?lang=es).
 
@@ -1029,8 +1029,8 @@ fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
 | 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
 | 5 / 6 — Generation and evidence | Question grouping, explicit outcomes and fixed-source replay implemented; synthesis support/relevance acceptance pending |
 | 7 / 8 — API and interface | After the pending terminal synthesis quality review |
-| 9 / 12B — Packaging and observability | After the local MVP; logs can be added as needed |
-| 10 — BOE / EUR-Lex synchronization | After the local MVP |
+| 9 / 12B — Packaging and observability | Containerized with Docker and Compose; local logs present |
+| 10 — BOE / EUR-Lex synchronization | BOE Open Data API adapter, hash change detection, and atomic reindexing implemented; EUR-Lex planned |
 | 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
 | 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
 
