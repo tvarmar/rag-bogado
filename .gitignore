@@ -20,9 +20,13 @@ data/qdrant/
 
 # SQLite catalog and retained document originals
 data/catalog/
+data/raw/
 
 # Local generation runtime and downloaded weights
 data/runtime/
 data/models/
 
+# Local study and scratch notes
 ESTUDIAR.md
+TODO.md
+*.local.md

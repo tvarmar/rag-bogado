@@ -215,3 +215,8 @@ def test_query_active_and_publish_respect_qdrant_url(tmp_path, monkeypatch):
         monkeypatch.setenv("QDRANT_URL", "http://env-qdrant:6333")
         query_active(catalog, "act", "Question?", model_factory=Model)
         assert recorded_stores[-1] == "http://env-qdrant:6333"
+
+        # 4. With document_id="all"
+        all_res = query_active(catalog, "all", "Question?", model_factory=Model)
+        assert all_res["document_id"] == "all"
+        assert all_res["index_id"] == "all_active"

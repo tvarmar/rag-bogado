@@ -2,11 +2,13 @@
 
 from pathlib import Path
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from rag_bogado.api.app import create_app
 from rag_bogado.indexing.catalog import DocumentCatalog
+from rag_bogado.ingestion.boe import BoeClient
 
 
 @pytest.fixture
@@ -117,7 +119,8 @@ def json_question(payload: dict) -> str:
 
 
 def fake_query_active(catalog, doc_id, text, top_k):
-    active = catalog.active_index(doc_id)
+    target_id = "test_doc" if doc_id == "all" else doc_id
+    active = catalog.active_index(target_id)
     return {
         "document_id": doc_id,
         "version_id": active["version_id"],
@@ -201,6 +204,22 @@ def test_ask_endpoint_success(catalog_with_document: Path):
     assert len(answer["sources"]) == 1
     assert answer["sources"][0]["id"] == "Q1-S1"
     assert answer["sources"][0]["article"] == "Artículo 1"
+
+
+def test_ask_endpoint_all_documents_queries_corpus(catalog_with_document: Path):
+    app = create_app(
+        catalog_path=catalog_with_document,
+        generator_factory=lambda: FakeGenerator("answered"),
+        query_fn=fake_query_active,
+    )
+    client = TestClient(app)
+    payload = {
+        "question": "¿Quién tiene la obligación?",
+        "document_id": "all",
+    }
+    response = client.post("/ask", json=payload)
+    assert response.status_code == 200
+    assert response.json()["status"] == "answered"
 
 
 def test_ask_endpoint_unknown_document_returns_404(catalog_with_document: Path):
@@ -325,3 +344,102 @@ def test_create_app_environment_variables(tmp_path: Path, monkeypatch):
     index_res = client.get("/")
     assert index_res.status_code == 200
     assert "Custom Static UI" in index_res.text
+
+
+def test_list_documents_endpoint(catalog_with_document: Path):
+    app = create_app(catalog_path=catalog_with_document)
+    client = TestClient(app)
+
+    res = client.get("/api/documents")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total"] == 4
+    doc_ids = [d["id"] for d in data["documents"]]
+    assert "eu_ai_act" in doc_ids
+    assert "rgpd" in doc_ids
+    assert "dsa" in doc_ids
+    assert "nis2" in doc_ids
+
+
+def test_ask_ollama_unavailable_returns_503(catalog_with_document: Path):
+    def failing_generator_factory():
+        class FailingGenerator:
+            def __init__(self):
+                self.model = "fake-model"
+
+            def request(self, *args, **kwargs):
+                raise RuntimeError(
+                    "Local Ollama request failed: "
+                    "<urlopen error [Errno 111] Connection refused>"
+                )
+
+            def generate(self, *args, **kwargs):
+                raise RuntimeError(
+                    "Local Ollama request failed: "
+                    "<urlopen error [Errno 111] Connection refused>"
+                )
+
+        return FailingGenerator()
+
+    app = create_app(
+        catalog_path=catalog_with_document,
+        generator_factory=failing_generator_factory,
+        query_fn=lambda *args, **kwargs: {"retrieval": []},
+    )
+    client = TestClient(app)
+
+    payload = {
+        "question": "¿Qué es un sistema de IA?",
+        "document_id": "test_doc",
+        "answer_mode": "synthesis",
+    }
+    res = client.post("/ask", json=payload)
+    assert res.status_code == 503
+    assert "Ollama" in res.json()["detail"]
+    assert "scripts/serve_ollama.sh" in res.json()["detail"]
+
+
+def test_sync_documents_endpoint(tmp_path: Path):
+    catalog_path = tmp_path / "sync_cat.sqlite3"
+
+    sample_meta = """{
+        "status": {"code": "200", "text": "ok"},
+        "data": [{
+            "identificador": "BOE-A-2018-16673",
+            "titulo": "Ley de Datos",
+            "fecha_actualizacion": "20260101",
+            "url_html_consolidada": "https://boe.es",
+            "url_eli": "https://eli.es"
+        }]
+    }"""
+    sample_xml = """<?xml version="1.0"?>
+    <documento fecha_actualizacion="20260101">
+        <metadatos><titulo>Ley de Datos</titulo></metadatos>
+        <texto>
+            <p class="articulo">Artículo 1. Objeto.</p>
+            <p class="parrafo">Texto.</p>
+        </texto>
+    </documento>"""
+
+    def mock_handler(request: httpx.Request) -> httpx.Response:
+        if "metadatos" in request.url.path:
+            return httpx.Response(200, text=sample_meta)
+        return httpx.Response(200, text=sample_xml)
+
+    def boe_factory():
+        return BoeClient(
+            client=httpx.Client(transport=httpx.MockTransport(mock_handler))
+        )
+
+    app = create_app(
+        catalog_path=catalog_path,
+        boe_client_factory=boe_factory,
+        sync_on_startup=False,
+    )
+    client = TestClient(app)
+
+    res = client.post("/api/documents/sync")
+    assert res.status_code == 200
+    data = res.json()
+    assert "results" in data
+    assert len(data["results"]) == 4

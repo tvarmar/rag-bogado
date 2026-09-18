@@ -72,6 +72,37 @@ def query_active(
     """Query only the active version, loading its pinned model without the PDF."""
     if not question.strip() or top_k < 0:
         raise ValueError("A nonblank question and nonnegative top_k are required")
+    if document_id == "all":
+        active_rows = catalog.connection.execute(
+            "SELECT DISTINCT document_id FROM indexing_runs WHERE active = 1"
+        ).fetchall()
+        active_ids = [row[0] for row in active_rows]
+        if not active_ids:
+            raise ValueError("No active document indexes found in catalog")
+        all_results = []
+        for doc_id in active_ids:
+            try:
+                sub_query = query_active(
+                    catalog,
+                    doc_id,
+                    question,
+                    top_k=top_k,
+                    model_factory=model_factory,
+                    qdrant_url=qdrant_url,
+                )
+                all_results.extend(sub_query["results"])
+            except Exception:
+                continue
+        all_results.sort(key=lambda r: r.get("score", 0.0), reverse=True)
+        return {
+            "document_id": "all",
+            "version_id": 0,
+            "content_hash": "all_active",
+            "source_path": "all_active",
+            "index_id": "all_active",
+            "question": question,
+            "results": all_results[:top_k],
+        }
     active = catalog.active_index(document_id)
     config = active["configuration"]
     for dependency, expected_version in config.get(

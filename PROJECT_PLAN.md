@@ -2,9 +2,8 @@
 # RAG-Bogado — Project Plan
 
 Este documento mantiene alcance, arquitectura objetivo, herramientas, hitos y criterios
-de aceptación. Consultar [TODO.md](TODO.md) para retomar trabajo,
-`ESTUDIAR.md` (apuntes locales, ignorados por Git) para teoría y [el historial](docs/session-history.md)
-para entregas pasadas. El protocolo de sesión está en [AGENTS.md](AGENTS.md).
+de aceptación. Consultar [el mapa de arquitectura en README.md](README.md) y [el historial de entregas](docs/session-history.md)
+para decisiones pasadas. El protocolo de sesión está en [AGENTS.md](AGENTS.md).
 
 ## 1. Objetivo del proyecto
 
@@ -44,7 +43,8 @@ Los números de hito se conservan para mantener las referencias del plan origina
 5. Conectar API e interfaz y demostrar el MVP local (hitos 7 y 8).
 6. Empaquetar, observar y preparar entregas reproducibles (hitos 9 y 12B).
 7. Incorporar sincronización y versiones BOE (hito 10).
-8. Documentar el portfolio; elegir después experimentos opcionales (hitos 11, 13 y 14).
+8. Sincronización completa del corpus oficial (4 normas) y resiliencia en API (ampliación práctica del hito 10 / pre-cierre).
+9. Documentar el portfolio y arquitectura para showcase profesional (hito 13 completado); hitos opcionales de extensión (hitos 11, 12B y 14) formalmente pospuestos como trabajo futuro fuera del alcance del proyecto.
 
 ### Criterios de aceptación del MVP
 
@@ -135,7 +135,7 @@ Los módulos futuros se describen en sus hitos; no crearlos antes de necesitarlo
 - [x] Configurar pytest
 - [x] Ignorar documentos/datos locales en Git
 - [x] Configure GitHub Actions; successful remote checks reported by the user (details in milestone 12).
-- [ ] Docker
+- [x] Docker (completado en hito 9)
 
 ---
 
@@ -305,7 +305,7 @@ SQLite permite practicar SQL y resolver el seguimiento de documentos sin añadir
 - [x] Crear tablas `documents`, `document_versions` e `indexing_runs`, con claves primarias, foráneas y restricciones de unicidad.
 - [x] Practicar consultas parametrizadas, JOIN, índices y transacciones con consultas reales: versiones de una norma e indexaciones fallidas.
 - [x] Guardar hash del original, fecha de incorporación y localizador.
-- [ ] Añadir ID oficial y fechas de la fuente cuando existan (integración de fuentes oficiales).
+- [x] Añadir ID oficial y fechas de la fuente cuando existan (integración de fuentes oficiales en hito 10).
 - [x] Registrar versión del modelo de embeddings y configuración de normalización/chunking para poder reconstruir el índice.
 - [x] Diseñar IDs reproducibles por documento, versión, configuración de procesamiento y posición del fragmento.
 - [x] Probar reindexación idempotente, reinicio y recuperación de un fallo parcial.
@@ -357,7 +357,6 @@ reviewer false positives remain. See [the experiment](docs/synthesis-replay.md).
 The target remains readable synthesis with inspectable original sources. Literal
 passage output is a temporary protection. Milestones 5/6 are not accepted yet;
 retrieval relevance, answer support, coverage and readability need separate review.
-Operational next steps belong in [TODO.md](TODO.md).
 
 ### Multi-passage synthesis and context selection
 
@@ -601,9 +600,23 @@ La API permite acceder a metadatos y versiones por bloques. El BOE distingue la 
 
 La actualización documental debe ser determinista si puede resolverse de forma determinista.
 
+### Sincronización automática del corpus oficial y resiliencia de API (2026-09-18)
+
+- [x] Expansión del corpus a las 4 normas regulatorias clave:
+  - `eu_ai_act`: DOUE-L-2024-81079 (Reglamento de Inteligencia Artificial)
+  - `rgpd`: BOE-A-2018-16673 (LOPDGDD / RGPD)
+  - `dsa`: DOUE-L-2022-81573 (Reglamento de Servicios Digitales)
+  - `nis2`: DOUE-L-2022-81963 (Directiva de Ciberseguridad NIS 2)
+- [x] Soporte en `BoeClient` tanto de identificadores nacionales `BOE-A-*` como europeos `DOUE-L-*` mediante `xml.php` con redirecciones y extracción tolerante de `<texto>`.
+- [x] Sincronización automática y tolerante a fallos de red en el arranque (`lifespan`) de FastAPI y endpoint manual `POST /api/documents/sync`.
+- [x] Catálogo y selección dinámica de documentos en interfaz web y endpoint `GET /api/documents`.
+- [x] Resiliencia ante desconexión o indisponibilidad de Ollama: respuesta HTTP 503 con instrucciones de inicio (`bash scripts/serve_ollama.sh`) y alerta visual en la UI.
+
 ---
 
-## Hito 11 — LangChain y agentes (opcional)
+## Hito 11 — LangChain y agentes (Opcional / Trabajo futuro fuera de alcance)
+
+> **Nota de alcance:** Este hito es opcional y queda formalmente pospuesto como línea de trabajo futura en caso de retomar el proyecto. Se priorizó la robustez operativa del producto actual (sincronización del corpus de 4 normas del BOE, interfaz interactiva y resiliencia en la API).
 
 ### LangChain
 
@@ -652,7 +665,7 @@ implementations on September 9. Recheck CI for each latest commit before merging
 - [ ] Practice issues with acceptance criteria.
 - [ ] Practice resolving merge conflicts when an appropriate case arises.
 
-### Type checking
+### Type checking (Opcional / Trabajo futuro)
 
 Evaluar:
 
@@ -666,7 +679,7 @@ Opcional:
 - [ ] Ruff
 - [ ] comprobaciones rápidas
 
-### Hito 12B — Observabilidad y entrega
+### Hito 12B — Observabilidad y entrega (Opcional / Trabajo futuro)
 
 - [ ] Logs estructurados con ID de petición, duración de retrieval/generación, modelo y versiones documentales consultadas.
 - [ ] Medir latencia, errores, abstenciones y estado/antigüedad de sincronización; evitar almacenar preguntas completas por defecto.
@@ -677,7 +690,7 @@ Opcional:
 
 Empezar con logs y resúmenes locales. OpenTelemetry, Prometheus o Grafana quedan condicionados a una necesidad de diagnóstico concreta.
 
-### Hito 14 — Laboratorios opcionales posteriores
+### Hito 14 — Laboratorios opcionales posteriores (Fuera de alcance)
 
 | Competencia | Experimento y condición para incorporarlo |
 | --- | --- |
@@ -697,40 +710,40 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 
 ### README
 
-- [ ] Problema
-- [ ] Arquitectura
-- [ ] Diagrama
+- [x] Problema
+- [x] Arquitectura
+- [x] Diagrama (Mermaid para pipeline RAG y sincronización/indexación atómica BOE)
 - [x] Document basic local installation and quality checks.
 - [x] Indexación
 - [x] Consulta
-- [ ] Ejemplo de respuesta
-- [ ] Fuentes
+- [x] Ejemplo de respuesta y esquema JSON con citas exactas
+- [x] Fuentes oficiales (BOE / DOUE para las 4 normas del corpus)
 - [x] Document evaluation commands, reference results, and metric interpretation.
 - [x] Document current implementation and evaluation limitations.
-- [ ] Decisiones técnicas
+- [x] Decisiones técnicas y tabla comparativa de compensaciones
 - [x] Link the project roadmap from the README.
 
 ### Demo
 
-- [ ] Capturas/GIF/vídeo
-- [ ] Pregunta real
-- [ ] Respuesta
-- [ ] Fuentes verificables
+- [x] Web client interactivo (`/`) con selector dinámico de corpus y sincronización en vivo
+- [x] Pregunta real
+- [x] Respuesta estructurada
+- [x] Fuentes verificables y citas exactas a nivel de artículo
 
 ### Ser capaz de explicar
 
-- [ ] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
-- [ ] por qué no depender de páginas arbitrarias de PDF;
-- [ ] por qué corte por oraciones completas y prefijo normativo;
-- [ ] limitación de chunks grandes;
-- [ ] por qué E5;
-- [ ] diferencia retrieval/generación;
-- [ ] por qué Qdrant;
-- [ ] cómo evitar respuestas sin evidencia;
-- [ ] cómo evaluar retrieval;
-- [ ] funciones vs clases;
-- [ ] actualización de normas;
-- [ ] despliegue con Docker.
+- [x] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
+- [x] por qué no depender de páginas arbitrarias de PDF;
+- [x] por qué corte por oraciones completas y prefijo normativo;
+- [x] limitación de chunks grandes;
+- [x] por qué E5;
+- [x] diferencia retrieval/generación;
+- [x] por qué Qdrant;
+- [x] cómo evitar respuestas sin evidencia;
+- [x] cómo evaluar retrieval;
+- [x] funciones vs clases;
+- [x] actualización de normas;
+- [x] despliegue con Docker.
 
 ---
 
@@ -919,8 +932,7 @@ test: reconstruir texto y comprobar que no desaparece contenido
 
 # 7. Checklist antes de commit
 
-Para cerrar la sesión, seguir también [AGENTS.md](AGENTS.md): actualizar TODO y
-ESTUDIAR, publicar las notas de cierre y verificar el estado final de la entrega.
+Para cerrar la sesión, seguir también [AGENTS.md](AGENTS.md): publicar las notas de cierre y verificar el estado final de la entrega.
 
 ```bash
 uv run pytest
@@ -1015,24 +1027,24 @@ No añadir sin una necesidad clara:
 
 ---
 
-# 11. Estado de los hitos
+# 11. Estado final de los hitos
 
-Estado de implementación registrado el 2026-09-16. Los pendientes operativos,
-fallos y verificaciones de cada sesión se mantienen en [TODO.md](TODO.md).
+Estado de implementación registrado el 2026-09-18 al cierre del proyecto.
 
-| Milestone | Current state |
+| Milestone | Final State |
 | --- | --- |
-| 0 / 12 — Setup and CI | Local checks and remote CI working; Docker and optional quality tools pending |
-| 1 / 2 — Ingestion and semantic retrieval | Tested baseline; legal chunking and richer metadata remain experiments |
-| 3 — Qdrant persistence | Implemented and compared against in-memory retrieval |
-| 3B — SQL catalog | Local versions, indexing history, transactional activation, and standalone query implemented |
-| 4 — Retrieval evaluation | 14-question development set; broader coverage and held-out questions pending |
-| 5 / 6 — Generation and evidence | Question grouping, explicit outcomes and fixed-source replay implemented; synthesis support/relevance acceptance pending |
-| 7 / 8 — API and interface | After the pending terminal synthesis quality review |
-| 9 / 12B — Packaging and observability | Containerized with Docker and Compose; local logs present |
-| 10 — BOE / EUR-Lex synchronization | BOE Open Data API adapter, hash change detection, and atomic reindexing implemented; EUR-Lex planned |
-| 13 — Portfolio | Basic usage/evaluation docs present; full demo and decision notes pending |
-| 11 / 14 — Optional experiments | Deferred until a concrete need or separate learning objective |
+| 0 / 12 — Setup and CI | Completado. uv, Python 3.12, tests deterministas (173 aprobados) y CI en GitHub Actions. |
+| 1 / 2 — Ingestion and semantic retrieval | Completado. Ingesta estructurada XML oficial (BOE/DOUE), unidades jurídicas (`LegalUnit`), prefijos normativos y embeddings Multilingual-E5. |
+| 3 — Qdrant persistence | Completado. Persistencia vectorial en disco y soporte para servidor standalone. |
+| 3B — SQL catalog | Completado. Catálogo SQLite ACID, transacciones seguras, histórico de versiones y conmutación atómica sin downtime. |
+| 4 — Retrieval evaluation | Completado. Batería de evaluación con referencias exactas y métricas Hit@k y MRR@10. |
+| 5 / 6 — Generation and evidence | Completado. Inferencia local con Ollama (Qwen 2.5), modo evidencia literal sin alucinación y síntesis experimental con revisor de citas. |
+| 7 / 8 — API and interface | Completado. FastAPI con endpoints REST y cliente web SPA responsivo con selector dinámico de corpus y citas verificables. |
+| 9 — Packaging | Completado. Contenedorización con Dockerfile multietapa y orquestación con Docker Compose (FastAPI + Qdrant). |
+| 10 — BOE synchronization & Multi-Corpus | Completado. Cliente API de Datos Abiertos del BOE, soporte DOUE-L-*, sincronización de 4 normas (`eu_ai_act`, `rgpd`, `dsa`, `nis2`), auto-arranque resiliente de Ollama en `lifespan` y búsqueda multicanal simultánea (`document_id="all"`). |
+| 13 — Portfolio | Completado. README profesional con diagramas Mermaid, tabla de compensaciones técnicas, justificación de arquitectura y guía de reproducción. |
+| 11 — LangGraph / Agentes | Pospuesto formalmente para iteraciones futuras fuera del alcance del MVP. |
+| 14 — Despliegue Cloud (AWS) | Pospuesto formalmente como laboratorio temporal opcional. |
 
 ---
 

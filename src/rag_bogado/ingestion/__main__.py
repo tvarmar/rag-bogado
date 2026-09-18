@@ -31,7 +31,7 @@ def main() -> None:
     sync_parser.add_argument("--store-path", type=Path, default=Path("data/qdrant"))
     sync_parser.add_argument("--model", default="intfloat/multilingual-e5-small")
     sync_parser.add_argument(
-        "--revision", default="e4ce9877abf4ed59fe848b943265004db73919e1"
+        "--revision", default="614241f622f53c4eeff9890bdc4f31cfecc418b3"
     )
     sync_parser.add_argument("--chunk-size", type=int, default=800)
     sync_parser.add_argument("--overlap", type=int, default=120)
