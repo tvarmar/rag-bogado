@@ -44,7 +44,8 @@ Los números de hito se conservan para mantener las referencias del plan origina
 5. Conectar API e interfaz y demostrar el MVP local (hitos 7 y 8).
 6. Empaquetar, observar y preparar entregas reproducibles (hitos 9 y 12B).
 7. Incorporar sincronización y versiones BOE (hito 10).
-8. Documentar el portfolio; elegir después experimentos opcionales (hitos 11, 13 y 14).
+8. Sincronización completa del corpus oficial (4 normas) y resiliencia en API (ampliación práctica del hito 10 / pre-cierre).
+9. Documentar el portfolio; hitos futuros y opcionales (hitos 11, 13 y 14 pospuestos para futuras fases si se retoma el proyecto).
 
 ### Criterios de aceptación del MVP
 
@@ -601,9 +602,23 @@ La API permite acceder a metadatos y versiones por bloques. El BOE distingue la 
 
 La actualización documental debe ser determinista si puede resolverse de forma determinista.
 
+### Sincronización automática del corpus oficial y resiliencia de API (2026-09-18)
+
+- [x] Expansión del corpus a las 4 normas regulatorias clave:
+  - `eu_ai_act`: DOUE-L-2024-81079 (Reglamento de Inteligencia Artificial)
+  - `rgpd`: BOE-A-2018-16673 (LOPDGDD / RGPD)
+  - `dsa`: DOUE-L-2022-81573 (Reglamento de Servicios Digitales)
+  - `nis2`: DOUE-L-2022-81963 (Directiva de Ciberseguridad NIS 2)
+- [x] Soporte en `BoeClient` tanto de identificadores nacionales `BOE-A-*` como europeos `DOUE-L-*` mediante `xml.php` con redirecciones y extracción tolerante de `<texto>`.
+- [x] Sincronización automática y tolerante a fallos de red en el arranque (`lifespan`) de FastAPI y endpoint manual `POST /api/documents/sync`.
+- [x] Catálogo y selección dinámica de documentos en interfaz web y endpoint `GET /api/documents`.
+- [x] Resiliencia ante desconexión o indisponibilidad de Ollama: respuesta HTTP 503 con instrucciones de inicio (`bash scripts/serve_ollama.sh`) y alerta visual en la UI.
+
 ---
 
-## Hito 11 — LangChain y agentes (opcional)
+## Hito 11 — LangChain y agentes (pospuesto / hito futuro)
+
+> **Nota de alcance (2026-09-18):** Este hito queda pospuesto como línea de trabajo futura en caso de retomar el proyecto. Se prioriza la robustez operativa del producto actual (sincronización del corpus de 4 normas del BOE y resiliencia en la API).
 
 ### LangChain
 

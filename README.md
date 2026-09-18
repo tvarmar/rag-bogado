@@ -46,7 +46,7 @@ rag-bogado/
 ├── .github/workflows/ci.yml   # Automated tests and Ruff checks
 ├── src/rag_bogado/
 │   ├── ingestion/            # xml_loader.py, normalizer.py, chunker.py,
-│   │                        # boe.py, sync.py, __main__.py (BOE sync CLI)
+│   │                        # boe.py, sync.py, corpus.py, __main__.py (BOE sync CLI)
 │   │                        # persistent_retriever.py, vector_store.py
 │   ├── indexing/             # indexer.py, catalog.py, configuration.py,
 │   │                        # service.py, __main__.py (catalog CLI)
@@ -165,17 +165,21 @@ absolute paths; moving data requires updating/rebuilding the catalog.
 
 ## Official sources and BOE synchronization
 
-Fetch official metadata or synchronize and atomically index consolidated legal texts from the Spanish Official State Gazette (BOE) Open Data API:
+Fetch official metadata or synchronize and atomically index consolidated legal texts from the Spanish Official State Gazette (BOE) Open Data API for the 4 core regulatory documents:
+- `eu_ai_act`: `DOUE-L-2024-81079` (Reglamento de Inteligencia Artificial)
+- `rgpd`: `BOE-A-2018-16673` (LOPDGDD / RGPD)
+- `dsa`: `DOUE-L-2022-81573` (Reglamento de Servicios Digitales - UE 2022/2065)
+- `nis2`: `DOUE-L-2022-81963` (Directiva de Ciberseguridad - UE 2022/2555)
 
 ```bash
 # Query official metadata (title, consolidation status, update timestamps):
 uv run python -m rag_bogado.ingestion metadata BOE-A-2018-16673
 
-# Synchronize one or more official documents:
-uv run python -m rag_bogado.ingestion sync BOE-A-2018-16673
+# Synchronize one or more official documents using official IDs or known aliases:
+uv run python -m rag_bogado.ingestion sync eu_ai_act rgpd dsa nis2
 
 # Inspect sync status and consolidation metadata:
-uv run python -m rag_bogado.indexing sync-status --document-id BOE-A-2018-16673
+uv run python -m rag_bogado.indexing sync-status --document-id rgpd
 ```
 
 The synchronization service checks official registry timestamps, computes SHA-256 hashes of the downloaded XML content, skips reindexing when content is unchanged, and activates new versions in Qdrant only after full vector verification.
@@ -227,11 +231,15 @@ uv run uvicorn rag_bogado.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Endpoints and views:
-- `GET /`: Interactive web client for desktop and mobile devices.
-- `GET /health`: Report service readiness, version, and active queryable documents in SQLite.
-- `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis.
+- `GET /`: Interactive web client with dynamic document switcher across the 4 corpus regulations and inline sync status.
+- `GET /health`: Report service readiness, version, Ollama availability (`ollama_ready`), and active queryable documents in SQLite.
+- `GET /api/documents`: List the 4 official corpus documents, titles, scopes, and synchronization readiness.
+- `POST /api/documents/sync`: Trigger automated BOE verification and synchronization across the corpus.
+- `POST /ask`: Answer questions using multi-query retrieval, RRF, evidence selection, and optional synthesis. Returns HTTP 503 if Ollama is unreachable, with instructions to run `bash scripts/serve_ollama.sh`.
 - `GET /docs`: Interactive OpenAPI documentation (Swagger UI).
 - `GET /redoc`: Alternative OpenAPI documentation (ReDoc).
+
+During FastAPI startup (`lifespan`), the server checks the BOE for the 4 official documents and synchronizes any missing or updated texts before allowing queries (fail-safe on network errors).
 
 To access the web interface from another device (such as a smartphone connected to the same local Wi-Fi network), navigate to your computer's local IP address (e.g. `http://192.168.1.XX:8000`).
 
