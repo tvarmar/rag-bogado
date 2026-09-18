@@ -45,7 +45,7 @@ Los números de hito se conservan para mantener las referencias del plan origina
 6. Empaquetar, observar y preparar entregas reproducibles (hitos 9 y 12B).
 7. Incorporar sincronización y versiones BOE (hito 10).
 8. Sincronización completa del corpus oficial (4 normas) y resiliencia en API (ampliación práctica del hito 10 / pre-cierre).
-9. Documentar el portfolio; hitos futuros y opcionales (hitos 11, 13 y 14 pospuestos para futuras fases si se retoma el proyecto).
+9. Documentar el portfolio y arquitectura para showcase profesional (hito 13 completado); hitos futuros y opcionales (hitos 11 y 14 pospuestos para futuras fases si se retoma el proyecto).
 
 ### Criterios de aceptación del MVP
 
@@ -712,40 +712,40 @@ AWS no garantiza gratuidad indefinida: el Free plan actual dura hasta seis meses
 
 ### README
 
-- [ ] Problema
-- [ ] Arquitectura
-- [ ] Diagrama
+- [x] Problema
+- [x] Arquitectura
+- [x] Diagrama (Mermaid para pipeline RAG y sincronización/indexación atómica BOE)
 - [x] Document basic local installation and quality checks.
 - [x] Indexación
 - [x] Consulta
-- [ ] Ejemplo de respuesta
-- [ ] Fuentes
+- [x] Ejemplo de respuesta y esquema JSON con citas exactas
+- [x] Fuentes oficiales (BOE / DOUE para las 4 normas del corpus)
 - [x] Document evaluation commands, reference results, and metric interpretation.
 - [x] Document current implementation and evaluation limitations.
-- [ ] Decisiones técnicas
+- [x] Decisiones técnicas y tabla comparativa de compensaciones
 - [x] Link the project roadmap from the README.
 
 ### Demo
 
-- [ ] Capturas/GIF/vídeo
-- [ ] Pregunta real
-- [ ] Respuesta
-- [ ] Fuentes verificables
+- [x] Web client interactivo (`/`) con selector dinámico de corpus y sincronización en vivo
+- [x] Pregunta real
+- [x] Respuesta estructurada
+- [x] Fuentes verificables y citas exactas a nivel de artículo
 
 ### Ser capaz de explicar
 
-- [ ] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
-- [ ] por qué no depender de páginas arbitrarias de PDF;
-- [ ] por qué corte por oraciones completas y prefijo normativo;
-- [ ] limitación de chunks grandes;
-- [ ] por qué E5;
-- [ ] diferencia retrieval/generación;
-- [ ] por qué Qdrant;
-- [ ] cómo evitar respuestas sin evidencia;
-- [ ] cómo evaluar retrieval;
-- [ ] funciones vs clases;
-- [ ] actualización de normas;
-- [ ] despliegue con Docker.
+- [x] por qué XML oficial y parsing de unidades jurídicas (`LegalUnit`);
+- [x] por qué no depender de páginas arbitrarias de PDF;
+- [x] por qué corte por oraciones completas y prefijo normativo;
+- [x] limitación de chunks grandes;
+- [x] por qué E5;
+- [x] diferencia retrieval/generación;
+- [x] por qué Qdrant;
+- [x] cómo evitar respuestas sin evidencia;
+- [x] cómo evaluar retrieval;
+- [x] funciones vs clases;
+- [x] actualización de normas;
+- [x] despliegue con Docker.
 
 ---
 
