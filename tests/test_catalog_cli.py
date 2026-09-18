@@ -111,3 +111,35 @@ def test_index_xml_document(tmp_path, monkeypatch, capsys):
     assert len(embedded) == 1
     assert "Artículo 4. Alfabetización en IA" in embedded[0]
     assert "Regla legal." in embedded[0]
+
+
+def test_sync_status_command(tmp_path, monkeypatch, capsys):
+    from rag_bogado.indexing.catalog import DocumentCatalog
+
+    catalog_path = tmp_path / "catalog" / "catalog.sqlite3"
+    with DocumentCatalog(catalog_path) as catalog:
+        catalog.record_sync_metadata(
+            document_id="BOE-A-2018-16673",
+            source="BOE",
+            official_id="BOE-A-2018-16673",
+            title="Ley de Datos",
+            last_checked_at="2026-09-18T10:00:00Z",
+            estado_consolidacion="Finalizado",
+        )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "indexing",
+            "--catalog",
+            str(catalog_path),
+            "sync-status",
+            "--document-id",
+            "BOE-A-2018-16673",
+        ],
+    )
+    cli.main()
+    captured = capsys.readouterr()
+    data = json.loads(captured.out)
+    assert data["official_id"] == "BOE-A-2018-16673"
+    assert data["estado_consolidacion"] == "Finalizado"
